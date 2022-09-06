@@ -1,0 +1,10 @@
+configure_zsh() {
+    print_info "Configuring oh-my-zsh"
+    cp configurations/zsh/.zshrc ~/.zshrc
+}
+
+configure_vim() {
+    mkdir -p ~/.vim/plugged
+    cp configurations/vim/.vimrc ~/
+    print_hint "Remember to install plugins before first use: vim +PlugInstall"
+}
