@@ -12,10 +12,14 @@ source $(pwd)/scripts/installers
 source $(pwd)/scripts/configurators
 source $(pwd)/configurations/brew_casks
 
+email="fill.your@email.com"
+name="Firstname Lastname"
+
 ## basics
 install_xcode
 install_brew
-configure_github_ssh_key "fill.your@email.com"
+configure_github_ssh_key $email $name
+configure_git $email
 
 ## zsh with plugins
 install_zsh
