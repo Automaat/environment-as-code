@@ -101,4 +101,27 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias cd_sb="cd /Users/marcinskalski/Library/Mobile\ Documents/iCloud~md~obsidian/Documents"
+alias sb="cd /Users/marcinskalski/Library/Mobile\ Documents/iCloud~md~obsidian/Documents"
+
+####################################################################
+# ZPlug config
+export ZPLUG_HOME=/opt/homebrew/opt/zplug
+source $ZPLUG_HOME/init.zsh
+
+# ZPlug plugins list:
+zplug "MichaelAquilina/zsh-you-should-use"
+
+
+if ! zplug check --verbose; then
+    printf "Install? [y/N]: "
+    if read -q; then
+        echo; zplug install
+    fi
+fi
+
+# Then, source plugins and add commands to $PATH
+zplug load
+####################################################################
+# FZF config
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+####################################################################
