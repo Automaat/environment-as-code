@@ -10,16 +10,30 @@ print_hint() {
 
 source $(pwd)/scripts/installers
 source $(pwd)/scripts/configurators
+source $(pwd)/configurations/brew_casks
 
-# install_xcode
-# install_brew
-# install_zsh
+## basics
+install_xcode
+install_brew
+configure_github_ssh_key "fill.your@email.com"
+
+## zsh with plugins
+install_zsh
+install_zplug
+install_fzf
 configure_zsh
-# install_vim_plug
-# configure_vim
-# install_gobrew
 
-# brew install --cask visual-studio-code google-chrome
+## VIM
+install_vim_plug
+configure_vim
 
-# casks="todoist obsidian bitwarden"
-# install_brew_casks $casks
+## Golang
+install_gobrew
+
+## Working directories
+create_para_folders
+
+## Apps
+install_brew_casks $basic_casks
+install_brew_casks $company_specific_casks
+# brew install docker

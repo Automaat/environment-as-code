@@ -43,7 +43,7 @@ install_brew_casks() {
     print_info "Installing brew packages"
     casks=$@
     for cask in $casks; do
-        brew install --cask $casks
+        brew list $cask &> /dev/null || brew install --cask $cask
     done
 }
 
@@ -54,4 +54,25 @@ install_gobrew() {
     else 
         curl -sLk https://git.io/gobrew | sh -
     fi
+}
+
+install_zplug() {
+    print_info "Checking ZPlug"
+    brew list zplug &> /dev/null
+    if [ $? -ne 0 ]; then
+        print_info "Installing ZPlug"
+        brew install zplug
+    fi
+    echo "ZPlug installed"
+}
+
+install_fzf() {
+    print_info "Checking FZF"
+    brew list fzf &> /dev/null
+    if [ $? -ne 0 ]; then
+        print_info "Installing FZF"
+        brew install fzf
+        $(brew --prefix)/opt/fzf/install
+    fi
+    echo "FZF installed"
 }
