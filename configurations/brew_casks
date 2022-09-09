@@ -1,2 +1,2 @@
-basic_casks="todoist obsidian bitwarden visual-studio-code google-chrome google-drive"
+basic_casks="todoist obsidian bitwarden visual-studio-code google-chrome google-drive contexts iterm2"
 company_specific_casks="1password"
