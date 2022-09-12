@@ -40,4 +40,3 @@ create_para_folders
 ## Apps
 install_brew_casks $basic_casks
 install_brew_casks $company_specific_casks
-# brew install docker

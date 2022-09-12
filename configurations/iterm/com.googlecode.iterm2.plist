@@ -269,11 +269,11 @@
 			<key>HotKey Alternate Shortcuts</key>
 			<array/>
 			<key>HotKey Characters</key>
-			<string>0</string>
+			<string></string>
 			<key>HotKey Characters Ignoring Modifiers</key>
-			<string>§</string>
+			<string></string>
 			<key>HotKey Key Code</key>
-			<integer>10</integer>
+			<integer>53</integer>
 			<key>HotKey Modifier Activation</key>
 			<integer>0</integer>
 			<key>HotKey Modifier Flags</key>
