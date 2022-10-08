@@ -31,12 +31,12 @@ configure_zsh
 install_vim_plug
 configure_vim
 
-## Golang
+# ## Golang
 install_gobrew
 
-## Working directories
+# ## Working directories
 create_para_folders
 
-## Apps
+# ## Apps
 install_brew_casks $basic_casks
 install_brew_casks $company_specific_casks
