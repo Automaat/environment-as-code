@@ -64,6 +64,8 @@ cat ~/.ssh/id_ed25519.pub
 - Git config (name, email, signing)
 - SSH key generation
 - PARA folder structure (Projects/Areas/Resources/Archive)
+- Claude Code settings and custom commands
+- mise config (tool versions)
 
 ## Updating Configuration
 
