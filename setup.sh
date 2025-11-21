@@ -1,42 +1,44 @@
-#! /bin/bash
+#!/bin/bash
 
-print_info() {
-    echo "$(tput setaf 2)$1$(tput setaf 7)"
-}
+set -e
 
-print_hint() {
-    echo "$(tput setaf 3)$1$(tput setaf 7)"
-}
+echo "=================================="
+echo "Environment Setup via chezmoi"
+echo "=================================="
+echo ""
 
-source $(pwd)/scripts/installers
-source $(pwd)/scripts/configurators
-source $(pwd)/configurations/brew_casks
+# Check if chezmoi is installed
+if ! command -v chezmoi &> /dev/null; then
+    echo "chezmoi not found. Installing via Homebrew..."
 
-email="fill.your@email.com"
-name="Firstname Lastname"
+    # Check if Homebrew is installed
+    if ! command -v brew &> /dev/null; then
+        echo "Homebrew not found. Installing Homebrew first..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-## basics
-install_xcode
-install_brew
-configure_github_ssh_key $email $name
-configure_git $email
+        # Add Homebrew to PATH for Apple Silicon Macs
+        if [[ $(uname -m) == "arm64" ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        fi
+    fi
 
-## zsh with plugins
-install_zsh
-install_zplug
-install_fzf
-configure_zsh
+    brew install chezmoi
+fi
 
-## VIM
-install_vim_plug
-configure_vim
+echo ""
+echo "Running chezmoi to set up your environment..."
+echo ""
 
-# ## Golang
-install_gobrew
+# Initialize and apply chezmoi configuration
+chezmoi init --apply
 
-# ## Working directories
-create_para_folders
-
-# ## Apps
-install_brew_casks $basic_casks
-install_brew_casks $company_specific_casks
+echo ""
+echo "=================================="
+echo "Setup complete!"
+echo "=================================="
+echo ""
+echo "Next steps:"
+echo "1. Restart your terminal or run: source ~/.zshrc"
+echo "2. Run 'vim +PlugInstall' to install Vim plugins"
+echo "3. If you generated a new SSH key, add it to GitHub"
+echo ""
