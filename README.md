@@ -60,7 +60,7 @@ cat ~/.ssh/id_ed25519.pub
 
 - oh-my-zsh with custom plugins
 - Vim with vim-plug
-- iTerm2 preferences
+- Ghostty terminal configuration
 - Git config (name, email, signing)
 - SSH key generation
 - PARA folder structure (Projects/Areas/Resources/Archive)
