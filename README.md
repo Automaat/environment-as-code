@@ -53,7 +53,7 @@ cat ~/.ssh/id_ed25519.pub
 
 - todoist, obsidian, bitwarden, 1password
 - visual-studio-code, google-chrome, google-drive
-- contexts, iterm2, spotify, docker
+- contexts, ghostty, docker
 - adobe-acrobat-reader, espanso
 
 ### Configurations
