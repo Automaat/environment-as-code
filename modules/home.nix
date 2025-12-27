@@ -3,7 +3,7 @@
 let
   # User-specific variables - edit these values
   name = "Marcin Skalski";
-  email = "marcin.skalski@konghq.com";
+  email = "skalskimarcin33@gmail.com";
 
 in {
   # Home Manager settings
