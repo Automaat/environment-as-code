@@ -1,11 +1,11 @@
-{ pkgs, name, email, ... }:
+{ pkgs, fullName, userEmail, ... }:
 
 {
   programs.git = {
     enable = true;
 
-    userName = name;
-    userEmail = email;
+    userName = fullName;
+    userEmail = userEmail;
 
     signing = {
       key = "683BF754A0B005CD";

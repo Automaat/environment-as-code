@@ -2,8 +2,8 @@
 
 let
   # User-specific variables - edit these values
-  name = "Marcin Skalski";
-  email = "skalskimarcin33@gmail.com";
+  fullName = "Marcin Skalski";
+  userEmail = "skalskimarcin33@gmail.com";
 
 in {
   # Home Manager settings
@@ -28,7 +28,7 @@ in {
   ];
 
   # Pass variables to imported modules
-  _module.args = { inherit name email; };
+  _module.args = { inherit fullName userEmail; };
 
   # Activation scripts
   home.activation = {
@@ -36,7 +36,7 @@ in {
     generateSshKey = lib.hm.dag.entryAfter ["writeBoundary"] ''
       if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
         $DRY_RUN_CMD mkdir -p "$HOME/.ssh"
-        $DRY_RUN_CMD ssh-keygen -t ed25519 -C "${email}" -f "$HOME/.ssh/id_ed25519" -N ""
+        $DRY_RUN_CMD ssh-keygen -t ed25519 -C "${userEmail}" -f "$HOME/.ssh/id_ed25519" -N ""
         echo "SSH key generated. Add it to GitHub:"
         echo "  cat ~/.ssh/id_ed25519.pub | pbcopy"
       fi
