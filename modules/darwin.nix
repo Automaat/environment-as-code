@@ -29,6 +29,7 @@
     taps = [
       "shivammathur/php"
       "lencx/chatgpt"
+      "automaat/whisper-hotkey"
     ];
 
     # GUI applications
