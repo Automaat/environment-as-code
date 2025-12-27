@@ -159,15 +159,15 @@
   '';
 
   # Copy CLAUDE.md from chezmoi source
-  home.file.".claude/CLAUDE.md".source = /Users/marcin.skalski@konghq.com/.local/share/chezmoi/dot_claude/CLAUDE.md;
+  home.file.".claude/CLAUDE.md".source = "${config.home.homeDirectory}/.local/share/chezmoi/dot_claude/CLAUDE.md";
 
   # Claude Code commands
-  home.file.".claude/commands/cleanup-code.md".source = /Users/marcin.skalski@konghq.com/.local/share/chezmoi/dot_claude/commands/cleanup-code.md;
-  home.file.".claude/commands/docs-review.md".source = /Users/marcin.skalski@konghq.com/.local/share/chezmoi/dot_claude/commands/docs-review.md;
-  home.file.".claude/commands/pr-review.md".source = /Users/marcin.skalski@konghq.com/.local/share/chezmoi/dot_claude/commands/pr-review.md;
+  home.file.".claude/commands/cleanup-code.md".source = "${config.home.homeDirectory}/.local/share/chezmoi/dot_claude/commands/cleanup-code.md";
+  home.file.".claude/commands/docs-review.md".source = "${config.home.homeDirectory}/.local/share/chezmoi/dot_claude/commands/docs-review.md";
+  home.file.".claude/commands/pr-review.md".source = "${config.home.homeDirectory}/.local/share/chezmoi/dot_claude/commands/pr-review.md";
 
   # Claude Code skills
-  home.file.".claude/skills/go-code-review/SKILL.md".source = /Users/marcin.skalski@konghq.com/.claude/skills/go-code-review/SKILL.md;
-  home.file.".claude/skills/go-code-review/knowledge-base.md".source = /Users/marcin.skalski@konghq.com/.claude/skills/go-code-review/knowledge-base.md;
-  home.file.".claude/skills/go-code-review/real-world-patterns.md".source = /Users/marcin.skalski@konghq.com/.claude/skills/go-code-review/real-world-patterns.md;
+  home.file.".claude/skills/go-code-review/SKILL.md".source = "${config.home.homeDirectory}/.claude/skills/go-code-review/SKILL.md";
+  home.file.".claude/skills/go-code-review/knowledge-base.md".source = "${config.home.homeDirectory}/.claude/skills/go-code-review/knowledge-base.md";
+  home.file.".claude/skills/go-code-review/real-world-patterns.md".source = "${config.home.homeDirectory}/.claude/skills/go-code-review/real-world-patterns.md";
 }
