@@ -267,10 +267,6 @@ darwinConfigurations = {
 
 The zsh config includes conditional aliases for Kong/Kuma work if `~/kong` directory exists.
 
-## Migration from Chezmoi
-
-See [MIGRATION.md](MIGRATION.md) for detailed guide on migrating from the previous chezmoi setup.
-
 ## Requirements
 
 - macOS (tested on Sequoia)
@@ -323,7 +319,7 @@ darwin-rebuild build --flake ~/.config/nix-darwin
 nix store diff-closures /run/current-system ./result
 ```
 
-## Benefits Over Homebrew/Chezmoi
+## Benefits
 
 - **Atomic updates**: Rollback if something breaks
 - **Reproducible**: Exact same environment on any machine
