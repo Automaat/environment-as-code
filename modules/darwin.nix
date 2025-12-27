@@ -7,11 +7,8 @@
   # Set primary user for homebrew and system defaults
   system.primaryUser = "marcin.skalski@konghq.com";
 
-  # Nix configuration
-  nix.settings = {
-    experimental-features = "nix-command flakes";
-    trusted-users = [ "@admin" ];
-  };
+  # Disable nix-darwin's Nix management (using Determinate installer)
+  nix.enable = false;
 
   # System packages available to all users
   environment.systemPackages = with pkgs; [
