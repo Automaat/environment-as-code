@@ -28,6 +28,7 @@
 
     taps = [
       "shivammathur/php"
+      "lencx/chatgpt"
     ];
 
     # GUI applications
