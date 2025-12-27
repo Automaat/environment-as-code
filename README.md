@@ -33,27 +33,29 @@ Automated macOS environment setup using nix-darwin and home-manager.
    cd environment-as-code
    ```
 
-2. Set your user info (optional):
-   ```bash
-   export USER_NAME="Your Name"
-   export USER_EMAIL="your.email@example.com"
+2. Configure your details:
+
+   a. Edit `modules/home.nix` and set your name/email:
+   ```nix
+   name = "Your Name";
+   email = "your.email@example.com";
    ```
 
-3. Get your hostname:
+   b. Get your hostname:
    ```bash
    scutil --get LocalHostName
    ```
 
-4. Update `flake.nix` with your hostname and system architecture:
-   - Replace `"default"` with your hostname from step 3
-   - Change `"aarch64-darwin"` to `"x86_64-darwin"` if on Intel Mac
+   c. Update `flake.nix` with your hostname and architecture:
+   - Replace `"M-Skalski-MBP"` with your hostname
+   - Change `"aarch64-darwin"` to `"x86_64-darwin"` if Intel Mac
 
-5. Build and activate:
+3. Build and activate:
    ```bash
    nix run nix-darwin -- switch --flake .#$(scutil --get LocalHostName)
    ```
 
-6. Restart your terminal and verify:
+4. Restart your terminal and verify:
    ```bash
    darwin-rebuild switch --flake ~/.config/nix-darwin
    ```
@@ -235,14 +237,16 @@ darwin-rebuild switch --flake ~/.config/nix-darwin
 
 ### User Info
 
-Set via environment variables before first build:
+Edit `modules/home.nix`:
 
-```bash
-export USER_NAME="Your Name"
-export USER_EMAIL="your.email@example.com"
+```nix
+let
+  name = "Your Name";
+  email = "your.email@example.com";
+in {
+  # ...
+}
 ```
-
-Or edit `modules/home.nix` to change defaults.
 
 ### Machine-Specific Config
 
