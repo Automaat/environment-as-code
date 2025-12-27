@@ -78,4 +78,10 @@
 
   # Auto upgrade nix package and the daemon service
   services.nix-daemon.enable = true;
+
+  # Configure users
+  users.users."marcin.skalski" = {
+    home = "/Users/marcin.skalski";
+    description = "Marcin Skalski";
+  };
 }
