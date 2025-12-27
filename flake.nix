@@ -31,6 +31,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "backup";
             home-manager.users."marcin.skalski@konghq.com" = import ./modules/home.nix;
           }
         ];
