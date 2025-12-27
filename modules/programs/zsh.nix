@@ -114,6 +114,13 @@
     enableZshIntegration = true;
   };
 
+  # Direnv for per-project environments
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
+  };
+
   # Starship prompt
   programs.starship = {
     enable = true;

@@ -36,6 +36,8 @@ with pkgs; [
   autojump
   bat
   buf
+  direnv
+  nix-direnv
   # create-dmg  # Not in nixpkgs - keep in homebrew if needed
   firebase-tools
   fzf
