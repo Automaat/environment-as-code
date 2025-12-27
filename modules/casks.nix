@@ -2,7 +2,6 @@
   # Productivity
   "1password"
   "bitwarden"
-  "todoist"
   "todoist-app"
   "obsidian"
   "espanso"
@@ -23,7 +22,6 @@
   "google-drive"
   "google-drive-file-stream"
   "gcloud-cli"
-  "google-cloud-sdk"
 
   # Communication
   "discord"
