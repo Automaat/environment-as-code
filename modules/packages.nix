@@ -26,9 +26,7 @@ with pkgs; [
 
   # Python Tools
   pipx
-  python310
-  python313
-  python314
+  python313  # Use pyenv for multiple versions
   ruff
   uv
   virtualenv
