@@ -103,9 +103,6 @@
       export PATH="$PATH:$HOME/go/bin"
       export PATH="$PATH:$HOME/.local/bin"
 
-      # Starship prompt (commented out, keeping default oh-my-zsh theme)
-      # eval "$(starship init zsh)"
-
       # Custom aliases
       alias cs="carousel-splitter"
     '';
@@ -117,11 +114,11 @@
     enableZshIntegration = true;
   };
 
-  # Starship (available but not enabled by default)
+  # Starship prompt
   programs.starship = {
-    enable = false;
-    # Uncomment to use starship instead of oh-my-zsh theme
-    # enable = true;
-    # settings = {};
+    enable = true;
+    settings = {
+      # Add custom starship config here if needed
+    };
   };
 }
