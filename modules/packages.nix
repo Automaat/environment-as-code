@@ -36,7 +36,6 @@ with pkgs; [
   autojump
   bat
   buf
-  chezmoi
   # create-dmg  # Not in nixpkgs - keep in homebrew if needed
   firebase-tools
   fzf
