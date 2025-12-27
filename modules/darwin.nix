@@ -4,6 +4,9 @@
   # Enable nix-darwin
   system.stateVersion = 5;
 
+  # Set primary user for homebrew and system defaults
+  system.primaryUser = "marcin.skalski@konghq.com";
+
   # Nix configuration
   nix.settings = {
     experimental-features = "nix-command flakes";
@@ -55,7 +58,7 @@
   '';
 
   # Enable Touch ID for sudo
-  security.pam.enableSudoTouchIdAuth = true;
+  security.pam.services.sudo_local.touchIdAuth = true;
 
   # System defaults
   system.defaults = {
@@ -75,9 +78,6 @@
       KeyRepeat = 2;
     };
   };
-
-  # Auto upgrade nix package and the daemon service
-  services.nix-daemon.enable = true;
 
   # Configure users
   users.users."marcin.skalski@konghq.com" = {
