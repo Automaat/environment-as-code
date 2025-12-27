@@ -1,13 +1,9 @@
 { config, pkgs, lib, ... }:
 
 let
-  # User-specific variables (can be overridden via env or flake inputs)
-  userName = builtins.getEnv "USER_NAME";
-  userEmail = builtins.getEnv "USER_EMAIL";
-
-  # Fallbacks for development
-  name = if userName != "" then userName else "Marcin Skalski";
-  email = if userEmail != "" then userEmail else "marcin.skalski@konghq.com";
+  # User-specific variables - edit these values
+  name = "Marcin Skalski";
+  email = "marcin.skalski@konghq.com";
 
 in {
   # Home Manager settings

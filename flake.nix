@@ -18,7 +18,7 @@
   outputs = { self, nixpkgs, darwin, home-manager }: {
     darwinConfigurations = {
       # Replace with your hostname or use: $(scutil --get LocalHostName)
-      "default" = darwin.lib.darwinSystem {
+      "M-Skalski-MBP" = darwin.lib.darwinSystem {
         system = "aarch64-darwin"; # or "x86_64-darwin"
 
         modules = [
