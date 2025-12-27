@@ -5,12 +5,11 @@
     enable = true;
 
     plugins = with pkgs.vimPlugins; [
-      # Darcula color scheme
-      vim-darcula
+      # Note: vim-darcula not in nixpkgs
+      # Install manually via vim-plug if needed
     ];
 
     extraConfig = ''
-      colorscheme darcula
       set number
       set tabstop=4
     '';
