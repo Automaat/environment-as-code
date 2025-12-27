@@ -3,18 +3,19 @@
 {
   programs.git = {
     enable = true;
-
-    userName = fullName;
-    userEmail = userEmail;
+    lfs.enable = true;
 
     signing = {
       key = "683BF754A0B005CD";
       signByDefault = true;
     };
 
-    lfs.enable = true;
+    settings = {
+      user = {
+        name = fullName;
+        email = userEmail;
+      };
 
-    extraConfig = {
       pull = {
         rebase = true;
       };
@@ -44,6 +45,6 @@
 
   services.gpg-agent = {
     enable = true;
-    pinentryPackage = pkgs.pinentry_mac;
+    pinentry.package = pkgs.pinentry_mac;
   };
 }

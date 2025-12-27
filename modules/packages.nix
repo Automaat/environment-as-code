@@ -10,7 +10,7 @@ with pkgs; [
   git
   go
   gofumpt
-  golang-migrate
+  # golang-migrate  # Not in nixpkgs - use `migrate` or install via go
   hugo
   ninja
   nodejs
