@@ -24,6 +24,9 @@
         modules = [
           ./modules/darwin.nix
 
+          # Allow unfree packages
+          { nixpkgs.config.allowUnfree = true; }
+
           home-manager.darwinModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
