@@ -1,178 +1,332 @@
 # environment-as-code
 
-Automated macOS environment setup using Homebrew Bundle and chezmoi.
+Automated macOS environment setup using nix-darwin and home-manager.
 
 ## Features
 
-- **Homebrew packages & casks** - Declarative package management
-- **Dotfiles management** - .zshrc, .vimrc, iTerm2 config
-- **Development tools** - Git, SSH, oh-my-zsh, vim-plug, mise
-- **PARA folder structure** - Organized documents hierarchy
-- **Machine-specific configs** - Templates for different setups
+- **Declarative package management** - All packages defined in Nix
+- **Dotfiles management** - Managed via home-manager
+- **Reproducible setup** - Identical environments across machines
+- **Homebrew integration** - GUI apps installed via Homebrew casks
+- **Development tools** - Git, SSH, oh-my-zsh, vim, mise, Claude Code
+- **System configuration** - macOS defaults and preferences
 
 ## Quick Setup
 
-### New Machine
+### Prerequisites
 
-```bash
-# Clone and run setup
-git clone https://github.com/yourusername/environment-as-code.git
-cd environment-as-code
-./setup.sh
-```
+1. Xcode Command Line Tools:
+   ```bash
+   xcode-select --install
+   ```
 
-This will:
+2. Install Nix (using Determinate Systems installer):
+   ```bash
+   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+   ```
 
-1. Install Homebrew (if needed)
-2. Install chezmoi
-3. Run chezmoi to set up everything
+### Installation
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/yourusername/environment-as-code.git
+   cd environment-as-code
+   ```
+
+2. Set your user info (optional):
+   ```bash
+   export USER_NAME="Your Name"
+   export USER_EMAIL="your.email@example.com"
+   ```
+
+3. Get your hostname:
+   ```bash
+   scutil --get LocalHostName
+   ```
+
+4. Update `flake.nix` with your hostname and system architecture:
+   - Replace `"default"` with your hostname from step 3
+   - Change `"aarch64-darwin"` to `"x86_64-darwin"` if on Intel Mac
+
+5. Build and activate:
+   ```bash
+   nix run nix-darwin -- switch --flake .#$(scutil --get LocalHostName)
+   ```
+
+6. Restart your terminal and verify:
+   ```bash
+   darwin-rebuild switch --flake ~/.config/nix-darwin
+   ```
 
 ### Post-Setup
 
 ```bash
-# Restart terminal or reload shell
-source ~/.zshrc
+# SSH key will be auto-generated if not present
+# Copy it to GitHub:
+cat ~/.ssh/id_ed25519.pub | pbcopy
 
-# Install Vim plugins
-vim +PlugInstall
-
-# Add SSH key to GitHub (if generated)
-cat ~/.ssh/id_ed25519.pub
+# PARA folders created automatically in ~/Documents/
+ls ~/Documents/
 ```
 
 ## What Gets Installed
 
-### CLI Tools (via Homebrew)
+### CLI Tools (via Nix)
 
-- docker, k9s, pyenv, gh, kubectl, kubectx, helm
-- autojump, zsh-autosuggestions, zsh-syntax-highlighting, starship
-- mise, zplug, fzf, saml2aws
-- jq, tree, pre-commit, awscli
+**Development:**
+- go, node, python (3.10, 3.13, 3.14), rust, dart, deno
+- pyenv, rbenv, mise
+- gh, git, docker, docker-compose, lima, orbstack
+
+**Kubernetes/Cloud:**
+- kubectl, kubectx, kubie, helm, k9s, kind, minikube, skaffold, eksctl
+- consul, kumactl
+- awscli, aws-iam-authenticator, aws-sso-cli, saml2aws
+
+**CLI Utilities:**
+- bat, fzf, jq, tree, autojump, starship
+- pre-commit, shellcheck, actionlint, tflint, vale
+- ruff, uv, oxlint, yamlfmt, yamllint
+
+**Build Tools:**
+- cmake, ninja, autoconf, hugo, buf
+
+**Security:**
+- bitwarden-cli, gnupg, pinentry_mac, yubikey-manager
 
 ### Applications (via Homebrew Cask)
 
-- todoist, obsidian, bitwarden, 1password
-- visual-studio-code, google-chrome, google-drive
-- contexts, ghostty, docker
-- adobe-acrobat-reader, espanso
+**Productivity:**
+- 1Password, Bitwarden, Todoist, Obsidian, Espanso, Contexts, Freedom
+
+**Development:**
+- Visual Studio Code, Ghostty, Insomnia, pgAdmin4, OrbStack
+
+**Browsers:**
+- Vivaldi
+
+**Cloud:**
+- Google Drive, Google Cloud SDK, Home Assistant
+
+**Communication:**
+- Discord, ChatGPT
+
+**Media:**
+- XnViewMP, Adobe Acrobat Reader, Elgato Stream Deck, Whisper Hotkey
+
+**Fonts:**
+- Fira Code Nerd Font, Iosevka, Iosevka Nerd Font
+
+**LaTeX:**
+- BasicTeX
 
 ### Configurations
 
-- oh-my-zsh with custom plugins
-- Vim with vim-plug
-- Ghostty terminal configuration
-- Git config (name, email, signing)
-- SSH key generation
-- PARA folder structure (Projects/Areas/Resources/Archive)
-- Claude Code settings and custom commands
-- mise config (tool versions)
+**Shell (zsh):**
+- oh-my-zsh with plugins: git, brew, docker, golang, helm, kubectl, terraform, fzf
+- zsh-autosuggestions, zsh-syntax-highlighting
+- ZPlug plugins: you-should-use, clean-history
+- autojump, starship (disabled by default)
 
-## Updating Configuration
+**Git:**
+- User name/email (from env or defaults)
+- GPG signing enabled (key: 683BF754A0B005CD)
+- Pull rebase, sign-off, LFS support
 
-See [UPDATING.md](UPDATING.md) for detailed instructions on:
+**Terminal (Ghostty):**
+- Iosevka 23pt font with Nerd Font symbols
+- Everforest Light theme
+- Performance optimized for Claude Code (200M scrollback)
 
-- Editing dotfiles
-- Adding new packages
-- Syncing across machines
-- Managing chezmoi
+**Other:**
+- Vim with Darcula theme
+- K9s with Everforest skin
+- Mise config (Go 1.24.9, uv latest)
+- Claude Code settings, commands, and skills
+- Klaudiush validators
 
-### Quick Reference
-
-```bash
-# Edit dotfile
-chezmoi edit ~/.zshrc
-
-# Add new package (after installing)
-chezmoi edit ~/.local/share/chezmoi/run_onchange_install-packages.sh.tmpl
-
-# Apply changes
-chezmoi apply
-
-# Commit and push
-chezmoi cd
-git add .
-git commit -m "description"
-git push
-```
+**macOS Defaults:**
+- Dock autohide, no recents
+- Finder show all extensions
+- Fast key repeat
+- Touch ID for sudo
 
 ## Structure
 
-```text
-~/.local/share/chezmoi/          # chezmoi source directory
-├── .chezmoi.toml.tmpl           # Config with prompts
-├── dot_zshrc.tmpl               # .zshrc template
-├── dot_vimrc                    # .vimrc
-├── dot_config/iterm/            # iTerm2 config
-├── run_once_before_*.sh         # Pre-setup scripts
-├── run_once_after_*.sh.tmpl     # Post-setup scripts
-├── run_onchange_install-packages.sh.tmpl  # Brewfile
-├── UPDATING.md                  # Update instructions
-└── README.md                    # This file
 ```
+.
+├── flake.nix                    # Main entrypoint
+├── modules/
+│   ├── darwin.nix              # macOS system configuration
+│   ├── home.nix                # Home-manager configuration
+│   ├── packages.nix            # CLI packages list
+│   ├── casks.nix               # GUI apps list
+│   ├── programs/
+│   │   ├── zsh.nix            # Zsh + oh-my-zsh config
+│   │   ├── git.nix            # Git configuration
+│   │   ├── vim.nix            # Vim configuration
+│   │   └── vscode.nix         # VSCode (placeholder)
+│   └── dotfiles/
+│       ├── ghostty.nix        # Ghostty terminal config
+│       ├── k9s.nix            # K9s config + skin
+│       ├── mise.nix           # Mise tool versions
+│       ├── claude.nix         # Claude Code setup
+│       └── klaudiush.nix      # Klaudiush validators
+├── README.md                    # This file
+└── MIGRATION.md                 # Chezmoi → Nix guide
+```
+
+## Updating Configuration
+
+### Add/Remove Packages
+
+1. Edit package list:
+   ```bash
+   vim modules/packages.nix      # CLI tools
+   vim modules/casks.nix         # GUI apps
+   ```
+
+2. Apply changes:
+   ```bash
+   darwin-rebuild switch --flake ~/.config/nix-darwin
+   ```
+
+### Update Dotfiles
+
+1. Edit the relevant module:
+   ```bash
+   vim modules/programs/zsh.nix   # Shell config
+   vim modules/dotfiles/ghostty.nix  # Terminal config
+   ```
+
+2. Apply:
+   ```bash
+   darwin-rebuild switch --flake ~/.config/nix-darwin
+   ```
+
+### Update All Packages
+
+```bash
+# Update flake inputs (nixpkgs, nix-darwin, home-manager)
+nix flake update
+
+# Rebuild with new versions
+darwin-rebuild switch --flake ~/.config/nix-darwin
+```
+
+### Sync Across Machines
+
+1. Commit changes:
+   ```bash
+   cd ~/sideprojects/environment-as-code
+   git add .
+   git commit -s -S -m "feat: update configuration"
+   git push
+   ```
+
+2. On other machine:
+   ```bash
+   cd ~/sideprojects/environment-as-code
+   git pull
+   darwin-rebuild switch --flake .#$(scutil --get LocalHostName)
+   ```
 
 ## Customization
 
-### Machine-Specific Settings
+### User Info
 
-Edit templates to add conditionals:
+Set via environment variables before first build:
 
 ```bash
-chezmoi edit ~/.local/share/chezmoi/dot_zshrc.tmpl
+export USER_NAME="Your Name"
+export USER_EMAIL="your.email@example.com"
 ```
 
-Use conditionals:
+Or edit `modules/home.nix` to change defaults.
 
-```zsh
-{{- if eq .chezmoi.hostname "work-laptop" }}
-# Work-specific aliases
-{{- end }}
+### Machine-Specific Config
+
+Create per-host configs in `flake.nix`:
+
+```nix
+darwinConfigurations = {
+  "work-laptop" = darwin.lib.darwinSystem {
+    # work-specific config
+  };
+  "personal-mac" = darwin.lib.darwinSystem {
+    # personal config
+  };
+};
 ```
 
-### Email and Name
+### Work-Specific Aliases
 
-First run will prompt for:
+The zsh config includes conditional aliases for Kong/Kuma work if `~/kong` directory exists.
 
-- Email address
-- Full name
+## Migration from Chezmoi
 
-These are templated into:
-
-- Git config
-- SSH key generation
+See [MIGRATION.md](MIGRATION.md) for detailed guide on migrating from the previous chezmoi setup.
 
 ## Requirements
 
 - macOS (tested on Sequoia)
+- Apple Silicon (aarch64) or Intel (x86_64)
+- Admin access
 - Internet connection
-- Admin access for Xcode Command Line Tools
 
 ## Troubleshooting
 
-### Xcode Not Installed
+### Command Not Found After Install
+
+Restart terminal or reload PATH:
 
 ```bash
-xcode-select --install
+exec zsh
 ```
 
-### Homebrew Path Issues (Apple Silicon)
+### Homebrew Casks Not Installing
+
+Check homebrew installation:
 
 ```bash
-eval "$(/opt/homebrew/bin/brew shellenv)"
+which brew
+brew --version
 ```
 
-### chezmoi Changes Not Applying
+### Nix Daemon Issues
+
+Restart nix daemon:
 
 ```bash
-chezmoi diff    # See what would change
-chezmoi apply -v  # Verbose output
+sudo launchctl kickstart -k system/org.nixos.nix-daemon
 ```
 
-### Reset chezmoi State
+### Rebuild From Scratch
 
 ```bash
-rm -rf ~/.local/share/chezmoi/.chezmoistate.boltdb
-chezmoi apply
+# Remove nix-darwin state
+sudo rm -rf /etc/nix/nix.conf /run/current-system
+
+# Rebuild
+darwin-rebuild switch --flake ~/.config/nix-darwin
 ```
+
+### Check What Changed
+
+```bash
+# See what would change (dry run)
+darwin-rebuild build --flake ~/.config/nix-darwin
+nix store diff-closures /run/current-system ./result
+```
+
+## Benefits Over Homebrew/Chezmoi
+
+- **Atomic updates**: Rollback if something breaks
+- **Reproducible**: Exact same environment on any machine
+- **Declarative**: Single source of truth for all config
+- **Faster**: Binary cache, parallel builds
+- **Version pinning**: Lock exact package versions
+- **System config**: Manage macOS settings declaratively
 
 ## License
 
