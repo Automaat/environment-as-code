@@ -1,0 +1,151 @@
+# klaudiush global config
+# All validators enabled with defaults
+
+# Git Validators
+[validators.git]
+
+# Git Add - blocks adding sensitive files
+[validators.git.add]
+enabled = true
+severity = "error"
+blocked_patterns = ["*.secret", "*.key", ".env"]
+
+# Git Commit - enforce flags, staging, conventional commits
+[validators.git.commit]
+enabled = true
+severity = "error"
+required_flags = ["-s", "-S"]
+check_staging_area = true
+enable_message_validation = true
+
+[validators.git.commit.message]
+title_max_length = 50
+body_max_line_length = 72
+check_conventional_commits = true
+require_scope = true
+block_infra_scope_misuse = true
+block_pr_references = true
+block_ai_attribution = true
+
+# Git Push - validates remote/branch
+[validators.git.push]
+enabled = true
+severity = "error"
+
+# Git PR - conventional commits, body validation
+[validators.git.pr]
+enabled = true
+severity = "error"
+title_max_length = 50
+enable_conventional_commits = true
+require_body = false
+
+# Git Branch - naming conventions
+[validators.git.branch]
+enabled = true
+severity = "error"
+protected_branches = ["main", "master"]
+require_type = true
+allow_uppercase = false
+
+# Git No-Verify - blocks --no-verify flag
+[validators.git.no_verify]
+enabled = true
+severity = "error"
+
+# File Validators
+[validators.file]
+
+# Markdown - custom rules + markdownlint
+[validators.file.markdown]
+enabled = true
+severity = "error"
+timeout = "10s"
+context_lines = 2
+heading_spacing = true
+code_block_formatting = true
+list_formatting = true
+use_markdownlint = false
+
+# Shell - shellcheck integration
+[validators.file.shellscript]
+enabled = true
+severity = "error"
+timeout = "10s"
+use_shellcheck = true
+shellcheck_severity = "warning"
+
+# Terraform - fmt + tflint
+[validators.file.terraform]
+enabled = true
+severity = "error"
+timeout = "10s"
+check_format = true
+use_tflint = true
+tool_preference = "auto"
+
+# GitHub Actions - actionlint + digest pinning
+[validators.file.workflow]
+enabled = true
+severity = "error"
+timeout = "10s"
+enforce_digest_pinning = true
+require_version_comment = true
+check_latest_version = true
+use_actionlint = true
+
+# Go - gofumpt formatting
+[validators.file.gofumpt]
+enabled = true
+severity = "error"
+timeout = "10s"
+extra_rules = true
+
+# Python - ruff linting
+[validators.file.python]
+enabled = true
+severity = "error"
+timeout = "10s"
+context_lines = 2
+use_ruff = true
+
+# JavaScript/TypeScript - oxlint
+[validators.file.javascript]
+enabled = true
+severity = "error"
+timeout = "10s"
+context_lines = 2
+use_oxlint = true
+
+# Rust - rustfmt
+[validators.file.rust]
+enabled = true
+severity = "error"
+timeout = "10s"
+context_lines = 2
+use_rustfmt = true
+edition = "2021"
+
+# Secrets Detection
+[validators.secrets.secrets]
+enabled = true
+severity = "error"
+use_gitleaks = false
+block_on_detection = true
+max_file_size = "1MB"
+# allow_list = ["test-fixtures/*", "mock-*"]
+
+# Shell Validators
+[validators.shell]
+
+# Backtick - detects command substitution in double quotes
+[validators.shell.backtick]
+enabled = true
+severity = "error"
+
+# Notification Validators
+[validators.notification]
+
+# Bell - terminal bell on validation
+[validators.notification.bell]
+enabled = true
