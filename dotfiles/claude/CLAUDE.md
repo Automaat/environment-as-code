@@ -2,6 +2,10 @@
 
 In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 
+## Repository References
+
+- Nix setup for this machine: ~/sideprojects/environment-as-code
+
 ## Operational Philosophy
 
 - Prioritize working solutions over discussion

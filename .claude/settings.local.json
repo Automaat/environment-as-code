@@ -18,7 +18,12 @@
       "Bash(chezmoi add:*)",
       "Bash(brew bundle dump:*)",
       "Bash(chezmoi managed:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(k9s version:*)",
+      "Bash(home-manager switch:*)",
+      "Bash(git -C /Users/marcin.skalski@konghq.com/sideprojects/environment-as-code log --all --oneline --grep=\"k9s\")",
+      "Bash(k9s info:*)",
+      "Bash(darwin-rebuild switch:*)"
     ],
     "deny": [],
     "ask": []

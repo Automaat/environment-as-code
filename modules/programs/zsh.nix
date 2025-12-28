@@ -51,6 +51,9 @@
 
     # Additional shell initialization
     initContent = ''
+      # XDG Base Directory - ensures k9s uses ~/.config instead of Application Support
+      export XDG_CONFIG_HOME="$HOME/.config"
+
       # FZF integration
       source ${pkgs.fzf}/share/fzf/key-bindings.zsh
       source ${pkgs.fzf}/share/fzf/completion.zsh
