@@ -7,6 +7,7 @@
   "contexts"
   "freedom"
   "hammerspoon"
+  "airbuddy"
 
   # Development
   "visual-studio-code"
