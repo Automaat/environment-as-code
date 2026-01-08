@@ -21,6 +21,7 @@ in {
     ./programs/vim.nix
     ./programs/vscode.nix
     ./dotfiles/ghostty.nix
+    ./dotfiles/hammerspoon.nix
     ./dotfiles/k9s.nix
     ./dotfiles/mise.nix
     ./dotfiles/claude.nix

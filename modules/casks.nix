@@ -2,11 +2,11 @@
   # Productivity
   "1password"
   "bitwarden"
-  "todoist-app"
-  "obsidian"
+  "todoist-app"  "obsidian"
   "espanso"
   "contexts"
   "freedom"
+  "hammerspoon"
 
   # Development
   "visual-studio-code"
@@ -26,6 +26,9 @@
   # Communication
   "discord"
   "chatgpt"
+
+  # Home Automation
+  "home-assistant"
 
   # Media
   "xnviewmp"
