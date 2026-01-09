@@ -5,6 +5,9 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "R", function()
 end)
 hs.alert.show("Hammerspoon config loaded")
 
+-- Zoom meeting integration
+require("zoom-smart-plug")
+
 -- Window management
 -- Maximize window
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "M", function()
