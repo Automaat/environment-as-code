@@ -8,6 +8,9 @@ hs.alert.show("Hammerspoon config loaded")
 -- Zoom meeting integration
 require("zoom-smart-plug")
 
+-- Desk charger battery monitoring
+require("desk-charger-battery")
+
 -- Window management
 -- Maximize window
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "M", function()
