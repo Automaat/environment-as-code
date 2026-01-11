@@ -106,4 +106,7 @@ with pkgs; [
 
   # CLI utilities
   # gemini-cli  # Not in nixpkgs - install via npm/pip if needed
+
+  # 3D modeling
+  openscad
 ]

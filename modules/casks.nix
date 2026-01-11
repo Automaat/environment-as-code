@@ -9,6 +9,10 @@
   "hammerspoon"
   "airbuddy"
 
+  # 3D printing
+  "freecad"
+  "bambu-studio"
+
   # Development
   "visual-studio-code"
   "ghostty"
