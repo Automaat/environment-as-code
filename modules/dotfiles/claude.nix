@@ -74,6 +74,18 @@
         "Bash(tree:*)"
         "Bash(which:*)"
         "Bash(yamllint:*)"
+        "Bash(fc-list:*)"
+        "Bash(ghostty +show-config:*)"
+        "Bash(ghostty:*)"
+        "Bash(cp:*)"
+        "Bash(rm:*)"
+        "Bash(lsof:*)"
+        "Bash(ps:*)"
+        "Bash(git checkout:*)"
+        "Bash(git add:*)"
+        "Bash(git commit:*)"
+        "Bash(git push:*)"
+        "Bash(gh pr create:*)"
         "WebFetch"
       ];
     };
@@ -165,9 +177,40 @@
   home.file.".claude/commands/cleanup-code.md".source = ../../dotfiles/claude/commands/cleanup-code.md;
   home.file.".claude/commands/docs-review.md".source = ../../dotfiles/claude/commands/docs-review.md;
   home.file.".claude/commands/pr-review.md".source = ../../dotfiles/claude/commands/pr-review.md;
+  home.file.".claude/commands/fix-review.md".source = ../../dotfiles/claude/commands/fix-review.md;
+  home.file.".claude/commands/go-review.md".source = ../../dotfiles/claude/commands/go-review.md;
+  home.file.".claude/commands/merge-renovate.md".source = ../../dotfiles/claude/commands/merge-renovate.md;
 
   # Claude Code skills
   home.file.".claude/skills/go-code-review/SKILL.md".source = ../../dotfiles/claude/skills/go-code-review/SKILL.md;
   home.file.".claude/skills/go-code-review/knowledge-base.md".source = ../../dotfiles/claude/skills/go-code-review/knowledge-base.md;
   home.file.".claude/skills/go-code-review/real-world-patterns.md".source = ../../dotfiles/claude/skills/go-code-review/real-world-patterns.md;
+
+  # claude-md-gen skill
+  home.file.".claude/skills/claude-md-gen/SKILL.md".source = ../../dotfiles/claude/skills/claude-md-gen/SKILL.md;
+  home.file.".claude/skills/claude-md-gen/checklist.md".source = ../../dotfiles/claude/skills/claude-md-gen/checklist.md;
+  home.file.".claude/skills/claude-md-gen/customization-guide.md".source = ../../dotfiles/claude/skills/claude-md-gen/customization-guide.md;
+  home.file.".claude/skills/claude-md-gen/patterns/triage-workflows.md".source = ../../dotfiles/claude/skills/claude-md-gen/patterns/triage-workflows.md;
+  home.file.".claude/skills/claude-md-gen/patterns/decision-matrices.md".source = ../../dotfiles/claude/skills/claude-md-gen/patterns/decision-matrices.md;
+  home.file.".claude/skills/claude-md-gen/patterns/output-templates.md".source = ../../dotfiles/claude/skills/claude-md-gen/patterns/output-templates.md;
+  home.file.".claude/skills/claude-md-gen/patterns/cove-verification.md".source = ../../dotfiles/claude/skills/claude-md-gen/patterns/cove-verification.md;
+  home.file.".claude/skills/claude-md-gen/patterns/few-shot-examples.md".source = ../../dotfiles/claude/skills/claude-md-gen/patterns/few-shot-examples.md;
+  home.file.".claude/skills/claude-md-gen/patterns/citation-systems.md".source = ../../dotfiles/claude/skills/claude-md-gen/patterns/citation-systems.md;
+  home.file.".claude/skills/claude-md-gen/templates/research-knowledge.md".source = ../../dotfiles/claude/skills/claude-md-gen/templates/research-knowledge.md;
+  home.file.".claude/skills/claude-md-gen/templates/mixed.md".source = ../../dotfiles/claude/skills/claude-md-gen/templates/mixed.md;
+  home.file.".claude/skills/claude-md-gen/templates/web-app.md".source = ../../dotfiles/claude/skills/claude-md-gen/templates/web-app.md;
+  home.file.".claude/skills/claude-md-gen/templates/cli-tool.md".source = ../../dotfiles/claude/skills/claude-md-gen/templates/cli-tool.md;
+  home.file.".claude/skills/claude-md-gen/templates/library.md".source = ../../dotfiles/claude/skills/claude-md-gen/templates/library.md;
+  home.file.".claude/skills/claude-md-gen/templates/python-cli.md".source = ../../dotfiles/claude/skills/claude-md-gen/templates/python-cli.md;
+  home.file.".claude/skills/claude-md-gen/templates/api-service.md".source = ../../dotfiles/claude/skills/claude-md-gen/templates/api-service.md;
+  home.file.".claude/skills/claude-md-gen/questions/library-questions.md".source = ../../dotfiles/claude/skills/claude-md-gen/questions/library-questions.md;
+  home.file.".claude/skills/claude-md-gen/questions/api-service-questions.md".source = ../../dotfiles/claude/skills/claude-md-gen/questions/api-service-questions.md;
+  home.file.".claude/skills/claude-md-gen/questions/python-cli-questions.md".source = ../../dotfiles/claude/skills/claude-md-gen/questions/python-cli-questions.md;
+  home.file.".claude/skills/claude-md-gen/questions/research-questions.md".source = ../../dotfiles/claude/skills/claude-md-gen/questions/research-questions.md;
+  home.file.".claude/skills/claude-md-gen/questions/mixed-questions.md".source = ../../dotfiles/claude/skills/claude-md-gen/questions/mixed-questions.md;
+  home.file.".claude/skills/claude-md-gen/questions/web-app-questions.md".source = ../../dotfiles/claude/skills/claude-md-gen/questions/web-app-questions.md;
+  home.file.".claude/skills/claude-md-gen/questions/cli-tool-questions.md".source = ../../dotfiles/claude/skills/claude-md-gen/questions/cli-tool-questions.md;
+
+  # obsidian-inbox-cleanup skill
+  home.file.".claude/skills/obsidian-inbox-cleanup/SKILL.md".source = ../../dotfiles/claude/skills/obsidian-inbox-cleanup/SKILL.md;
 }
