@@ -1,0 +1,22 @@
+# Added by OrbStack: 'orb' SSH host for Linux machines
+# This only works if it's at the top of ssh_config (before any Host blocks).
+# This won't be added again if you remove it.
+Include ~/.orbstack/ssh/config
+
+Include ~/.colima/ssh_config
+
+# Homelab host - EDIT THESE VALUES FOR YOUR SETUP
+Host homelab
+  HostName 192.168.0.241
+  User admin
+  IdentityFile ~/.ssh/id_ed25519_homelab
+  IdentityAgent none
+
+# GitHub - explicit key selection
+Host github.com
+  IdentityAgent none
+  IdentityFile ~/.ssh/id_ed25519
+
+# Bitwarden SSH agent - global fallback
+Host *
+  IdentityAgent ~/.bitwarden-ssh-agent.sock

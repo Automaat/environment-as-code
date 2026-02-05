@@ -1,0 +1,78 @@
+# ~/.config/starship.toml
+# Minimal config for Go/Python/Rust/K8s workflow
+# Keep it clean, fast, and useful
+
+# Format: what shows and in what order
+format = """
+$directory\
+$git_branch\
+$golang\
+$python\
+$rust\
+$kubernetes\
+$fill\
+$cmd_duration\
+$line_break\
+$character"""
+
+# Don't add blank line before prompt
+add_newline = false
+
+# Directory: shorten long paths
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold cyan"
+
+# Git: just show branch, keep it simple
+[git_branch]
+symbol = "⎇ "
+format = "on [$symbol$branch]($style) "
+style = "bold purple"
+
+# Golang: show version when in Go project
+[golang]
+symbol = "🐹 "
+format = "via [$symbol($version )]($style)"
+style = "bold cyan"
+
+# Python: show version + venv when in Python project
+[python]
+symbol = "🐍 "
+format = 'via [${symbol}${pyenv_prefix}(${version })(\($virtualenv\) )]($style)'
+style = "yellow bold"
+
+# Rust: show version when in Rust project
+[rust]
+symbol = "🦀 "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+# Kubernetes: disabled by default, enable if you want
+# Uncomment to enable
+[kubernetes]
+disabled = true
+symbol = "⎈ "
+format = 'on [$symbol$context( \($namespace\))]($style) '
+style = "bold blue"
+
+# Optional: shorten k8s context names
+# [[kubernetes.contexts]]
+# context_pattern = "arn:aws:eks:.*:.*:cluster/(.*)"
+# context_alias = "$1"
+
+# Fill: creates space between left and right sections
+[fill]
+symbol = " "
+
+# Command duration: show time for slow commands
+[cmd_duration]
+min_time = 500  # Only show if command took >500ms
+format = "took [$duration]($style) "
+style = "bold yellow"
+
+# Prompt character: changes color based on success/failure
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"

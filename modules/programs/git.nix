@@ -22,6 +22,7 @@
 
       core = {
         autocrlf = "input";
+        excludesfile = "~/.gitignore_global";
       };
 
       url."ssh://git@github.com/" = {
@@ -46,5 +47,10 @@
   services.gpg-agent = {
     enable = true;
     pinentry.package = pkgs.pinentry_mac;
+  };
+
+  # Link global gitignore
+  home.file.".gitignore_global" = {
+    source = ../../dotfiles/git/.gitignore_global;
   };
 }

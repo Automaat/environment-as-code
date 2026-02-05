@@ -26,6 +26,9 @@ in {
     ./dotfiles/mise.nix
     ./dotfiles/claude.nix
     ./dotfiles/klaudiush.nix
+    ./dotfiles/starship.nix
+    ./dotfiles/ssh.nix
+    ./dotfiles/docker.nix
   ];
 
   # Pass variables to imported modules
