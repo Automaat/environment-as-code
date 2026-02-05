@@ -2,7 +2,7 @@
 -- Desk Charger Battery Controller
 -- ========================================
 -- Monitors iPhone and AirPods case battery levels
--- via AirBuddy Shortcuts and controls Home Assistant
+-- via Shortcuts and controls Home Assistant
 -- smart plug via webhook
 --
 -- Installation:
@@ -51,18 +51,19 @@ local state = {
 -- Battery Level Retrieval
 -- ========================================
 local function getBatteryLevel(shortcut_name)
-    local success, result = pcall(function()
-        return hs.shortcuts.run(shortcut_name)
-    end)
+    local output, status = hs.execute(string.format("shortcuts run '%s'", shortcut_name))
 
-    if not success then
-        log.e(string.format("Failed to run shortcut '%s': %s", shortcut_name, result))
+    if not status then
+        log.e(string.format("Failed to run shortcut '%s'", shortcut_name))
         return nil
     end
 
-    local battery = tonumber(result)
+    -- Trim whitespace/newlines
+    output = output:match("^%s*(.-)%s*$")
+
+    local battery = tonumber(output)
     if not battery then
-        log.e(string.format("Invalid battery value from '%s': %s", shortcut_name, result))
+        log.e(string.format("Invalid battery value from '%s': %s", shortcut_name, output))
         return nil
     end
 

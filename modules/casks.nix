@@ -8,6 +8,7 @@
   "freedom"
   "hammerspoon"
   "airbuddy"
+  "disk-inventory-x"
 
   # 3D printing
   "freecad"
@@ -34,6 +35,8 @@
 
   # Home Automation
   "home-assistant"
+  "wch-ch34x-usb-serial-driver"
+  "tailscale-app"
 
   # Media
   "xnviewmp"

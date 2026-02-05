@@ -105,6 +105,7 @@
       export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
       export PATH="$PATH:$HOME/go/bin"
       export PATH="$PATH:$HOME/.local/bin"
+      export PATH="$PATH:/Applications/ToolHive.app/Contents/Resources/bin/darwin-arm64"
 
       # Custom aliases
       alias cs="carousel-splitter"

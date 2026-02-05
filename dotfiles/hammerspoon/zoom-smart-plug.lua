@@ -89,6 +89,22 @@ local function isInMeeting()
 end
 
 -- ========================================
+-- Media Control
+-- ========================================
+local function pauseAllMedia()
+    log.i("Pausing all media playback")
+
+    -- Run AppleScript in parallel background tasks (non-blocking)
+    -- Only pause if app is already running (won't launch apps)
+    local apps = {"Spotify", "Music", "VLC", "IINA", "QuickTime Player"}
+    for _, app in ipairs(apps) do
+        hs.task.new("/usr/bin/osascript", nil, {"-e",
+            string.format('if application "%s" is running then tell application "%s" to pause', app, app)
+        }):start()
+    end
+end
+
+-- ========================================
 -- Home Assistant Webhook
 -- ========================================
 local function sendWebhook(meeting_state, on_success)
@@ -126,6 +142,7 @@ local function checkMeetingState()
     -- State transition: not in meeting → in meeting
     if currently_in_meeting and not state.in_meeting then
         log.i("Meeting started - turning on smart plug")
+        pauseAllMedia()
         sendWebhook("started", function()
             -- Only update state after successful webhook
             state.in_meeting = true
@@ -133,7 +150,7 @@ local function checkMeetingState()
             -- Optional: show notification
             hs.notify.new({
                 title = "Zoom Meeting",
-                informativeText = "Smart plug turned ON",
+                informativeText = "Smart plug ON, media paused",
             }):send()
         end)
 

@@ -10,7 +10,6 @@ with pkgs; [
   git
   go
   gofumpt
-  # golang-migrate  # Not in nixpkgs - use `migrate` or install via go
   hugo
   ninja
   nodejs
@@ -23,6 +22,8 @@ with pkgs; [
   deno
   dart
   rustup
+  toolhive
+  tailscale
 
   # Python Tools
   pipx
@@ -109,4 +110,7 @@ with pkgs; [
 
   # 3D modeling
   openscad
+
+  # home assistant
+  esphome
 ]
