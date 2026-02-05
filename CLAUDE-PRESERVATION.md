@@ -169,29 +169,25 @@ cp -r ~/.claude/skills/obsidian-inbox-cleanup dotfiles/claude/skills/
 ## Current Coverage
 
 **Tracked (via nix):**
-- ✅ Core settings.json (permissions, hooks, statusline)
+- ✅ Core settings.json (permissions + merged local, hooks, statusline)
 - ✅ CLAUDE.md (global instructions)
-- ✅ 3/6 commands (50%)
-- ✅ 1/3 skills (33%)
+- ✅ 6/6 commands (100%) - All commands tracked
+- ✅ 3/3 skills (100%) - All skills tracked
 - ✅ Statusline script
 
-**Not Tracked:**
-- ❌ 3 commands (fix-review, go-review, merge-renovate)
-- ❌ 2 skills (claude-md-gen, obsidian-inbox-cleanup)
-- ❌ settings.local.json (machine-specific, intentional)
+**Not Tracked (Intentional):**
+- ❌ settings.local.json (merged into main settings.json)
 - ❌ Runtime state (ephemeral, intentional)
 - ❌ Project memory (project-specific, intentional)
 
-## Recommendation
+## ✅ COMPLETE - All Commands & Skills Tracked
 
-**High Priority - Add to Nix:**
-- `fix-review.md`, `go-review.md`, `merge-renovate.md` commands (if actively used)
-- Skills only if frequently used (can reinstall via skill marketplace)
+**Added in commit fe65589:**
+- All 6 commands (fix-review, go-review, merge-renovate)
+- All 3 skills (go-code-review, claude-md-gen, obsidian-inbox-cleanup)
+- Merged settings.local.json permissions into main settings.json
 
-**Low Priority:**
-- Project MEMORY.md files → backup separately if valuable
-- settings.local.json → document pattern, regenerate per machine
-
-**Don't Track:**
+**Still Don't Track (Intentional):**
 - Runtime state (history, sessions, etc.) → regenerates naturally
 - Logs → ephemeral debugging data
+- Project MEMORY.md → project-specific, backup separately if valuable
