@@ -2,7 +2,8 @@
   # Productivity
   "1password"
   "bitwarden"
-  "todoist-app"  "obsidian"
+  "todoist"
+  "obsidian"
   "espanso"
   "contexts"
   "freedom"
