@@ -8,8 +8,8 @@ let
 in {
   # Home Manager settings
   home.stateVersion = "24.11";
-  home.username = "marcin.skalski@konghq.com";
-  home.homeDirectory = "/Users/marcin.skalski@konghq.com";
+  home.username = "marcin.skalski";
+  home.homeDirectory = "/Users/marcin.skalski";
 
   # Install CLI packages
   home.packages = import ./packages.nix { inherit pkgs; };
@@ -19,7 +19,6 @@ in {
     ./programs/zsh.nix
     ./programs/git.nix
     ./programs/vim.nix
-    ./programs/vscode.nix
     ./dotfiles/ghostty.nix
     ./dotfiles/hammerspoon.nix
     ./dotfiles/k9s.nix
@@ -40,7 +39,7 @@ in {
     generateSshKey = lib.hm.dag.entryAfter ["writeBoundary"] ''
       if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
         $DRY_RUN_CMD mkdir -p "$HOME/.ssh"
-        $DRY_RUN_CMD ssh-keygen -t ed25519 -C "${userEmail}" -f "$HOME/.ssh/id_ed25519" -N ""
+        $DRY_RUN_CMD /usr/bin/ssh-keygen -t ed25519 -C "${userEmail}" -f "$HOME/.ssh/id_ed25519" -N ""
         echo "SSH key generated. Add it to GitHub:"
         echo "  cat ~/.ssh/id_ed25519.pub | pbcopy"
       fi
