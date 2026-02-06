@@ -13,7 +13,25 @@ Automated macOS environment setup using nix-darwin and home-manager.
 
 ## Quick Setup
 
-### Prerequisites
+### Automated Bootstrap (Recommended)
+
+Run this one-liner on a fresh Mac:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yourusername/environment-as-code/main/bootstrap.sh | bash
+```
+
+The script will:
+- Install Xcode CLI Tools
+- Install Nix with experimental features
+- Clone the repository
+- Prompt for your name/email
+- Auto-detect hostname and architecture
+- Build and activate the configuration
+
+### Manual Installation
+
+#### Prerequisites
 
 1. Xcode Command Line Tools:
    ```bash
@@ -25,7 +43,7 @@ Automated macOS environment setup using nix-darwin and home-manager.
    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
    ```
 
-### Installation
+#### Steps
 
 1. Clone this repository:
    ```bash
