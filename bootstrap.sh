@@ -83,10 +83,10 @@ info "Detected user: $ACTUAL_USER"
 info "Detected home: $ACTUAL_HOME"
 
 # Update home.nix
-sed -i '' "s/fullName = \".*\";/fullName = \"$USER_NAME\";/" modules/home.nix
-sed -i '' "s/userEmail = \".*\";/userEmail = \"$USER_EMAIL\";/" modules/home.nix
-sed -i '' "s/home.username = \".*\";/home.username = \"$ACTUAL_USER\";/" modules/home.nix
-sed -i '' "s|home.homeDirectory = \".*\";|home.homeDirectory = \"$ACTUAL_HOME\";|" modules/home.nix
+sed -i '' "s/^  fullName = \".*\";$/  fullName = \"$USER_NAME\";/" modules/home.nix
+sed -i '' "s/^  userEmail = \".*\";$/  userEmail = \"$USER_EMAIL\";/" modules/home.nix
+sed -i '' "s/^  home.username = \".*\";$/  home.username = \"$ACTUAL_USER\";/" modules/home.nix
+sed -i '' "s|^  home.homeDirectory = \".*\";$|  home.homeDirectory = \"$ACTUAL_HOME\";|" modules/home.nix
 
 # Get hostname and architecture
 HOSTNAME=$(scutil --get LocalHostName)
@@ -101,9 +101,9 @@ info "Hostname: $HOSTNAME"
 info "Architecture: $NIX_ARCH"
 
 # Update flake.nix
-sed -i '' "s/\"M-Skalski-MBP\"/\"$HOSTNAME\"/" flake.nix
-sed -i '' "s/\"aarch64-darwin\"/\"$NIX_ARCH\"/" flake.nix
-sed -i '' "s/\"marcin.skalski@konghq.com\"/\"$ACTUAL_USER\"/" flake.nix
+sed -i '' "s/\"M-Skalski-MBP\"/\"$HOSTNAME\"/g" flake.nix
+sed -i '' "s/\"aarch64-darwin\"/\"$NIX_ARCH\"/g" flake.nix
+sed -i '' "s/\"marcin.skalski@konghq.com\"/\"$ACTUAL_USER\"/g" flake.nix
 
 success "Configuration updated"
 
