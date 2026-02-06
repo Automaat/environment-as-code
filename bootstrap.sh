@@ -68,9 +68,18 @@ info "Configuring personal details..."
 read -p "Full name: " USER_NAME
 read -p "Email: " USER_EMAIL
 
+# Get actual username and home directory
+ACTUAL_USER=$(whoami)
+ACTUAL_HOME="$HOME"
+
+info "Detected user: $ACTUAL_USER"
+info "Detected home: $ACTUAL_HOME"
+
 # Update home.nix
-sed -i '' "s/name = \".*\";/name = \"$USER_NAME\";/" modules/home.nix
-sed -i '' "s/email = \".*\";/email = \"$USER_EMAIL\";/" modules/home.nix
+sed -i '' "s/fullName = \".*\";/fullName = \"$USER_NAME\";/" modules/home.nix
+sed -i '' "s/userEmail = \".*\";/userEmail = \"$USER_EMAIL\";/" modules/home.nix
+sed -i '' "s/home.username = \".*\";/home.username = \"$ACTUAL_USER\";/" modules/home.nix
+sed -i '' "s|home.homeDirectory = \".*\";|home.homeDirectory = \"$ACTUAL_HOME\";|" modules/home.nix
 
 # Get hostname and architecture
 HOSTNAME=$(scutil --get LocalHostName)
