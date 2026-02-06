@@ -3,6 +3,21 @@ set -e
 
 echo "🔧 Fixing configuration for current user..."
 
+# Find repo directory
+if [ -f "flake.nix" ] && [ -d "modules" ]; then
+    REPO_DIR="$(pwd)"
+elif [ -d "$HOME/sideprojects/environment-as-code" ]; then
+    REPO_DIR="$HOME/sideprojects/environment-as-code"
+else
+    echo "❌ Error: Cannot find environment-as-code repository"
+    echo "   Run this script from the repo directory or ensure it's in ~/sideprojects/environment-as-code"
+    exit 1
+fi
+
+cd "$REPO_DIR"
+echo "Working in: $REPO_DIR"
+echo ""
+
 # Get actual values
 ACTUAL_USER=$(whoami)
 ACTUAL_HOME="$HOME"
