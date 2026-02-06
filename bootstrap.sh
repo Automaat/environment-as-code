@@ -13,6 +13,11 @@ error() { echo -e "${RED}❌ $1${NC}" >&2; exit 1; }
 success() { echo -e "${GREEN}✅ $1${NC}"; }
 info() { echo -e "${YELLOW}ℹ️  $1${NC}"; }
 
+# Check not running as root
+if [ "$EUID" -eq 0 ]; then
+    error "Do not run this script with sudo or as root"
+fi
+
 # 1. Install Xcode CLI Tools
 if ! xcode-select -p &>/dev/null; then
     info "Installing Xcode Command Line Tools..."
@@ -32,6 +37,12 @@ if ! command -v nix &>/dev/null; then
     if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
         . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
     fi
+
+    # Verify Nix is available
+    if ! command -v nix &>/dev/null; then
+        error "Nix installation failed. Try restarting terminal and run script again."
+    fi
+    success "Nix installed"
 else
     success "Nix already installed"
 fi
@@ -42,6 +53,7 @@ sudo mkdir -p /etc/nix
 if ! grep -q "experimental-features = nix-command flakes" /etc/nix/nix.conf 2>/dev/null; then
     echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf
     sudo launchctl kickstart -k system/org.nixos.nix-daemon
+    sleep 2  # Wait for daemon to restart
     success "Experimental features enabled"
 else
     success "Experimental features already enabled"
@@ -96,6 +108,7 @@ info "Architecture: $NIX_ARCH"
 # Update flake.nix
 sed -i '' "s/\"M-Skalski-MBP\"/\"$HOSTNAME\"/" flake.nix
 sed -i '' "s/\"aarch64-darwin\"/\"$NIX_ARCH\"/" flake.nix
+sed -i '' "s/\"marcin.skalski@konghq.com\"/\"$ACTUAL_USER\"/" flake.nix
 
 success "Configuration updated"
 
