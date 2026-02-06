@@ -13,11 +13,6 @@ error() { echo -e "${RED}❌ $1${NC}" >&2; exit 1; }
 success() { echo -e "${GREEN}✅ $1${NC}"; }
 info() { echo -e "${YELLOW}ℹ️  $1${NC}"; }
 
-# Check not running as root
-if [ "$EUID" -eq 0 ]; then
-    error "Do not run this script with sudo or as root"
-fi
-
 # 1. Install Xcode CLI Tools
 if ! xcode-select -p &>/dev/null; then
     info "Installing Xcode Command Line Tools..."
@@ -114,7 +109,8 @@ success "Configuration updated"
 
 # 6. Build and activate
 info "Building nix-darwin configuration (this may take 10-15 minutes)..."
-nix run nix-darwin -- switch --flake ".#$HOSTNAME"
+info "Note: nix-darwin will prompt for sudo password when needed..."
+nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake ".#$HOSTNAME"
 
 success "🎉 Bootstrap complete!"
 echo ""
