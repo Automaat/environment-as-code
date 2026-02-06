@@ -109,8 +109,8 @@ success "Configuration updated"
 
 # 6. Build and activate
 info "Building nix-darwin configuration (this may take 10-15 minutes)..."
-info "Note: nix-darwin will prompt for sudo password when needed..."
-nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake ".#$HOSTNAME"
+info "Running with sudo (required for system activation)..."
+sudo --preserve-env=HOME nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake ".#$HOSTNAME"
 
 success "🎉 Bootstrap complete!"
 echo ""
