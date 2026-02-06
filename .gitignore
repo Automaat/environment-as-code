@@ -41,3 +41,6 @@ result-*
 *.secret
 *.key
 .env
+
+# VSCode settings (synced via VSCode account)
+dotfiles/vscode/
