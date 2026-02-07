@@ -65,6 +65,7 @@
     dock = {
       autohide = true;
       show-recents = false;
+      wvous-br-corner = 0;  # Disable Quick Note hot corner
     };
 
     finder = {
