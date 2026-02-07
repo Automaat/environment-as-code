@@ -6,7 +6,7 @@
     lfs.enable = true;
 
     signing = {
-      key = "683BF754A0B005CD";
+      key = "C25DFDF396ADF455";
       signByDefault = true;
     };
 
