@@ -5,7 +5,7 @@
   system.stateVersion = 5;
 
   # Set primary user for homebrew and system defaults
-  system.primaryUser = "marcin.skalski@konghq.com";
+  system.primaryUser = "marcin.skalski";
 
   # Disable nix-darwin's Nix management (using Determinate installer)
   nix.enable = false;
@@ -28,7 +28,7 @@
 
     taps = [
       "shivammathur/php"
-      "lencx/chatgpt"
+
       "automaat/whisper-hotkey"
     ];
 
@@ -75,12 +75,14 @@
       AppleShowAllExtensions = true;
       InitialKeyRepeat = 15;
       KeyRepeat = 2;
+      AppleInterfaceStyle = "Dark";
+      "com.apple.keyboard.fnState" = true;
     };
   };
 
   # Configure users
-  users.users."marcin.skalski@konghq.com" = {
-    home = "/Users/marcin.skalski@konghq.com";
+  users.users."marcin.skalski" = {
+    home = "/Users/marcin.skalski";
     description = "Marcin Skalski";
   };
 }
