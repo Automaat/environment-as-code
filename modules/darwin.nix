@@ -28,7 +28,7 @@
 
     taps = [
       "shivammathur/php"
-      "lencx/chatgpt"
+
       "automaat/whisper-hotkey"
     ];
 
@@ -75,6 +75,8 @@
       AppleShowAllExtensions = true;
       InitialKeyRepeat = 15;
       KeyRepeat = 2;
+      AppleInterfaceStyle = "Dark";
+      "com.apple.keyboard.fnState" = true;
     };
   };
 
