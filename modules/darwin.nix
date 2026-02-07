@@ -80,6 +80,12 @@
       AppleInterfaceStyle = "Dark";
       "com.apple.keyboard.fnState" = true;
     };
+
+    CustomUserPreferences = {
+      "com.apple.screencapture" = {
+        target = "clipboard";
+      };
+    };
   };
 
   # Configure users
