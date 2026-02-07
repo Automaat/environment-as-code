@@ -44,3 +44,6 @@ result-*
 
 # VSCode settings (synced via VSCode account)
 dotfiles/vscode/
+
+# Claude Code local settings
+.claude/
