@@ -41,6 +41,12 @@ echo "Updating modules/home.nix..."
 sed -i '' "s/^  home.username = \".*\";$/  home.username = \"$ACTUAL_USER\";/" modules/home.nix
 sed -i '' "s|^  home.homeDirectory = \".*\";$|  home.homeDirectory = \"$ACTUAL_HOME\";|" modules/home.nix
 
+# Fix darwin.nix
+echo "Updating modules/darwin.nix..."
+sed -i '' "s/system.primaryUser = \".*\";/system.primaryUser = \"$ACTUAL_USER\";/" modules/darwin.nix
+sed -i '' "s/users.users.\".*\" = {/users.users.\"$ACTUAL_USER\" = {/" modules/darwin.nix
+sed -i '' "s|home = \"/Users/.*\";|home = \"$ACTUAL_HOME\";|" modules/darwin.nix
+
 # Fix flake.nix
 echo "Updating flake.nix..."
 sed -i '' "s/\"M-Skalski-MBP\"/\"$HOSTNAME\"/g" flake.nix
@@ -54,6 +60,8 @@ echo ""
 echo "Verification:"
 echo "─────────────────────────────────────"
 grep -E "home.username|home.homeDirectory" modules/home.nix | sed 's/^/  /'
+echo ""
+grep -E "primaryUser|users.users" modules/darwin.nix | sed 's/^/  /'
 echo ""
 grep -E "darwinConfigurations|system =|home-manager.users" flake.nix | sed 's/^/  /'
 echo "─────────────────────────────────────"

@@ -30,6 +30,7 @@
       "shivammathur/php"
 
       "automaat/whisper-hotkey"
+      "automaat/tap"
     ];
 
     # GUI applications
@@ -37,7 +38,7 @@
 
     # Keep PHP in homebrew (not migrated to nix)
     brews = [
-      # Add PHP formula here if needed
+      "automaat/tap/cache-buster"
     ];
   };
 

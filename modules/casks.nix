@@ -2,14 +2,17 @@
   # Productivity
   "1password"
   "bitwarden"
-  "todoist"
+  "todoist-app"
   "obsidian"
-  "espanso"
   "contexts"
   "freedom"
   "hammerspoon"
   "airbuddy"
   "disk-inventory-x"
+  "raycast"
+  "microsoft-edge"
+  "logi-options+"
+  "notion"
 
   # 3D printing
   "freecad"
@@ -27,12 +30,11 @@
 
   # Cloud
   "google-drive"
-  "google-drive-file-stream"
   "gcloud-cli"
 
   # Communication
   "discord"
-  "chatgpt"
+  "signal" 
 
   # Home Automation
   "home-assistant"
@@ -43,7 +45,6 @@
   "xnviewmp"
   "adobe-acrobat-reader"
   "elgato-stream-deck"
-  "whisper-hotkey"
 
   # Fonts (keeping in homebrew for easier management)
   "font-fira-code-nerd-font"
