@@ -24,6 +24,7 @@
   "insomnia"
   "pgadmin4"
   "orbstack"
+  "jetbrains-toolbox"
 
   # Browsers
   "vivaldi"

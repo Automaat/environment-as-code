@@ -42,6 +42,21 @@ In all interactions and commit messages, be extremely concise and sacrifice gram
   - Merge commit: PR_TITLE + PR_BODY
   - Rebase: disabled
 
+### Subissues
+
+**Terminal:** `gh-add-subissue <parent-num> <child-num> [owner/repo]`
+
+**Manual GraphQL (requires `GraphQL-Features: sub_issues` header):**
+```bash
+# Get issue IDs first
+gh api graphql -f query='query($owner:String!,$repo:String!,$num:Int!){repository(owner:$owner,name:$repo){issue(number:$num){id}}}' -f owner=OWNER -f repo=REPO -F num=123
+
+# Add subissue
+gh api graphql -H "GraphQL-Features: sub_issues" -f query='mutation{addSubIssue(input:{issueId:"I_parent",subIssueId:"I_child"}){issue{number}subIssue{number}}}'
+```
+
+**When user requests adding subissues:** Use `gh-add-subissue` script (located in ~/.local/bin/)
+
 ## Coding Projects
 
 - Use mise for tools dependency management

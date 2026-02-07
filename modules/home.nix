@@ -28,6 +28,7 @@ in {
     ./dotfiles/starship.nix
     ./dotfiles/ssh.nix
     ./dotfiles/docker.nix
+    ./scripts.nix
   ];
 
   # Pass variables to imported modules
