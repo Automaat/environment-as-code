@@ -6,6 +6,7 @@
   # Edit dotfiles/ssh/config for your setup
   home.file.".ssh/config" = {
     source = ../../dotfiles/ssh/config;
+    force = true;
   };
 
   # Ensure SSH directory exists with correct permissions
