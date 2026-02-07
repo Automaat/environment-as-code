@@ -18,8 +18,8 @@
   outputs = { self, nixpkgs, darwin, home-manager }: {
     darwinConfigurations = {
       # Replace with your hostname or use: $(scutil --get LocalHostName)
-      "M-Skalski-MBP" = darwin.lib.darwinSystem {
-        system = "aarch64-darwin"; # or "x86_64-darwin"
+      "JJ4M9J6X2M" = darwin.lib.darwinSystem {
+        system = "aarch64-darwin"; # or "aarch64-darwin"
 
         modules = [
           ./modules/darwin.nix
@@ -31,8 +31,8 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "backup";
-            home-manager.users."marcin.skalski@konghq.com" = import ./modules/home.nix;
+            home-manager.backupFileExtension = "hm-backup";
+            home-manager.users."marcin.skalski" = import ./modules/home.nix;
           }
         ];
       };
