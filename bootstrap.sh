@@ -100,6 +100,11 @@ fi
 info "Hostname: $HOSTNAME"
 info "Architecture: $NIX_ARCH"
 
+# Update darwin.nix
+sed -i '' "s/system.primaryUser = \".*\";/system.primaryUser = \"$ACTUAL_USER\";/" modules/darwin.nix
+sed -i '' "s/users.users.\".*\" = {/users.users.\"$ACTUAL_USER\" = {/" modules/darwin.nix
+sed -i '' "s|home = \"/Users/.*\";|home = \"$ACTUAL_HOME\";|" modules/darwin.nix
+
 # Update flake.nix
 sed -i '' "s/\"M-Skalski-MBP\"/\"$HOSTNAME\"/g" flake.nix
 sed -i '' "s/\"aarch64-darwin\"/\"$NIX_ARCH\"/g" flake.nix
