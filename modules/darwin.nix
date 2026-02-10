@@ -55,6 +55,7 @@
     mkdir -p "$HOME/Documents/2_Areas"
     mkdir -p "$HOME/Documents/3_Resources"
     mkdir -p "$HOME/Documents/4_Archive"
+    mkdir -p "$HOME/Documents/screenshots"
   '';
 
   # Enable Touch ID for sudo
@@ -83,7 +84,8 @@
 
     CustomUserPreferences = {
       "com.apple.screencapture" = {
-        target = "clipboard";
+        location = "~/Documents/screenshots";
+        type = "png";
       };
     };
   };
