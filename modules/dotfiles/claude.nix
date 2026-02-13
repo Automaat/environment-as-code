@@ -121,6 +121,17 @@
           ];
         }
       ];
+      Stop = [
+        {
+          hooks = [
+            {
+              type = "command";
+              command = "${config.home.homeDirectory}/.claude/hooks/mark-session-end.sh";
+              timeout = 5;
+            }
+          ];
+        }
+      ];
     };
     statusLine = {
       type = "command";
@@ -173,6 +184,12 @@
   # Copy CLAUDE.md from repo
   home.file.".claude/CLAUDE.md".source = ../../dotfiles/claude/CLAUDE.md;
 
+  # Claude Code hooks
+  home.file.".claude/hooks/mark-session-end.sh" = {
+    source = ../../dotfiles/claude/hooks/mark-session-end.sh;
+    executable = true;
+  };
+
   # Claude Code commands
   home.file.".claude/commands/cleanup-code.md".source = ../../dotfiles/claude/commands/cleanup-code.md;
   home.file.".claude/commands/docs-review.md".source = ../../dotfiles/claude/commands/docs-review.md;
@@ -214,4 +231,7 @@
 
   # notion-inbox-cleanup skill
   home.file.".claude/skills/notion-inbox-cleanup/SKILL.md".source = ../../dotfiles/claude/skills/notion-inbox-cleanup/SKILL.md;
+
+  # docx skill (document creation/editing)
+  home.file.".claude/skills/docx".source = ../../dotfiles/claude/skills/docx;
 }

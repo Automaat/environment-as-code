@@ -31,6 +31,7 @@
 
       "automaat/whisper-hotkey"
       "automaat/tap"
+      "smykla-skalski/tap"
     ];
 
     # GUI applications
@@ -39,6 +40,7 @@
     # Keep PHP in homebrew (not migrated to nix)
     brews = [
       "automaat/tap/cache-buster"
+      "smykla-skalski/tap/klaudiush"
     ];
   };
 

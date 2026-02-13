@@ -24,6 +24,7 @@ with pkgs; [
   rustup
   toolhive
   tailscale
+  tmux
 
   # Python Tools
   pipx
