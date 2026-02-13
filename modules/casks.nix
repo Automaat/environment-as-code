@@ -25,6 +25,7 @@
   "pgadmin4"
   "orbstack"
   "jetbrains-toolbox"
+  "balenaetcher"
 
   # Browsers
   "vivaldi"

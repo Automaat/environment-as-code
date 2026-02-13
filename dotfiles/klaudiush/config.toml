@@ -34,7 +34,7 @@ severity = "error"
 
 # Git PR - conventional commits, body validation
 [validators.git.pr]
-enabled = true
+enabled = false
 severity = "error"
 title_max_length = 50
 enable_conventional_commits = true
@@ -65,7 +65,7 @@ context_lines = 2
 heading_spacing = true
 code_block_formatting = true
 list_formatting = true
-use_markdownlint = false
+use_markdownlint = true
 
 # Shell - shellcheck integration
 [validators.file.shellscript]
@@ -107,7 +107,7 @@ enabled = true
 severity = "error"
 timeout = "10s"
 context_lines = 2
-use_ruff = true
+use_ruff = false
 
 # JavaScript/TypeScript - oxlint
 [validators.file.javascript]
@@ -126,13 +126,18 @@ context_lines = 2
 use_rustfmt = true
 edition = "2021"
 
+# Linter Ignore - blocks linter ignore directives
+[validators.file.linter_ignore]
+enabled = true
+severity = "error"
+
 # Secrets Detection
 [validators.secrets.secrets]
 enabled = true
 severity = "error"
 use_gitleaks = false
 block_on_detection = true
-max_file_size = "1MB"
+max_file_size = 1048576  # 1MB in bytes
 # allow_list = ["test-fixtures/*", "mock-*"]
 
 # Shell Validators
