@@ -27,7 +27,6 @@ in {
     ./dotfiles/klaudiush.nix
     ./dotfiles/starship.nix
     ./dotfiles/ssh.nix
-    ./dotfiles/docker.nix
     ./scripts.nix
   ];
 

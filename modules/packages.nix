@@ -25,6 +25,7 @@ with pkgs; [
   toolhive
   tailscale
   tmux
+  cloudflared
 
   # Python Tools
   pipx
@@ -35,6 +36,7 @@ with pkgs; [
 
   # CLI Tools
   actionlint
+  ansible
   autojump
   bat
   buf
@@ -48,6 +50,7 @@ with pkgs; [
   jq
   jwt-cli
   oniguruma
+  opentofu
   # oxlint  # May not be in stable nixpkgs yet
   ponysay
   pre-commit
@@ -96,9 +99,11 @@ with pkgs; [
   postgresql_14
 
   # Security Tools
+  age
   bitwarden-cli
   gnupg
   pinentry_mac
+  sops
 
   # Media/FFmpeg
   ffmpeg

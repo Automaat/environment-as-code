@@ -11,6 +11,12 @@ Host homelab
   User admin
   IdentityFile ~/.ssh/id_ed25519_homelab
   IdentityAgent none
+  MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com
+
+# Proxmox NAS
+Host proxmox
+  HostName 192.168.0.101
+  User root
 
 # GitHub - explicit key selection
 Host github.com
