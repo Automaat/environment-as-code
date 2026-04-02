@@ -55,7 +55,8 @@
   home.file.".claude/commands/cleanup-code.md".source = ../../dotfiles/claude/commands/cleanup-code.md;
   home.file.".claude/commands/docs-review.md".source = ../../dotfiles/claude/commands/docs-review.md;
   home.file.".claude/commands/pr-review.md".source = ../../dotfiles/claude/commands/pr-review.md;
-  home.file.".claude/commands/fix-review.md".source = ../../dotfiles/claude/commands/fix-review.md;
+  home.file.".claude/skills/fix-review/SKILL.md".source = ../../dotfiles/claude/skills/fix-review/SKILL.md;
+  home.file.".claude/skills/fix-review/references/examples.md".source = ../../dotfiles/claude/skills/fix-review/references/examples.md;
   home.file.".claude/commands/fix-review-auto.md".source = ../../dotfiles/claude/commands/fix-review-auto.md;
   home.file.".claude/commands/go-review.md".source = ../../dotfiles/claude/commands/go-review.md;
   home.file.".claude/commands/merge-renovate.md".source = ../../dotfiles/claude/commands/merge-renovate.md;

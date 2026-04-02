@@ -17,6 +17,8 @@ Host homelab
 Host proxmox
   HostName 192.168.0.101
   User root
+  IdentityAgent none
+  IdentityFile ~/.ssh/id_ed25519
 
 # GitHub - explicit key selection
 Host github.com

@@ -68,6 +68,9 @@ with pkgs; [
   zsh-autosuggestions
   zsh-syntax-highlighting
 
+  # Cloud Tools
+  (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin])
+
   # AWS Tools
   aws-iam-authenticator
   aws-sso-cli

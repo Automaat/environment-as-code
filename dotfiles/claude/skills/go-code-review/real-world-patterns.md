@@ -136,7 +136,6 @@ func validateAndWrap(val Validator) error {
 - Identify similar code blocks
 - Abstract common behavior
 - Preserve clarity
-- Don't over-abstract
 
 **Why:** Reduces duplication, easier updates, fewer bugs
 
@@ -191,10 +190,8 @@ for _, item := range items {
 
 **Pattern:**
 
-- Simple, clear implementation first
 - Optimize only with profiling data
 - Document complexity trade-offs
-- Maintainability over cleverness
 
 **Why:** Code clarity, easier debugging, prevents bugs
 
