@@ -218,7 +218,7 @@ When creating pr description follow format:
 
 ### Notes
 
-- When asked to save note/findings to inbox, always save to: /Users/marcin.skalski@konghq.com/Library/Mobile Documents/iCloud~md~obsidian/Documents/second-brain/0_Inbox
+- When asked to save note/findings to inbox, always save to: /Users/marcin.skalski/Documents/Obsidian Vault/0_Inbox
 - Always use markdown format for notes
 - Use good amount of emojis when writing notes
 
@@ -298,3 +298,118 @@ When creating pr description follow format:
 - Triggered by: performance issues, technical debt
 - Behavior: measure first, targeted improvements
 - Tools: profiling, benchmarking, refactoring
+
+## Plan Mode: Persona-Driven Phase 2
+
+**OVERRIDES the default Phase 2 instruction in plan mode.** When Plan Mode
+is active and the task is non-trivial, replace generic `Plan` agents with
+persona-driven planners spawned across **two providers** (Claude + Codex).
+
+### When this applies
+
+- Plan Mode active AND task is non-trivial.
+- Skip personas (use default flow) when task is: typo fix, single-line
+  edit, mechanical rename, single-file refactor with no design choices.
+
+### Phase 2 step 1 — persona selection
+
+Score the user request + Phase 1 findings against the council shortcut list
+in `~/.claude/plugins/cache/sai/council/1.5.0/skills/council/SKILL.md`
+(L61-87). Full registry / lens-per-persona at
+`~/.claude/plugins/cache/sai/council/1.5.0/skills/council/references/personas.md`.
+
+- **Default count: 2 personas.** Bump to 3 when:
+  - Two-surface (eng + UX), or
+  - Refactor / cross-cutting / "complex" framing, or
+  - Best-fit shortcut group has 3 distinct lenses.
+- Always include one bias-correction persona (`antirez`, `tef`, `hebert`,
+  `meadows`, `chin`, `norman`, `nielsen`, `watson`) unless task is a
+  narrow specialist audit.
+- Avoid duplicate lenses — if two personas would push for the same thing,
+  keep the sharper domain fit.
+- **Announce before spawning** in one short sentence:
+  `Auto-selected <p1> + <p2> [+ <p3>] because <one-line evidence>.`
+
+### Phase 2 step 2 — parallel spawning across both providers
+
+For **each** selected persona, spawn **two** planners in parallel:
+1. Claude side — `Agent` tool, `subagent_type: "Plan"`.
+2. Codex side — `Bash` tool, `run_in_background: true`,
+   `codex exec --sandbox read-only --skip-git-repo-check`.
+
+All planners (across personas × providers) fire in **one tool-use block**.
+Total: 4 calls (2 personas) or 6 calls (3 personas).
+
+**Shared persona brief** (identical body for both providers):
+
+```
+You are <persona-name> (<short identity>).
+Your lens: <one-line philosophy>.
+You push for: <2-3 specifics>. You refuse: <1-2 specifics>.
+
+Background from Phase 1 exploration:
+<findings, file paths, code traces — same brief for all personas>
+
+User request:
+<verbatim>
+
+Write a detailed implementation plan strictly through your lens.
+- List the critical files to modify (with paths).
+- Step-by-step implementation order.
+- Name what you would cut and what you would refuse.
+- No hedging. Disagree with the safe path if your lens says so.
+- Cite reusable functions/utilities you found in the brief.
+
+Output a self-contained plan, not a review of someone else's plan.
+End with a marker line: `---END-PLAN---`.
+```
+
+**Claude wrapper:**
+
+```
+Agent({
+  description: "<persona> plan (claude)",
+  subagent_type: "Plan",
+  prompt: <shared persona brief>
+})
+```
+
+**Codex wrapper** (heredoc keeps the prompt safe for any chars):
+
+```bash
+codex exec --sandbox read-only --skip-git-repo-check - <<'PROMPT'
+<shared persona brief>
+PROMPT
+```
+
+`run_in_background: true` so all Codex calls fire concurrently with the
+Claude `Agent` calls. Read-only sandbox forbids file writes — Codex
+outputs only to stdout. Trim the brief to file paths + key findings (drop
+full code excerpts) — Codex can re-read files itself.
+
+After spawning, wait for all backgrounded Codex outputs to complete before
+synthesizing. Collect each plan from stdout up to the `---END-PLAN---`
+marker (strip preceding tool-use chatter).
+
+### Phase 4 — synthesis to plan file
+
+Read all 4–6 returned plans. Write ONE plan to the plan file with sections:
+
+- **Context** — why this change.
+- **Approach** — recommended path. Spine drawn from cross-provider,
+  cross-persona convergence. Convergence on the *same persona, different
+  providers* = strong signal. Convergence on *different personas, same
+  provider* = weaker signal.
+- **Critical files** — deduped union of files-to-modify across all plans.
+- **Steps** — implementation order.
+- **Tradeoffs** — 2–5 bullets, both axes:
+  - *Persona axis:* `<p1> wanted X, <p2> wanted Y. Chose X because …`
+  - *Provider axis (only when notable):* `On <persona>, claude proposed X
+    while codex proposed Y. Chose X because …`
+- **Verification** — end-to-end test approach.
+
+### Trivial-task escape
+
+For typo / rename / single-line / single-file mechanical change: skip
+personas. Use the existing default Phase 2 flow (one generic Plan agent
+or no agent).
