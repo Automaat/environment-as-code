@@ -24,8 +24,7 @@ in {
     ./dotfiles/k9s.nix
     ./dotfiles/mise.nix
     ./dotfiles/claude.nix
-    ./dotfiles/klaudiush.nix
-    ./dotfiles/starship.nix
+./dotfiles/starship.nix
     ./dotfiles/ssh.nix
     ./scripts.nix
   ];

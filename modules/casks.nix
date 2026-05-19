@@ -13,6 +13,7 @@
   "microsoft-edge"
   "logi-options+"
   "notion"
+  "zed"
 
   # 3D printing
   "freecad"
@@ -32,7 +33,7 @@
 
   # Cloud
   "google-drive"
-  "gcloud-cli"
+  # gcloud-cli moved to Nix packages (google-cloud-sdk with gke-gcloud-auth-plugin)
 
   # Communication
   "discord"
