@@ -15,7 +15,7 @@
         logoless: false
         crumbsless: false
         noIcons: false
-        skin: nord-light
+        skin: transparent
       skipLatestRevCheck: false
       disablePodCounting: false
       shellPod:
@@ -33,7 +33,6 @@
         tail: 100
         buffer: 5000
         sinceSeconds: -1
-        fullScreenLogs: false
         textWrap: false
         showTime: false
       thresholds:
@@ -43,6 +42,51 @@
         memory:
           critical: 90
           warn: 70
+  '';
+
+  xdg.configFile."k9s/skins/transparent.yaml".text = ''
+    # -----------------------------------------------------------------------------
+    # Transparent skin
+    # Preserve your terminal session background color
+    # -----------------------------------------------------------------------------
+    k9s:
+      body:
+        bgColor: default
+      prompt:
+        bgColor: default
+      info:
+        sectionColor: default
+      dialog:
+        bgColor: default
+        labelFgColor: default
+        fieldFgColor: default
+      frame:
+        crumbs:
+          bgColor: default
+        title:
+          bgColor: default
+          counterColor: default
+        menu:
+          fgColor: default
+      views:
+        charts:
+          bgColor: default
+        table:
+          bgColor: default
+          header:
+            fgColor: default
+            bgColor: default
+        xray:
+          bgColor: default
+        logs:
+          bgColor: default
+        indicator:
+          bgColor: default
+          toggleOnColor: default
+          toggleOffColor: default
+        yaml:
+          colonColor: default
+          valueColor: default
   '';
 
   xdg.configFile."k9s/skins/everforest-light.yaml".text = ''
