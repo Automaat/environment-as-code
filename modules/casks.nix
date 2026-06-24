@@ -14,6 +14,7 @@
   "logi-options+"
   "notion"
   "zed"
+  "codex"
 
   # 3D printing
   "freecad"
@@ -27,6 +28,7 @@
   "orbstack"
   "jetbrains-toolbox"
   "balenaetcher"
+  "copilot-cli"
 
   # Browsers
   "vivaldi"
@@ -37,7 +39,7 @@
 
   # Communication
   "discord"
-  "signal" 
+  "signal"
 
   # Home Automation
   "home-assistant"
