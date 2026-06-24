@@ -69,9 +69,6 @@
       # rbenv
       eval "$(rbenv init - zsh)"
 
-      # mise
-      eval "$(mise activate zsh)"
-
       # saml2aws completion
       eval "$(saml2aws --completion-script-zsh)"
 
@@ -79,7 +76,7 @@
       [[ ! -r ~/.opam/opam-init/init.zsh ]] || source ~/.opam/opam-init/init.zsh > /dev/null 2> /dev/null
 
       # Aliases
-      alias sb="cd $HOME/Library/Mobile\ Documents/iCloud~md~obsidian/Documents"
+      alias sb="cd $HOME/Documents/secon-brain-sync"
 
       # Work-specific aliases (conditional on ~/kong directory existing)
       if [ -d "$HOME/kong" ]; then
@@ -106,6 +103,9 @@
       export PATH="$PATH:$HOME/go/bin"
       export PATH="$PATH:$HOME/.local/bin"
       export PATH="$PATH:/Applications/ToolHive.app/Contents/Resources/bin/darwin-arm64"
+
+      # mise (activate after all PATH modifications so its shims take precedence)
+      eval "$(mise activate zsh)"
 
       # Custom aliases
       alias cs="carousel-splitter"

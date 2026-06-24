@@ -41,6 +41,7 @@
     brews = [
       "automaat/tap/cache-buster"
       "smykla-skalski/tap/klaudiush"
+      "rtk"
     ];
   };
 
