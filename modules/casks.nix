@@ -19,6 +19,7 @@
   # 3D printing
   "freecad"
   "bambu-studio"
+  "openscad"
 
   # Development
   "visual-studio-code"
