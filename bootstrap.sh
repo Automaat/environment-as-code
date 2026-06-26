@@ -117,6 +117,11 @@ info "Building nix-darwin configuration (this may take 10-15 minutes)..."
 info "Running with sudo (required for system activation)..."
 sudo --preserve-env=HOME nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake ".#$HOSTNAME"
 
+# 7. Link non-nix dotfiles (Claude/Codex/Copilot agent instructions)
+info "Linking agent-instruction configs (not nix-managed)..."
+"$REPO_DIR/dotfiles/claude/link.sh"
+success "Agent configs linked"
+
 success "🎉 Bootstrap complete!"
 echo ""
 info "Next steps:"
