@@ -28,7 +28,10 @@ link "$src_dir/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 # Codex (global) — flat AGENTS.md; Codex does not follow markdown links.
 link "$src_dir/AGENTS.md" "$HOME/.codex/AGENTS.md"
 
-# Copilot CLI (global) — parent-dir walk-up reads ~/AGENTS.md for repos under ~.
+# Copilot CLI (global) — documented global instruction directory.
+link "$src_dir/AGENTS.md" "$HOME/.copilot/instructions/global.instructions.md"
+
+# Copilot CLI compatibility — older/global parent walk-up setups.
 link "$src_dir/AGENTS.md" "$HOME/AGENTS.md"
 
 echo "done."
