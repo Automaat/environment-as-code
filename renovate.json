@@ -1,15 +1,40 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":semanticCommitType(chore)",
+    ":semanticCommitScope(deps)"
   ],
+  "labels": ["dependencies", "automerge"],
   "reviewers": ["Automaat"],
   "automerge": true,
   "automergeStrategy": "squash",
   "platformAutomerge": false,
+  "nix": {
+    "enabled": true
+  },
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true,
-    "schedule": ["* 0-5 * * 1"]
-  }
+    "schedule": ["* 0-5 * * 1"],
+    "commitMessageTopic": "flake.lock"
+  },
+  "packageRules": [
+    {
+      "description": "Keep Nix flake inputs updated as one tested toolchain bump.",
+      "matchManagers": ["nix"],
+      "groupName": "Nix flake inputs",
+      "groupSlug": "nix-flake-inputs",
+      "addLabels": ["nix"],
+      "automerge": true
+    },
+    {
+      "description": "Keep CI actions that build the Nix system current.",
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github-actions"],
+      "automerge": true
+    }
+  ]
 }
