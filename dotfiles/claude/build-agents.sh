@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Generate a self-contained AGENTS.md from the modular CLAUDE.md + rules/.
 # Claude inlines the rules/ links; Codex (~/.codex/AGENTS.md) and Copilot CLI
-# (~/AGENTS.md, parent-dir walk-up) load AGENTS.md verbatim and do NOT follow
-# markdown links — so the rule bodies must be inlined here. Re-run after editing
-# CLAUDE.md or rules/.
+# (~/.copilot/instructions/*.instructions.md) load a single file verbatim and do
+# NOT follow markdown links — so the rule bodies must be inlined here. Re-run
+# after editing CLAUDE.md or rules/.
 set -euo pipefail
 
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
