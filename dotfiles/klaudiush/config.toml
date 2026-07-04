@@ -1,0 +1,82 @@
+# klaudiush global config — single source of truth (XDG: ~/.config/klaudiush/config.toml)
+# Merged from the former XDG + legacy ~/.klaudiush configs; legacy values win on overlap.
+
+# Git Validators
+[validators.git]
+
+# Git Add - blocks adding sensitive files
+[validators.git.add]
+enabled = true
+severity = "error"
+blocked_patterns = ["*.secret", "*.key", ".env"]
+
+# Git Commit - enforce flags, staging, conventional commits
+[validators.git.commit]
+enabled = true
+severity = "error"
+required_flags = ["-s", "-S"]
+check_staging_area = true
+enable_message_validation = true
+
+# Git Push - validates remote/branch; blocks direct pushes to main/master
+[validators.git.push]
+enabled = true
+severity = "error"
+blocked_branches = ["main", "master"]
+
+# Git PR - conventional commits, body validation
+[validators.git.pr]
+enabled = false
+severity = "error"
+title_max_length = 70
+enable_conventional_commits = true
+require_body = false
+
+# Git Branch - naming conventions
+[validators.git.branch]
+enabled = true
+severity = "error"
+protected_branches = ["main", "master"]
+require_type = true
+allow_uppercase = false
+
+# Git No-Verify - blocks --no-verify flag
+[validators.git.no_verify]
+enabled = true
+severity = "error"
+
+# File Validators
+[validators.file]
+
+
+# Linter Ignore - blocks linter ignore directives
+[validators.file.linter_ignore]
+enabled = true
+severity = "error"
+
+# AI Comments - blocks filler comments that only restate the code
+[validators.file.ai_comments]
+enabled = true
+severity = "error"
+
+# Secrets Detection
+[validators.secrets.secrets]
+enabled = false
+severity = "error"
+use_gitleaks = false
+block_on_detection = true
+max_file_size = 1048576  # 1MB in bytes
+# allow_list = ["test-fixtures/*", "mock-*"]
+
+[providers]
+
+[providers.claude]
+enabled = true
+
+[providers.codex]
+enabled = true
+experimental = true
+hooks_config_path = "/Users/marcin.skalski/Library/Application Support/orca/codex-runtime-home/home/hooks.json"
+
+[providers.gemini]
+enabled = false

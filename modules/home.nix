@@ -22,6 +22,7 @@ in {
     ./dotfiles/ghostty.nix
     ./dotfiles/hammerspoon.nix
     ./dotfiles/k9s.nix
+    ./dotfiles/klaudiush.nix
     ./dotfiles/mise.nix
     ./dotfiles/starship.nix
     ./dotfiles/ssh.nix
