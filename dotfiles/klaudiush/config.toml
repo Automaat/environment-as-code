@@ -45,6 +45,26 @@ allow_uppercase = false
 enabled = true
 severity = "error"
 
+# Rules Engine - custom command-level policies
+[rules]
+enabled = true
+
+# Block all force pushes, including --force-with-lease / --force-if-includes and -f.
+[[rules.rules]]
+name = "block-force-push"
+description = "Block force pushes"
+enabled = true
+priority = 100
+
+[rules.rules.match]
+validator_type = "git.push"
+command_pattern = 'git\s+push\b[^&|;]*(\s|=)(--force(-with-lease|-if-includes)?|-f)($|=|\s)'
+
+[rules.rules.action]
+type = "block"
+message = "Force push is blocked. Rebase/merge and push normally; a human must run any force push."
+reference = "GIT-FORCE"
+
 # File Validators
 [validators.file]
 
