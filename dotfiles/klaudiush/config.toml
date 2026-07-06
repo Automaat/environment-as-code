@@ -1,6 +1,10 @@
 # klaudiush global config — single source of truth (XDG: ~/.config/klaudiush/config.toml)
 # Merged from the former XDG + legacy ~/.klaudiush configs; legacy values win on overlap.
 
+# Failure pattern tracking — disabled to avoid writing .klaudiush/patterns.json into project repos
+[patterns]
+enabled = false
+
 # Git Validators
 [validators.git]
 
