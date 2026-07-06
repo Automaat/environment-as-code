@@ -58,7 +58,7 @@ priority = 100
 
 [rules.rules.match]
 validator_type = "git.push"
-command_pattern = '(^|\s)(--force(-with-lease|-if-includes)?|-f)($|=|\s)'
+command_pattern = 'git\s+push\b[^&|;]*(\s|=)(--force(-with-lease|-if-includes)?|-f)($|=|\s)'
 
 [rules.rules.action]
 type = "block"
