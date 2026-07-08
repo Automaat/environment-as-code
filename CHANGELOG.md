@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/Automaat/environment-as-code/compare/v1.0.0...v1.1.0) (2026-07-06)
+
+
+### Features
+
+* **klaudiush:** block force pushes ([#24](https://github.com/Automaat/environment-as-code/issues/24)) ([908821f](https://github.com/Automaat/environment-as-code/commit/908821f55ae195f475794ffacdb7bf9e11889898))
+
 ## 1.0.0 (2026-06-27)
 
 
