@@ -20,7 +20,6 @@ enabled = true
 severity = "error"
 required_flags = ["-s", "-S"]
 check_staging_area = true
-enable_message_validation = true
 
 # Git Push - validates remote/branch; blocks direct pushes to main/master
 [validators.git.push]
@@ -48,6 +47,14 @@ allow_uppercase = false
 [validators.git.no_verify]
 enabled = true
 severity = "error"
+
+# Git Fetch - default-on; disabled to keep only explicitly configured validators
+[validators.git.fetch]
+enabled = false
+
+# GitHub Issue - default-on; disabled to keep only explicitly configured validators
+[validators.github.issue]
+enabled = false
 
 # Rules Engine - custom command-level policies
 [rules]
@@ -83,6 +90,25 @@ severity = "error"
 enabled = true
 severity = "error"
 
+# The validators below are default-on; disabled to keep only the explicitly configured set.
+[validators.file.markdown]
+enabled = false
+
+[validators.file.shell_script]
+enabled = false
+
+[validators.file.terraform]
+enabled = false
+
+[validators.file.workflow]
+enabled = false
+
+[validators.file.python]
+enabled = false
+
+[validators.file.javascript]
+enabled = false
+
 # Secrets Detection
 [validators.secrets.secrets]
 enabled = false
@@ -91,6 +117,10 @@ use_gitleaks = false
 block_on_detection = true
 max_file_size = 1048576  # 1MB in bytes
 # allow_list = ["test-fixtures/*", "mock-*"]
+
+# Notification Bell - default-on; disabled to keep only explicitly configured validators
+[validators.notification.bell]
+enabled = false
 
 [providers]
 
