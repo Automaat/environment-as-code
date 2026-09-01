@@ -5,9 +5,9 @@ Include ~/.orbstack/ssh/config
 
 Include ~/.colima/ssh_config
 
-# Homelab host - EDIT THESE VALUES FOR YOUR SETUP
+# Homelab host
 Host homelab
-  HostName 192.168.1.10
+  HostName 192.168.0.241
   User admin
   IdentityFile ~/.ssh/id_ed25519_homelab
   IdentityAgent none
@@ -15,7 +15,7 @@ Host homelab
 
 # Proxmox NAS
 Host proxmox
-  HostName 192.168.1.20
+  HostName 192.168.0.101
   User root
   IdentityAgent none
   IdentityFile ~/.ssh/id_ed25519

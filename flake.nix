@@ -27,6 +27,16 @@
           # Allow unfree packages
           { nixpkgs.config.allowUnfree = true; }
 
+          {
+            nixpkgs.overlays = [
+              (final: prev: {
+                pre-commit = prev.pre-commit.overrideAttrs (old: {
+                  doCheck = false;
+                });
+              })
+            ];
+          }
+
           home-manager.darwinModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
