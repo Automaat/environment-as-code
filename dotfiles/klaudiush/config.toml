@@ -134,3 +134,10 @@ hooks_config_path = "/Users/marcin.skalski/Library/Application Support/orca/code
 
 [providers.gemini]
 enabled = false
+
+# opencode has no declarative hook config; klaudiush generates a bridge plugin
+# at plugin_path instead. Regenerate after a klaudiush upgrade with
+# `klaudiush doctor --fix`.
+[providers.opencode]
+enabled = true
+plugin_path = "/Users/marcin.skalski/.config/opencode/plugin/klaudiush.ts"
