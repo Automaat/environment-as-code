@@ -85,7 +85,7 @@ with pkgs; [
   eksctl
   kubernetes-helm
   kind
-  kubectl
+  (hiPrio kubectl)
   kubectx
   kubie
   # kumactl  # Not in nixpkgs - install from Kong/Kuma releases
