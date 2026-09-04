@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/Automaat/environment-as-code/compare/v1.1.0...v1.2.0) (2026-09-04)
+
+
+### Features
+
+* **klaudiush:** strict comment mode ([#35](https://github.com/Automaat/environment-as-code/issues/35)) ([de921a6](https://github.com/Automaat/environment-as-code/commit/de921a69dac3ae38e4f41cb045cf15b6c43dca0e))
+
+
+### Bug Fixes
+
+* **ssh:** point homelab and proxmox at real IPs ([#33](https://github.com/Automaat/environment-as-code/issues/33)) ([4b23152](https://github.com/Automaat/environment-as-code/commit/4b2315266910bf32ae928fc62a5843ce938c28cc))
+
 ## [1.1.0](https://github.com/Automaat/environment-as-code/compare/v1.0.0...v1.1.0) (2026-07-06)
 
 
