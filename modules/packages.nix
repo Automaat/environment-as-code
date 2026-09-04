@@ -113,10 +113,12 @@ with pkgs; [
   ffmpeg
 
   # Version managers
-  # mise's cargo test suite fails in the Nix sandbox: the
-  # preserve_metadata_dir_layer setuid test asserts a 0o4000 bit
-  # survives, but sandboxed builds strip setuid. Skip the suite.
-  (mise.overrideAttrs (_: { doCheck = false; }))
+  # mise: cargo test suite fails in the Nix sandbox (setuid bit
+  # stripped); libz-ng-sys build script needs cmake, undeclared.
+  (mise.overrideAttrs (old: {
+    doCheck = false;
+    nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [ cmake ];
+  }))
 
   # CLI utilities
   # gemini-cli  # Not in nixpkgs - install via npm/pip if needed
