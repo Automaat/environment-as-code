@@ -34,4 +34,25 @@ link "$src_dir/AGENTS.md" "$HOME/.copilot/instructions/global.instructions.md"
 # Copilot CLI compatibility — older/global parent walk-up setups.
 link "$src_dir/AGENTS.md" "$HOME/AGENTS.md"
 
+# opencode (global) — flat AGENTS.md. Linked explicitly rather than relying on
+# opencode's ~/.claude/CLAUDE.md fallback, which loses the rules/ links.
+link "$src_dir/AGENTS.md" "$HOME/.config/opencode/AGENTS.md"
+
+# opencode commands — opencode has no .claude/commands fallback, so each
+# command is linked individually into its own commands directory. Stale links
+# are pruned first, otherwise a renamed or deleted command leaves a dangling
+# symlink behind that opencode still tries to load.
+oc_commands="$HOME/.config/opencode/commands"
+mkdir -p "$oc_commands"
+for existing in "$oc_commands"/*.md; do
+  [ -L "$existing" ] || continue
+  [ -e "$existing" ] && continue
+  rm -f "$existing"
+  echo "pruned dangling $existing"
+done
+for cmd in "$src_dir"/commands/*.md; do
+  [ -e "$cmd" ] || continue
+  link "$cmd" "$oc_commands/$(basename "$cmd")"
+done
+
 echo "done."

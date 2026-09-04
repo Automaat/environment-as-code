@@ -61,6 +61,8 @@ enabled = false
 enabled = true
 
 # Block all force pushes, including --force-with-lease / --force-if-includes and -f.
+# The leading group skips git's global options, so `git -C <path> push --force`
+# matches too; -C/-c come first in the alternation to consume their argument.
 [[rules.rules]]
 name = "block-force-push"
 description = "Block force pushes"
@@ -69,7 +71,7 @@ priority = 100
 
 [rules.rules.match]
 validator_type = "git.push"
-command_pattern = 'git\s+push\b[^&|;]*(\s|=)(--force(-with-lease|-if-includes)?|-f)($|=|\s)'
+command_pattern = 'git(?:\s+(?:-[Cc]\s+\S+|--(?:git-dir|work-tree|namespace|exec-path)=\S+|-\S+|--\S+))*\s+push\b[^&|;]*(\s|=)(--force(-with-lease|-if-includes)?|-f)($|=|\s)'
 
 [rules.rules.action]
 type = "block"
@@ -89,6 +91,7 @@ severity = "error"
 [validators.file.ai_comments]
 enabled = true
 severity = "error"
+mode = "strict"
 
 # The validators below are default-on; disabled to keep only the explicitly configured set.
 [validators.file.markdown]
@@ -134,3 +137,10 @@ hooks_config_path = "/Users/marcin.skalski/Library/Application Support/orca/code
 
 [providers.gemini]
 enabled = false
+
+# opencode has no declarative hook config; klaudiush generates a bridge plugin
+# at plugin_path instead. Regenerate after a klaudiush upgrade with
+# `klaudiush doctor --fix`.
+[providers.opencode]
+enabled = true
+plugin_path = "/Users/marcin.skalski/.config/opencode/plugin/klaudiush.ts"
