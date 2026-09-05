@@ -76,6 +76,7 @@ with pkgs; [
   aws-iam-authenticator
   aws-sso-cli
   awscli2
+  okta-aws-cli
   # gimme-aws-creds  # Python tool - install via pipx if needed
   saml2aws
 
