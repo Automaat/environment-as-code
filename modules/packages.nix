@@ -80,6 +80,7 @@ with pkgs; [
   okta-aws-cli
   # gimme-aws-creds  # Python tool - install via pipx if needed
   saml2aws
+  _1password-cli
 
   # Kubernetes Tools
   consul

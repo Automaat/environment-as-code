@@ -49,6 +49,10 @@
       ];
     };
 
+    envExtra = ''
+      [[ ! -r ~/.config/zsh/secrets.zsh ]] || source ~/.config/zsh/secrets.zsh
+    '';
+
     # Additional shell initialization
     initContent = ''
       # XDG Base Directory - ensures k9s uses ~/.config instead of Application Support
@@ -109,6 +113,29 @@
 
       # Custom aliases
       alias cs="carousel-splitter"
+
+      # Kong npm registry auth; ref+account come from ~/.config/zsh/secrets.zsh
+      npm_token() {
+        [[ -n ''${NPM_TOKEN:-} ]] && return 0
+        local acct=''${OP_ACCOUNT:-}
+        local ref=''${NPM_TOKEN_OP_REF:-}
+        [[ -n $ref && -n $acct ]] || return 0
+        local t
+        t=$(op read $ref --account $acct 2>/dev/null)
+        if [[ -z $t ]] && [[ -o interactive ]]; then
+          eval "$(op signin --account $acct)" 2>/dev/null
+          t=$(op read $ref --account $acct 2>/dev/null)
+        fi
+        if [[ -z $t ]]; then
+          print -u2 "NPM_TOKEN: 1Password did not answer. Try: eval \"\$(op signin --account $acct)\""
+          return 1
+        fi
+        export NPM_TOKEN=$t
+      }
+
+      for c in npm npx pnpm yarn; do
+        eval "$c() { npm_token || return 1; command $c \"\$@\"; }"
+      done
     '';
   };
 
