@@ -49,6 +49,7 @@ with pkgs; [
   jd-diff-patch
   jq
   jwt-cli
+  omp  # oh-my-pi coding agent, via the oh-my-pi flake overlay
   oniguruma
   opentofu
   # oxlint  # May not be in stable nixpkgs yet

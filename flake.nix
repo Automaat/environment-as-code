@@ -13,9 +13,13 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # No inputs.nixpkgs.follows: the overlay serves this flake's own build,
+    # pinned against the nixpkgs, bun2nix, and rust toolchain it needs.
+    oh-my-pi.url = "github:can1357/oh-my-pi";
   };
 
-  outputs = { self, nixpkgs, darwin, home-manager }: {
+  outputs = { self, nixpkgs, darwin, home-manager, oh-my-pi }: {
     darwinConfigurations = {
       # Replace with your hostname or use: $(scutil --get LocalHostName)
       "JJ4M9J6X2M" = darwin.lib.darwinSystem {
@@ -29,6 +33,7 @@
 
           {
             nixpkgs.overlays = [
+              oh-my-pi.overlays.default
               (final: prev: {
                 pre-commit = prev.pre-commit.overrideAttrs (old: {
                   doCheck = false;
