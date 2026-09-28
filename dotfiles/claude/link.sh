@@ -21,13 +21,19 @@ link() { # link <target> <linkpath>
   echo "linked $path -> $target"
 }
 
-# Agents still try to load a dangling link left by a renamed source.
+# Agents still try to load a dangling link left by a renamed source. Only
+# links into this repo go: plugins and other repos link into the same dirs,
+# and their targets may just be missing for now (e.g. repo not cloned yet).
 prune_dangling() { # prune_dangling <dir>
   local dir="$1" existing
   mkdir -p "$dir"
   for existing in "$dir"/*; do
     [ -L "$existing" ] || continue
     [ -e "$existing" ] && continue
+    case "$(readlink "$existing")" in
+      "$src_dir"/*) ;;
+      *) continue ;;
+    esac
     rm -f "$existing"
     echo "pruned dangling $existing"
   done
