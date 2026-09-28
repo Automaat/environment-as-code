@@ -52,7 +52,9 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       MISE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      HOMEBREW_NO_AUTO_UPDATE: "1"
+      # No HOMEBREW_NO_AUTO_UPDATE: the runner image's formula index is stale,
+      # and a fresh Mac always installs current versions (e.g. a mise new
+      # enough for the pypi backend).
       HOMEBREW_NO_INSTALL_CLEANUP: "1"
       # The managed git config rewrites GitHub HTTPS to SSH; the runner has no
       # key on GitHub (bootstrap.sh registers one before installing tools).
