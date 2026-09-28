@@ -67,6 +67,36 @@ func TestApply(t *testing.T) {
 	}
 }
 
+func TestApplyStopsWhenCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var ran []string
+	plan := Plan{
+		{Module: "system", Changes: []Change{
+			{Action: Run, Target: "sudo", Apply: func(context.Context) error {
+				ran = append(ran, "sudo")
+				cancel()
+				return errors.New("interrupted")
+			}},
+		}},
+		{Module: "files", Changes: []Change{
+			{Action: Create, Target: "f", Apply: func(context.Context) error {
+				ran = append(ran, "f")
+				return nil
+			}},
+		}},
+	}
+
+	err := Apply(ctx, func(string) {}, plan)
+
+	if got := strings.Join(ran, ","); got != "sudo" {
+		t.Errorf("ran %s; nothing may run after cancellation", got)
+	}
+	if !errors.Is(err, context.Canceled) || !strings.Contains(err.Error(), "system: sudo: interrupted") {
+		t.Errorf("err = %v, want the change error joined with context.Canceled", err)
+	}
+}
+
 func TestPrint(t *testing.T) {
 	plan := Plan{
 		{Module: "links", Changes: []Change{{Action: Create, Target: "~/.zshrc", Detail: "→ x", Diff: "-old\n+new\n"}}},
