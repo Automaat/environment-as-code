@@ -103,17 +103,12 @@ func run(ctx context.Context, env Env, out, errOut *console) int {
 		return ExitUsage
 	}
 
-	cfg, err := loadConfig(*cfgPath, env.Cwd)
+	cfg, err := loadConfig(*cfgPath, env.Cwd, env.Home)
 	if err != nil {
 		errOut.fail(err)
 		return ExitErr
 	}
-	all, err := Modules(cfg, env)
-	if err != nil {
-		errOut.fail(err)
-		return ExitErr
-	}
-	mods, err := selectModules(all, *only)
+	mods, err := selectModules(Modules(cfg, env), *only)
 	if err != nil {
 		errOut.fail(err)
 		return ExitUsage
@@ -221,7 +216,7 @@ func parseArgs(fs *flag.FlagSet, args []string) (string, bool) {
 	return cmd, true
 }
 
-func loadConfig(flagPath, cwd string) (*config.Config, error) {
+func loadConfig(flagPath, cwd, home string) (*config.Config, error) {
 	path := flagPath
 	if path == "" {
 		found, err := config.Find(cwd)
@@ -234,19 +229,15 @@ func loadConfig(flagPath, cwd string) (*config.Config, error) {
 			return nil, err
 		}
 	}
-	return config.Load(path)
+	return config.Load(path, home)
 }
 
 // Modules returns every configured module in apply order. Order matters:
 // files put the mise config in place, brew installs mise, and commands may
 // need tools from either.
-func Modules(cfg *config.Config, env Env) ([]engine.Module, error) {
+func Modules(cfg *config.Config, env Env) []engine.Module {
 	paths := config.Paths{Home: env.Home, Root: cfg.Root}
-	state, err := install.LoadState(install.StatePath(env.Home))
-	if err != nil {
-		return nil, err
-	}
-	installer := &install.Installer{Paths: paths, State: state, Immutable: cfg.Protect.Immutable}
+	installer := &install.Installer{Paths: paths, StatePath: install.StatePath(env.Home), Immutable: cfg.Protect.Immutable}
 	mods := []engine.Module{
 		&system.Module{System: cfg.System, Paths: paths, Runner: env.Runner, PAMFile: env.PAMFile},
 		&files.Module{Files: cfg.Files, Keep: templateDsts(cfg, paths), Paths: paths, Installer: installer},
@@ -262,7 +253,7 @@ func Modules(cfg *config.Config, env Env) ([]engine.Module, error) {
 	return append(mods,
 		&commands.Module{Commands: cfg.Commands, Home: env.Home, Runner: env.Runner},
 		&defaults.Module{Defaults: cfg.Defaults, Runner: env.Runner},
-	), nil
+	)
 }
 
 func templateDsts(cfg *config.Config, paths config.Paths) []string {

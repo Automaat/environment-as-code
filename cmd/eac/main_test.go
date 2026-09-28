@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
+
+	"github.com/Automaat/environment-as-code/internal/install"
 )
 
 func TestMain(m *testing.M) {
@@ -27,6 +29,11 @@ func TestScripts(t *testing.T) {
 					return err
 				}
 			}
+			env.Defer(func() {
+				if err := install.Unlock(home); err != nil {
+					env.T().Fatal(err)
+				}
+			})
 			env.Setenv("HOME", home)
 			env.Setenv("PATH", bin+string(os.PathListSeparator)+env.Getenv("PATH"))
 			env.Setenv("EAC_PAM_FILE", filepath.Join(env.WorkDir, "sudo_local"))

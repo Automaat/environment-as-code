@@ -12,7 +12,7 @@ window-height = 80
 # ============================================================================
 
 # Large scrollback for long AI responses
-scrollback-limit = 200000000
+scrollback-limit = 10000000
 
 # Smooth scrolling during code generation
 cursor-style-blink = false

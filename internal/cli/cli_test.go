@@ -175,6 +175,29 @@ func TestPlanFailureDoesNotBlockOtherModules(t *testing.T) {
 	}
 }
 
+func TestCorruptStateFailsOnlyFileModules(t *testing.T) {
+	env, home := setup(t, linksOnly+"files: [{src: dotfiles/zshrc, dst: ~/.zshenv}]\n")
+	statePath := filepath.Join(home, ".local/state/eac/files.json")
+	if err := os.MkdirAll(filepath.Dir(statePath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(statePath, []byte("{nope"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	r := invoke(env, "", "apply", "-y")
+
+	if r.code != ExitErr {
+		t.Errorf("exit %d, want %d", r.code, ExitErr)
+	}
+	if !strings.Contains(r.stdout, "files: plan failed") || !strings.Contains(r.stderr, "files.json") {
+		t.Errorf("stdout: %s\nstderr: %s", r.stdout, r.stderr)
+	}
+	if _, err := os.Lstat(filepath.Join(home, ".zshrc")); err != nil {
+		t.Errorf("links must still apply with a corrupt state file: %v", err)
+	}
+}
+
 func TestApplyRecordsHistory(t *testing.T) {
 	env, home := setup(t, linksOnly)
 	env.Now = func() time.Time { return time.Date(2026, 9, 28, 12, 0, 0, 0, time.UTC) }

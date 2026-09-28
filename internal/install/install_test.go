@@ -30,7 +30,6 @@ func newInstaller(t *testing.T, immutable bool) (*Installer, string) {
 		Paths:     config.Paths{Home: home},
 		State:     state,
 		Immutable: immutable,
-		Now:       func() time.Time { return time.Unix(1700000000, 0) },
 	}, home
 }
 
@@ -255,16 +254,193 @@ func TestDirectoryInTheWay(t *testing.T) {
 	}
 }
 
-func TestBackupPathAvoidsCollisions(t *testing.T) {
-	dir := t.TempDir()
-	dst := filepath.Join(dir, "f")
-	now := time.Unix(42, 0)
-	if got := BackupPath(dst, now); got != dst+".eac-bak" {
-		t.Errorf("first = %s", got)
+func TestBackupNeverClobbers(t *testing.T) {
+	dst := filepath.Join(t.TempDir(), "f")
+	for i, body := range []string{"first", "second", "third"} {
+		mustWrite(t, dst, body)
+		got, err := Backup(dst)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := backupName(dst, i); got != want {
+			t.Errorf("backup %d = %s, want %s", i, got, want)
+		}
 	}
-	mustWrite(t, dst+".eac-bak", "")
-	if got := BackupPath(dst, now); got != dst+".eac-bak.42" {
-		t.Errorf("second = %s", got)
+	for i, want := range []string{"first", "second", "third"} {
+		if got, err := os.ReadFile(backupName(dst, i)); err != nil || string(got) != want {
+			t.Errorf("%s = %q, %v; want %q", backupName(dst, i), got, err, want)
+		}
+	}
+	if _, err := os.Lstat(dst); !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("original still there: %v", err)
+	}
+}
+
+// Two changes planned against the same free backup name (or a backup
+// appearing between plan and apply) must not overwrite each other.
+func TestBackupNameChosenAtApply(t *testing.T) {
+	in, home := newInstaller(t, true)
+	dst := filepath.Join(home, ".zshrc")
+	mustWrite(t, dst, "hand written")
+	c := plan(t, in, dst, "new", 0o644)
+	if !strings.HasSuffix(c.Detail, "back up to .zshrc.eac-bak") {
+		t.Fatalf("detail = %q", c.Detail)
+	}
+	mustWrite(t, dst+".eac-bak", "earlier backup")
+
+	if err := c.Apply(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+
+	for path, want := range map[string]string{
+		dst + ".eac-bak":   "earlier backup",
+		dst + ".eac-bak.1": "hand written",
+	} {
+		if got, err := os.ReadFile(path); err != nil || string(got) != want {
+			t.Errorf("%s = %q, %v; want %q", filepath.Base(path), got, err, want)
+		}
+	}
+	assertProtected(t, dst, "new", 0o444, true)
+}
+
+func TestBackupNameStopsOnLstatError(t *testing.T) {
+	dst := filepath.Join(t.TempDir(), strings.Repeat("a", 250))
+	mustWrite(t, dst, "x")
+	done := make(chan string, 1)
+	go func() { done <- BackupName(dst) }()
+	select {
+	case got := <-done:
+		if want := backupName(dst, 0); got != want {
+			t.Errorf("BackupName = %s, want %s", got, want)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("BackupName loops when the backup name is too long")
+	}
+	if _, err := Backup(dst); err == nil {
+		t.Error("Backup of a too-long name: expected error")
+	}
+	if got, err := os.ReadFile(dst); err != nil || string(got) != "x" {
+		t.Errorf("original = %q, %v", got, err)
+	}
+}
+
+func TestBackupRefusesSymlink(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "target")
+	mustWrite(t, target, "x")
+	if err := os.Chmod(target, 0o444); err != nil {
+		t.Fatal(err)
+	}
+	dst := filepath.Join(dir, "f")
+	if err := os.Symlink(target, dst); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Backup(dst); err == nil {
+		t.Fatal("expected error")
+	}
+	info, err := os.Stat(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm() != 0o444 {
+		t.Errorf("target mode = %o, want 444", info.Mode().Perm())
+	}
+	if _, err := os.Lstat(backupName(dst, 0)); !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("backup created: %v", err)
+	}
+}
+
+func TestSymlinkedParentRefused(t *testing.T) {
+	tests := []struct {
+		name  string
+		setup func(t *testing.T, in *Installer, home, repo string) string
+	}{
+		{
+			name: "directory moved from links to files",
+			setup: func(t *testing.T, in *Installer, home, repo string) string {
+				mustWrite(t, filepath.Join(repo, "d/f"), "v1")
+				link := filepath.Join(home, ".cfg/d")
+				if err := os.MkdirAll(filepath.Dir(link), 0o755); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink(filepath.Join(repo, "d"), link); err != nil {
+					t.Fatal(err)
+				}
+				return filepath.Join(link, "f")
+			},
+		},
+		{
+			name: "symlink under home pointing elsewhere",
+			setup: func(t *testing.T, in *Installer, home, _ string) string {
+				elsewhere := t.TempDir()
+				if err := os.Symlink(elsewhere, filepath.Join(home, ".cfg")); err != nil {
+					t.Fatal(err)
+				}
+				return filepath.Join(home, ".cfg/sub/f")
+			},
+		},
+		{
+			name: "outside home, resolving into the repo",
+			setup: func(t *testing.T, in *Installer, _, repo string) string {
+				mustWrite(t, filepath.Join(repo, "d/f"), "v1")
+				link := filepath.Join(t.TempDir(), "d")
+				if err := os.Symlink(filepath.Join(repo, "d"), link); err != nil {
+					t.Fatal(err)
+				}
+				return filepath.Join(link, "f")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			in, home := newInstaller(t, true)
+			repo, err := filepath.EvalSymlinks(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			in.Paths.Root = repo
+			dst := tt.setup(t, in, home, repo)
+
+			_, err = in.Plan(dst, []byte("v1"), 0o644)
+			if err == nil || !strings.Contains(err.Error(), "is a symlink; remove it") {
+				t.Fatalf("err = %v", err)
+			}
+			if info, err := os.Stat(filepath.Join(repo, "d/f")); err == nil && info.Mode().Perm() != 0o644 {
+				t.Errorf("repo source mode changed to %o", info.Mode().Perm())
+			}
+		})
+	}
+}
+
+func TestSymlinkOutsideHomeAllowed(t *testing.T) {
+	in, _ := newInstaller(t, false)
+	target := t.TempDir()
+	link := filepath.Join(t.TempDir(), "l")
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := in.Plan(filepath.Join(link, "f"), []byte("x"), 0o644); err != nil {
+		t.Errorf("symlink outside home and repo refused: %v", err)
+	}
+}
+
+func TestStateLoadedLazily(t *testing.T) {
+	home := t.TempDir()
+	statePath := StatePath(home)
+	mustWrite(t, statePath, "{nope")
+	in := &Installer{Paths: config.Paths{Home: home}, StatePath: statePath}
+
+	if _, err := in.Plan(filepath.Join(home, "f"), nil, 0o644); err == nil || !strings.Contains(err.Error(), statePath) {
+		t.Errorf("Plan err = %v, want one naming the state file", err)
+	}
+	if _, err := in.Tracked(); err == nil {
+		t.Error("Tracked: expected error")
+	}
+
+	mustWrite(t, statePath, `{"files": {"/x": "abc"}}`)
+	keys, err := in.Tracked()
+	if err != nil || len(keys) != 1 || keys[0] != "/x" {
+		t.Errorf("Tracked = %v, %v", keys, err)
 	}
 }
 

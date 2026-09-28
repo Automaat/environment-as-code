@@ -46,7 +46,11 @@ func (m *Module) Plan(_ context.Context) ([]engine.Change, error) {
 			}
 		}
 	}
-	for _, dst := range m.Installer.State.Keys() {
+	tracked, err := m.Installer.Tracked()
+	if err != nil {
+		return nil, err
+	}
+	for _, dst := range tracked {
 		if wanted[dst] {
 			continue
 		}

@@ -2,14 +2,13 @@
 # This only works if it's at the top of ssh_config (before any Host blocks).
 # This won't be added again if you remove it.
 Include ~/.orbstack/ssh/config
-Include ~/.colima/ssh_config
 # Homelab host
 Host homelab
 HostName 192.168.0.241
 User admin
 IdentityFile ~/.ssh/id_ed25519_homelab
 IdentityAgent none
-MACs hmac-sha2-512,hmac-sha1,hmac-sha2-256
+MACs +hmac-sha1
 # Proxmox NAS
 Host proxmox
 HostName 192.168.0.101
@@ -23,4 +22,3 @@ IdentityFile ~/.ssh/id_ed25519
 # Bitwarden SSH agent - global fallback
 Host *
 IdentityAgent ~/.bitwarden-ssh-agent.sock
-Ciphers aes128-ctr,aes256-ctr,aes192-ctr
