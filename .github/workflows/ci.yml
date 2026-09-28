@@ -43,6 +43,9 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       MISE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The managed git config rewrites GitHub HTTPS to SSH; the runner has no
+      # key on GitHub (bootstrap.sh registers one before installing tools).
+      GIT_CONFIG_GLOBAL: /dev/null
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -61,8 +64,11 @@ jobs:
           grep -E '^tap ' "$RUNNER_TEMP/Brewfile" | cut -d'"' -f2 | xargs -n1 brew trust --tap
           brew bundle install --file "$RUNNER_TEMP/Brewfile" --no-upgrade
 
+      # apply is idempotent, so one rerun absorbs runner network flakes.
       - name: apply
-        run: go run ./cmd/eac apply -y --only system,files,templates,mise,defaults
+        run: |
+          modules=system,files,templates,mise,defaults
+          go run ./cmd/eac apply -y --only "$modules" || go run ./cmd/eac apply -y --only "$modules"
 
       - name: nothing left to change
         run: go run ./cmd/eac check --only system,files,templates,mise,defaults

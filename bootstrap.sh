@@ -32,10 +32,22 @@ info "Installing the eac toolchain"
 mise trust --yes mise.toml
 mise install --yes
 
+info "Creating the SSH key"
+mise exec -- go run ./cmd/eac apply --only system
+
+# The managed git config fetches GitHub over SSH, so tool installs need the
+# key registered first.
+until ssh -T -o StrictHostKeyChecking=accept-new git@github.com 2>&1 | grep -q "successfully authenticated"; do
+    pbcopy < "$HOME/.ssh/id_ed25519.pub"
+    info "Public key copied. Add it at https://github.com/settings/ssh/new, then press any key"
+    open "https://github.com/settings/ssh/new"
+    read -r -n 1 -s
+done
+
 info "Converging the machine"
 mise exec -- go run ./cmd/eac apply
 
 info "Linking agent configs"
 ./dotfiles/claude/link.sh
 
-info "Done. Open a new terminal, then add the SSH key to GitHub: pbcopy < ~/.ssh/id_ed25519.pub"
+info "Done. Open a new terminal."
