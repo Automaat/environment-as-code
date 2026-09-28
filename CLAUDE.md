@@ -16,12 +16,12 @@ Declarative macOS setup driven by `eac`, a small Go CLI that converges this Mac 
 | `internal/modules/<name>/` | one package per module |
 | `internal/install/` | protected-copy writer + hash state (`~/.local/state/eac/files.json`) |
 | `internal/runner/` | exec abstraction; `runnertest.Fake` for tests |
-| `mise.toml` | repo toolchain (go, golangci-lint) + tasks |
+| `mise.toml` | repo toolchain (go, golangci-lint, shellcheck, actionlint) + tasks |
 
 ## Commands
 
 ```bash
-eac plan [--diff]             # ~/.local/bin/eac wraps `go run ./cmd/eac` in the repo
+eac plan [--diff]             # ~/.local/bin/eac builds ./cmd/eac from the repo (cached), then execs it
 eac apply                     # plan, confirm, apply
 eac upgrade                   # brew update, then apply (casks and formulae pick up new versions)
 eac check                     # exit 2 on drift
@@ -83,4 +83,7 @@ system → files → links → templates → brew → mise → commands → defa
 - `mise.prune: true` removes installed tool versions no mise config on the machine references (other projects' configs count, so their tools stay).
 - The mise module runs mise from `/`: from `$HOME`, mise treats `~/.config/mise/config.toml` as a project config that outranks the repo file, hiding bumped pins until after `apply`.
 - Renovate bumps `dotfiles/mise/config.toml`, `go.mod`, `mise.toml`, GitHub Actions; CI job `e2e on a fresh Mac` applies the config to a clean macOS runner to gate them.
-- Claude/Codex/Copilot config is linked by `dotfiles/claude/link.sh`, not eac.
+- Renovate auto-merges non-major bumps through GitHub native auto-merge (`platformAutomerge`); Go is bumped in `mise.toml` and `dotfiles/mise/config.toml` in one PR.
+- Claude/Codex/Copilot/opencode config (instructions, `skills/`, `commands/`) is linked by `dotfiles/claude/link.sh`, not eac. CI runs it against a temp `$HOME` and fails if the committed `dotfiles/claude/AGENTS.md` is stale.
+- Shell scripts pass `shellcheck` and workflows pass `actionlint` (both in CI).
+- `commands` stops at the first failing entry, so the `git signing key imported` check (fails until the GPG key is imported) stays last.

@@ -16,12 +16,15 @@ concurrency:
 jobs:
   test:
     name: test
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          # renovate: datasource=github-releases depName=jdx/mise
+          version: 2026.9.15
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -34,6 +37,24 @@ jobs:
 
       - name: lint
         run: mise run lint
+
+      - name: shellcheck
+        run: shellcheck bootstrap.sh dotfiles/claude/*.sh dotfiles/bin/*
+
+      - name: actionlint
+        run: actionlint
+
+      # link.sh also regenerates AGENTS.md, so a stale committed copy shows
+      # up as a diff.
+      - name: link.sh links agent configs
+        env:
+          HOME: ${{ runner.temp }}/h
+        run: |
+          ./dotfiles/claude/link.sh
+          for p in .claude/CLAUDE.md .claude/rules .claude/skills/go-code-review .claude/commands/go-review.md .codex/AGENTS.md .config/opencode/commands/go-review.md; do
+            if [ ! -L "$HOME/$p" ] || [ ! -e "$HOME/$p" ]; then echo "missing link $HOME/$p"; exit 1; fi
+          done
+          git diff --exit-code -- dotfiles/claude/AGENTS.md
 
       - name: unit, e2e and integration tests
         run: mise run test:integration
@@ -55,7 +76,7 @@ jobs:
     # to a new machine. Casks are skipped: several need GUI approval (kexts,
     # pkg installers) that a runner can't give. Also gates Renovate bumps of
     # the pinned tools.
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 90
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,6 +89,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          # renovate: datasource=github-releases depName=jdx/mise
+          version: 2026.9.15
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:

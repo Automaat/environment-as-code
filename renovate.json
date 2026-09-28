@@ -11,14 +11,23 @@
   "reviewers": ["Automaat"],
   "automerge": false,
   "automergeStrategy": "squash",
-  "platformAutomerge": false,
+  "platformAutomerge": true,
+  "rebaseWhen": "behind-base-branch",
   "postUpdateOptions": ["gomodTidy"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Versions pinned in workflow inputs behind a `# renovate:` comment, e.g. mise in jdx/mise-action.",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": ["# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\s+version: (?<currentValue>\\S+)"],
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    }
+  ],
   "packageRules": [
     {
-      "description": "Non-major updates merge on their own once CI is green; the automerge label is what auto-merge.yml acts on.",
+      "description": "Non-major updates merge on their own once the required checks pass, through GitHub native auto-merge.",
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true,
-      "addLabels": ["automerge"]
+      "automerge": true
     },
     {
       "description": "Batch routine CLI tool bumps from the global mise config into one weekly PR, gated by the e2e CI job.",
@@ -47,6 +56,16 @@
       "matchFileNames": ["go.mod", "mise.toml"],
       "groupName": "eac toolchain",
       "groupSlug": "eac-toolchain",
+      "addLabels": ["go"]
+    },
+    {
+      "description": "Go is pinned in both mise configs; bump them in one PR so eac and the global toolchain never drift apart.",
+      "matchManagers": ["mise"],
+      "matchDepNames": ["go"],
+      "matchFileNames": ["mise.toml", "dotfiles/mise/config.toml"],
+      "groupName": "go",
+      "groupSlug": "go",
+      "schedule": ["at any time"],
       "addLabels": ["go"]
     },
     {

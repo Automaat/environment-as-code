@@ -133,7 +133,7 @@ enabled = true
 [providers.codex]
 enabled = true
 experimental = true
-hooks_config_path = "/Users/marcin.skalski/Library/Application Support/orca/codex-runtime-home/home/hooks.json"
+hooks_config_path = "{{.Home}}/Library/Application Support/orca/codex-runtime-home/home/hooks.json"
 
 [providers.gemini]
 enabled = false
@@ -143,4 +143,4 @@ enabled = false
 # `klaudiush doctor --fix`.
 [providers.opencode]
 enabled = true
-plugin_path = "/Users/marcin.skalski/.config/opencode/plugin/klaudiush.ts"
+plugin_path = "{{.Home}}/.config/opencode/plugin/klaudiush.ts"
