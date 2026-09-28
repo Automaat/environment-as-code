@@ -46,6 +46,8 @@ A launchd agent runs `eac check` every day at 10:00 and shows a notification whe
 mise run test               # unit + e2e with fake brew/mise/defaults
 mise run test:integration   # adds real `defaults` round-trip
 mise run lint
+shellcheck bootstrap.sh dotfiles/claude/*.sh dotfiles/bin/*
+actionlint
 ```
 
 See [CLAUDE.md](CLAUDE.md) for layout and conventions.
