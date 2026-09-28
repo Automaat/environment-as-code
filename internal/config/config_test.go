@@ -130,6 +130,10 @@ links: [{src: dir, dst: ~/.cfg}]`, []string{"links[0]"}},
 defaults:
   - {domain: d, key: k, value: true}
   - {domain: d, key: k, value: true}`, []string{"defaults[1]: d k is already set by defaults[0]"}},
+		{"duplicate currentHost default", `
+defaults:
+  - {domain: d, key: k, value: true, currentHost: true}
+  - {domain: d, key: k, value: false, currentHost: true}`, []string{"defaults[1]: d k is already set by defaults[0]"}},
 		{"missing file fields", "files: [{dst: ~/x}]", []string{"files[0]: src and dst are required"}},
 		{"bad cleanup", "brew: {file: B, cleanup: nuke}", []string{`brew.cleanup: "nuke"`}},
 		{"brew without file", "brew: {upgrade: true}", []string{"brew.file is required"}},
@@ -160,6 +164,8 @@ files: [{src: a, dst: ~/.a}, {src: b, dst: ~/.ab}, {src: c, dst: ~/.a-b/x}]
 links: [{src: d, dst: /etc/x}]`},
 		{"same key in different domains", `
 defaults: [{domain: a, key: k, value: 1}, {domain: b, key: k, value: 1}]`},
+		{"same key per host and global", `
+defaults: [{domain: a, key: k, value: 1}, {domain: a, key: k, value: 1, currentHost: true}]`},
 		{"repo config", mustRead(t, "../../eac.yaml")},
 	}
 	for _, tt := range tests {

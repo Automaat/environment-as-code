@@ -214,12 +214,16 @@ func (c *Config) Validate(home string) error {
 	if c.Mise != nil && c.Mise.Config == "" {
 		errs = append(errs, errors.New("mise.config is required"))
 	}
-	defaultsSeen := map[[2]string]int{}
+	type defaultKey struct {
+		domain, key string
+		currentHost bool
+	}
+	defaultsSeen := map[defaultKey]int{}
 	for i, d := range c.Defaults {
 		if d.Domain == "" || d.Key == "" {
 			errs = append(errs, fmt.Errorf("defaults[%d]: domain and key are required", i))
 		}
-		key := [2]string{d.Domain, d.Key}
+		key := defaultKey{d.Domain, d.Key, d.CurrentHost}
 		if first, dup := defaultsSeen[key]; dup {
 			errs = append(errs, fmt.Errorf("defaults[%d]: %s %s is already set by defaults[%d]", i, d.Domain, d.Key, first))
 		} else {
