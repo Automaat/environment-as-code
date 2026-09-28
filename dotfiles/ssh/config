@@ -23,4 +23,4 @@ IdentityFile ~/.ssh/id_ed25519
 # Bitwarden SSH agent - global fallback
 Host *
 IdentityAgent ~/.bitwarden-ssh-agent.sock
-Ciphers aes256-ctr,aes192-ctr,aes128-ctr
+Ciphers aes128-ctr,aes256-ctr,aes192-ctr
