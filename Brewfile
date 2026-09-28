@@ -1,8 +1,8 @@
-tap "automaat/tap"
-tap "automaat/whisper-hotkey"
-tap "kong/agent-auth-cli"
-tap "shivammathur/php"
-tap "smykla-skalski/tap"
+tap "automaat/tap", trusted: true
+tap "automaat/whisper-hotkey", trusted: true
+tap "kong/agent-auth-cli", trusted: true
+tap "shivammathur/php", trusted: true
+tap "smykla-skalski/tap", trusted: true
 
 brew "antidote"
 brew "git"
