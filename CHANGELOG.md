@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0](https://github.com/Automaat/environment-as-code/compare/v1.2.0...v1.3.0) (2026-09-28)
+
+
+### Features
+
+* **eac:** replace nix-darwin with a Go CLI ([#55](https://github.com/Automaat/environment-as-code/issues/55)) ([f32678b](https://github.com/Automaat/environment-as-code/commit/f32678b0c04b48e8a3098a3d0c88df5e0b80f70b))
+* **flake:** add omp and 1Password npm auth ([#48](https://github.com/Automaat/environment-as-code/issues/48)) ([e78acf0](https://github.com/Automaat/environment-as-code/commit/e78acf0d871946ae74695492812565cc75db9f65))
+* **packages:** add okta-aws-cli ([#36](https://github.com/Automaat/environment-as-code/issues/36)) ([99e6c10](https://github.com/Automaat/environment-as-code/commit/99e6c10a1a5bcfb7c03378978751bf88c83cba47))
+
 ## [1.2.0](https://github.com/Automaat/environment-as-code/compare/v1.1.0...v1.2.0) (2026-09-04)
 
 
