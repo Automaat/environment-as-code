@@ -74,5 +74,7 @@ system → files → links → templates → brew → mise → commands → defa
 - `plan`/`check` must never change the system; brew calls set `HOMEBREW_NO_AUTO_UPDATE=1`.
 - Replaced files that eac didn't write (or that were edited) are backed up to `<file>.eac-bak`, never deleted.
 - `brew.cleanup: zap` removes anything not in the Brewfile: read the `-` lines of `plan` before `apply`.
+- `mise.prune: true` removes installed tool versions no mise config on the machine references (other projects' configs count, so their tools stay).
+- The mise module runs mise from `/`: from `$HOME`, mise treats `~/.config/mise/config.toml` as a project config that outranks the repo file, hiding bumped pins until after `apply`.
 - Renovate bumps `dotfiles/mise/config.toml`, `go.mod`, `mise.toml`, GitHub Actions; CI job `e2e on a fresh Mac` applies the config to a clean macOS runner to gate them.
 - Claude/Codex/Copilot config is linked by `dotfiles/claude/link.sh`, not eac.

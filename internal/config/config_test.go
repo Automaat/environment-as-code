@@ -28,7 +28,7 @@ templates:
   files:
     - {src: a.tmpl, dst: ~/a, mode: 0600}
 brew: {file: Brewfile, cleanup: zap, upgrade: true}
-mise: {config: dotfiles/mise/config.toml}
+mise: {config: dotfiles/mise/config.toml, prune: true}
 defaults:
   - {domain: com.apple.dock, key: autohide, value: true}
   - {domain: NSGlobalDomain, key: KeyRepeat, value: 2}
@@ -47,6 +47,9 @@ commands:
 	}
 	if want, _ := filepath.EvalSymlinks(filepath.Dir(p)); c.Root != want {
 		t.Errorf("Root = %q, want %q", c.Root, want)
+	}
+	if !c.Mise.Prune {
+		t.Error("mise.prune not loaded")
 	}
 	if !c.Protect.Immutable || len(c.Files) != 1 {
 		t.Errorf("protect/files not loaded: %+v %+v", c.Protect, c.Files)

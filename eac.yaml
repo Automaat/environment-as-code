@@ -41,6 +41,7 @@ brew:
 
 mise:
   config: dotfiles/mise/config.toml
+  prune: true
 
 system:
   sudoTouchID: true
