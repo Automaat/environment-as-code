@@ -85,5 +85,5 @@ jobs:
           TERM: xterm-256color
         run: |
           zsh -il -c true > /dev/null 2>&1 || true
-          out=$(script -q /dev/null zsh -il -c 'for t in kubectl gh jq starship k9s helm fzf direnv op; do command -v $t > /dev/null || echo "missing $t"; done' 2>&1 | tr -d '\r')
+          out=$(script -q /dev/null zsh -il -c "for t in kubectl gh jq starship k9s helm fzf direnv op; do command -v \$t > /dev/null || echo \"missing \$t\"; done" 2>&1 | tr -d '\r')
           if [ -n "$out" ]; then echo "$out"; exit 1; fi
