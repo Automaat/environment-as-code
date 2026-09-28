@@ -1,0 +1,18 @@
+[tools]
+go = "1.27.1"
+golangci-lint = "2.14.0"
+
+[tasks.test]
+run = "go test -race ./..."
+
+[tasks."test:integration"]
+run = "go test -race -tags integration ./..."
+
+[tasks.lint]
+run = "golangci-lint run"
+
+[tasks.plan]
+run = "go run ./cmd/eac plan"
+
+[tasks.apply]
+run = "go run ./cmd/eac apply"
