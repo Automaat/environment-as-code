@@ -78,7 +78,12 @@ jobs:
           if echo x >> "$HOME/.zshrc"; then echo "$HOME/.zshrc is writable"; exit 1; fi
           stat -f %Sf "$HOME/.zshrc" | grep -q uchg
 
+      # The first shell clones antidote plugins; the second must print nothing.
+      # script(1) gives zsh a terminal, as a real session has.
       - name: login shell starts cleanly with the pinned tools
+        env:
+          TERM: xterm-256color
         run: |
-          zsh -il -c 'for t in kubectl gh jq starship k9s helm fzf direnv op; do command -v $t >/dev/null || { echo "missing $t"; exit 1; }; done' 2> "$RUNNER_TEMP/zsh.err"
-          if [ -s "$RUNNER_TEMP/zsh.err" ]; then cat "$RUNNER_TEMP/zsh.err"; exit 1; fi
+          zsh -il -c true > /dev/null 2>&1 || true
+          out=$(script -q /dev/null zsh -il -c 'for t in kubectl gh jq starship k9s helm fzf direnv op; do command -v $t > /dev/null || echo "missing $t"; done' 2>&1 | tr -d '\r')
+          if [ -n "$out" ]; then echo "$out"; exit 1; fi
