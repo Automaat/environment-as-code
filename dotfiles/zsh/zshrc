@@ -31,7 +31,7 @@ fi
 
 [[ ! -d "$HOME/.kuma-dev/kuma-master/bin" ]] || path=("$HOME/.kuma-dev/kuma-master/bin" $path)
 [[ ! -d "$HOME/.antigravity/antigravity/bin" ]] || path=("$HOME/.antigravity/antigravity/bin" $path)
-path=("$HOME/bin" "/opt/homebrew/opt/ruby/bin" $path "$HOME/go/bin" "$HOME/.local/bin" "/Applications/ToolHive.app/Contents/Resources/bin/darwin-arm64")
+path=("$HOME/bin" "/opt/homebrew/opt/ruby/bin" $path "$HOME/go/bin" "$HOME/.local/bin" "/Applications/ToolHive.app/Contents/Resources/bin/darwin-arm64" "/opt/homebrew/share/google-cloud-sdk/bin")
 
 eval "$(mise activate zsh)"
 
