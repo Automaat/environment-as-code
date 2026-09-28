@@ -114,11 +114,11 @@ jobs:
       # kong/* is a private tap the runner can't clone. The image pins
       # HOMEBREW_NO_AUTO_UPDATE and ships a stale formula index (e.g. a mise
       # too old for the pypi backend), so update first, as a fresh Mac would.
+      # bundle install trusts the taps from their `trusted: true` options.
       - name: install formulae from the Brewfile
         run: |
           brew update --quiet
           grep -E '^(tap|brew) ' Brewfile | grep -v '"kong/' > "$RUNNER_TEMP/Brewfile"
-          grep -E '^tap ' "$RUNNER_TEMP/Brewfile" | cut -d'"' -f2 | xargs -n1 brew trust --tap
           brew bundle install --file "$RUNNER_TEMP/Brewfile" --no-upgrade
 
       # apply is idempotent, so one rerun absorbs runner network flakes.

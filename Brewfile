@@ -1,8 +1,6 @@
-tap "automaat/tap"
-tap "automaat/whisper-hotkey"
-tap "kong/agent-auth-cli"
-tap "shivammathur/php"
-tap "smykla-skalski/tap"
+tap "automaat/tap", trusted: true
+tap "kong/agent-auth-cli", trusted: true
+tap "smykla-skalski/tap", trusted: true
 
 brew "antidote"
 brew "git"
@@ -22,8 +20,6 @@ brew "ffmpeg"
 brew "oniguruma"
 brew "ponysay"
 brew "postgresql@14"
-brew "pyenv"
-brew "rbenv"
 brew "rsync"
 brew "rustup"
 brew "tmux"

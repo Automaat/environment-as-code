@@ -15,7 +15,8 @@ import (
 )
 
 const brewfile = `# comment
-tap "automaat/tap"
+tap "automaat/tap", trusted: true
+tap "homebrew/services"
 brew "jq"
 brew "automaat/tap/cache-buster"
 cask "ghostty"
@@ -35,9 +36,14 @@ Run ` + "`brew bundle cleanup --force`" + ` to make these changes.
 
 func newModule(t *testing.T, b config.Brew) (*Module, *runnertest.Fake, string) {
 	t.Helper()
+	return newModuleWith(t, b, brewfile)
+}
+
+func newModuleWith(t *testing.T, b config.Brew, content string) (*Module, *runnertest.Fake, string) {
+	t.Helper()
 	root := t.TempDir()
 	file := filepath.Join(root, "Brewfile")
-	if err := os.WriteFile(file, []byte(brewfile), 0o644); err != nil {
+	if err := os.WriteFile(file, []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	b.File = "Brewfile"
@@ -59,20 +65,66 @@ func TestParseBrewfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []Entry{{"tap", "automaat/tap"}, {"brew", "jq"}, {"brew", "automaat/tap/cache-buster"}, {"cask", "ghostty"}}
+	want := []Entry{
+		{Kind: "tap", Name: "automaat/tap", Trusted: true},
+		{Kind: "tap", Name: "homebrew/services"},
+		{Kind: "brew", Name: "jq"},
+		{Kind: "brew", Name: "automaat/tap/cache-buster"},
+		{Kind: "cask", Name: "ghostty"},
+	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v", got)
 	}
 }
 
 func TestParseCleanup(t *testing.T) {
-	got := ParseCleanup(cleanupOut)
-	want := []string{"cask zoom", "brew wget", "tap old/tap"}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
+	tests := []struct {
+		name string
+		out  string
+		want []string
+	}{
+		{"core sections", cleanupOut, []string{"cask zoom", "brew wget", "tap old/tap"}},
+		{"empty", "", nil},
+		{
+			"extension sections",
+			"Would uninstall Go packages:\ngolang.org/x/tools/gopls\nWould uninstall VSCode extensions:\nms-python.python\n" +
+				"Would uninstall Mac App Store apps:\nXcode\nWould uninstall Shiny things:\nsparkle\n",
+			[]string{"go golang.org/x/tools/gopls", "vscode ms-python.python", "mas Xcode", "Shiny things sparkle"},
+		},
 	}
-	if got := ParseCleanup(""); got != nil {
-		t.Errorf("empty output: %v", got)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ParseCleanup(tt.out); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPlanRequiresTrustedTaps(t *testing.T) {
+	m, fake, _ := newModuleWith(t, config.Brew{}, "tap \"homebrew/services\"\ntap \"a/ok\", trusted: true\ntap \"b/untrusted\"\n")
+
+	_, err := m.Plan(context.Background())
+	if err == nil || !strings.Contains(err.Error(), `tap "b/untrusted"`) || strings.Contains(err.Error(), "a/ok") {
+		t.Errorf("err = %v, want only b/untrusted reported", err)
+	}
+	if len(fake.Calls) != 0 {
+		t.Errorf("ran %v before rejecting the Brewfile", fake.Lines())
+	}
+}
+
+func TestOutdatedSkipsPinned(t *testing.T) {
+	m, fake, file := newModule(t, config.Brew{Upgrade: true})
+	fake.OnOK("brew trust --json=v1", `{"taps":["automaat/tap"]}`)
+	fake.OnOK("brew bundle check --file "+file+" --verbose --no-upgrade", "")
+	fake.OnOK("brew outdated --json=v2", `{"formulae":[{"name":"jq","pinned":true},{"name":"cache-buster","pinned":false}],"casks":[{"name":"ghostty","pinned":true}]}`)
+
+	changes, err := m.Plan(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := targets(changes); !reflect.DeepEqual(got, []string{"~ brew cache-buster", "! brew bundle install"}) {
+		t.Errorf("got %v; pinned entries never upgrade, so they are not drift", got)
 	}
 }
 
@@ -133,6 +185,11 @@ Satisfy missing dependencies with ` + "`brew bundle install`."})
 		"brew bundle cleanup --force --file " + file + " --zap",
 	}) {
 		t.Errorf("applied %v", got)
+	}
+	for _, c := range fake.Calls {
+		if !reflect.DeepEqual(c.Env, noAutoUpdate) {
+			t.Errorf("%s ran without disabling auto-update", c)
+		}
 	}
 }
 

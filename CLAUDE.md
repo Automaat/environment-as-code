@@ -31,7 +31,7 @@ mise run test:integration     # + real `defaults` round-trip (macOS only)
 mise run lint
 ```
 
-Exit codes: 0 ok, 1 error, 2 drift (`check`), 64 usage. A module that fails to plan is reported and skipped; the others still apply, and the run exits 1.
+Exit codes: 0 ok, 1 error, 2 drift (`check`), 64 usage, 130 interrupted. A module that fails to plan is reported and skipped; the others still apply, and the run exits 1.
 
 Each apply is appended to `~/.local/state/eac/history.jsonl` (time, commit, changes, error). Applying from a dirty checkout, a branch other than `main`, or behind upstream prints a warning.
 
@@ -45,8 +45,8 @@ Each apply is appended to `~/.local/state/eac/history.jsonl` (time, commit, chan
 | Dotfile | put under `dotfiles/`, add to `files` in `eac.yaml` (a dir src copies every file) |
 | Config an app must write itself | `links` in `eac.yaml` (plain symlink, unprotected) |
 | Dotfile needing `$HOME`/vars, or must be a real file | `templates` in `eac.yaml` (Go `text/template`: `.Home`, `.Vars.x`) |
-| macOS setting | `defaults` in `eac.yaml` (YAML type picks `-bool/-int/-float/-string`) |
-| One-off setup step | `commands` in `eac.yaml` (`run` executes only while `check` fails) |
+| macOS setting | `defaults` in `eac.yaml` (YAML type picks `-bool/-int/-float/-string`; `currentHost: true` for ByHost prefs) |
+| One-off setup step | `commands` in `eac.yaml` (`run` executes only while `check` fails; both run in `$HOME`, `check` times out after 30s) |
 
 Find a macOS preference key: `defaults read > a`, toggle in System Settings, `defaults read > b`, `diff a b`.
 
@@ -75,11 +75,12 @@ system → files → links → templates → brew → mise → commands → defa
 
 ## Rules
 
-- `plan`/`check` must never change the system; brew calls set `HOMEBREW_NO_AUTO_UPDATE=1`.
+- `plan`/`check` must never change the system; every brew call (apply too) sets `HOMEBREW_NO_AUTO_UPDATE=1`, so only `eac upgrade` refreshes Homebrew.
 - Replaced files that eac didn't write (or that were edited) are backed up to `<file>.eac-bak` (`.eac-bak.N` if taken), never deleted or overwritten.
 - `files`/`links`/`templates` destinations must be absolute or `~/…` (no `$VAR`) and must not overlap (same path, or one inside another's dir; case-insensitive). Modes are octal: `0644`, not `644`.
 - eac refuses to write through a symlinked parent dir under `$HOME` or one resolving into the repo (e.g. a dir moved from `links` to `files`): remove the old symlink first.
 - `brew.cleanup: zap` removes anything not in the Brewfile: read the `-` lines of `plan` before `apply`.
+- Every third-party `tap` in the Brewfile needs `trusted: true`: `brew bundle cleanup --force` resets Homebrew's trust store to the Brewfile, so trust granted elsewhere is lost (plan fails otherwise).
 - `mise.prune: true` removes installed tool versions no mise config on the machine references (other projects' configs count, so their tools stay).
 - The mise module runs mise from `/`: from `$HOME`, mise treats `~/.config/mise/config.toml` as a project config that outranks the repo file, hiding bumped pins until after `apply`.
 - Renovate bumps `dotfiles/mise/config.toml`, `go.mod`, `mise.toml`, GitHub Actions; CI job `e2e on a fresh Mac` applies the config to a clean macOS runner to gate them.

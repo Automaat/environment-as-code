@@ -3,8 +3,12 @@ package runner
 import (
 	"bytes"
 	"context"
+	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestExecRun(t *testing.T) {
@@ -63,5 +67,35 @@ func TestResultErr(t *testing.T) {
 		if err := tt.res.Err(c); err == nil || err.Error() != tt.want {
 			t.Errorf("Err = %v, want %q", err, tt.want)
 		}
+	}
+}
+
+func TestExecCancelInterruptsChild(t *testing.T) {
+	dir := t.TempDir()
+	ready, cleaned := filepath.Join(dir, "ready"), filepath.Join(dir, "cleaned")
+	script := `trap 'touch "$CLEANED"; exit 130' INT; touch "$READY"; while :; do sleep 0.05; done`
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		for {
+			if _, err := os.Stat(ready); err == nil {
+				cancel()
+				return
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}()
+
+	start := time.Now()
+	_, err := NewExec().Run(ctx, Cmd{Name: "sh", Args: []string{"-c", script}, Env: []string{"READY=" + ready, "CLEANED=" + cleaned}})
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("err = %v, want context.Canceled", err)
+	}
+	if _, err := os.Stat(cleaned); err != nil {
+		t.Errorf("child was not interrupted gracefully: %v", err)
+	}
+	if d := time.Since(start); d >= WaitDelay {
+		t.Errorf("took %s; the child should exit on SIGINT, not after the kill delay", d)
 	}
 }

@@ -10,13 +10,22 @@ import (
 	"github.com/Automaat/environment-as-code/internal/runner"
 )
 
+// exitInterrupted follows the shell convention of 128 + SIGINT.
+const exitInterrupted = 130
+
 func main() {
 	os.Exit(run())
 }
 
+// run restores default SIGINT handling after the first one, so a second
+// Ctrl-C kills eac instead of being swallowed.
 func run() int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
+	go func() {
+		<-ctx.Done()
+		stop()
+	}()
 
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -28,7 +37,7 @@ func run() int {
 		fmt.Fprintln(os.Stderr, "eac:", err)
 		return cli.ExitErr
 	}
-	return cli.Main(ctx, cli.Env{
+	code := cli.Main(ctx, cli.Env{
 		Args:    os.Args[1:],
 		Stdin:   os.Stdin,
 		Stdout:  os.Stdout,
@@ -38,4 +47,8 @@ func run() int {
 		Runner:  runner.NewExec(),
 		PAMFile: os.Getenv("EAC_PAM_FILE"),
 	})
+	if ctx.Err() != nil {
+		return exitInterrupted
+	}
+	return code
 }

@@ -125,13 +125,17 @@ func Print(w io.Writer, p Plan, diffs bool) error {
 // Apply executes the plan in order, reporting each change to progress before
 // running it. Within a module the first failure stops that module, since
 // later changes often depend on earlier ones; other modules still run and all
-// failures are returned together.
+// failures are returned together. Cancelling ctx stops before the next
+// change.
 func Apply(ctx context.Context, progress func(string), p Plan) error {
 	var errs []error
 	for _, mp := range p {
 		for _, c := range mp.Changes {
 			if c.Apply == nil {
 				continue
+			}
+			if err := ctx.Err(); err != nil {
+				return errors.Join(append(errs, err)...)
 			}
 			progress(mp.Module + ": " + c.String())
 			if err := c.Apply(ctx); err != nil {

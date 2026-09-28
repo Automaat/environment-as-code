@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
@@ -22,12 +23,18 @@ func cmd() config.Command {
 
 func run(t *testing.T, fake *runnertest.Fake) ([]engine.Change, error) {
 	t.Helper()
-	m := &Module{Runner: fake, Commands: []config.Command{cmd()}}
+	m := &Module{Runner: fake, Commands: []config.Command{cmd()}, Home: "/home/me"}
 	changes, err := m.Plan(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	return changes, engine.Apply(context.Background(), func(string) {}, engine.Plan{{Changes: changes}})
+	err = engine.Apply(context.Background(), func(string) {}, engine.Plan{{Changes: changes}})
+	for _, c := range fake.Calls {
+		if c.Dir != m.Home {
+			t.Errorf("%s ran in %q, want $HOME", c, c.Dir)
+		}
+	}
+	return changes, err
 }
 
 func TestSatisfiedIsSkipped(t *testing.T) {
@@ -86,5 +93,24 @@ func TestRunFailure(t *testing.T) {
 	_, err := run(t, fake)
 	if err == nil || !strings.Contains(err.Error(), "network down") {
 		t.Errorf("err = %v", err)
+	}
+}
+
+func TestHungCheckTimesOut(t *testing.T) {
+	defer func(d time.Duration) { CheckTimeout = d }(CheckTimeout)
+	CheckTimeout = 100 * time.Millisecond
+
+	m := &Module{
+		Runner:   runner.NewExec(),
+		Home:     t.TempDir(),
+		Commands: []config.Command{{Name: "hang", Check: "sleep 10", Run: "true"}},
+	}
+	start := time.Now()
+	_, err := m.Plan(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "hang: check timed out") {
+		t.Errorf("err = %v", err)
+	}
+	if d := time.Since(start); d > 5*time.Second {
+		t.Errorf("plan took %s; a hung check must not hang it", d)
 	}
 }

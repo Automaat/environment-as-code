@@ -2,6 +2,8 @@ package defaults
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -45,7 +47,16 @@ func fakeDefaults(state map[string][2]string) *runnertest.Fake {
 	return fake
 }
 
+// noActivateSettings makes the plan independent of the host's macOS.
+func noActivateSettings(t *testing.T) {
+	t.Helper()
+	old := ActivateSettings
+	ActivateSettings = filepath.Join(t.TempDir(), "missing")
+	t.Cleanup(func() { ActivateSettings = old })
+}
+
 func TestPlan(t *testing.T) {
+	noActivateSettings(t)
 	fake := fakeDefaults(map[string][2]string{
 		"com.apple.dock autohide":          {"boolean", "1"},
 		"com.apple.dock show-recents":      {"boolean", "1"},
@@ -92,6 +103,7 @@ func TestPlan(t *testing.T) {
 }
 
 func TestApply(t *testing.T) {
+	noActivateSettings(t)
 	fake := fakeDefaults(map[string][2]string{"com.apple.dock autohide": {"boolean", "0"}})
 	fake.On("defaults read-type NSGlobalDomain KeyRepeat", runner.Result{ExitCode: 1})
 	fake.OnOK("defaults write com.apple.dock autohide -bool true", "")
@@ -127,5 +139,72 @@ func TestWriteFailureSurfaces(t *testing.T) {
 	}
 	if err := engine.Apply(context.Background(), func(string) {}, engine.Plan{{Changes: changes}}); err == nil {
 		t.Error("expected write failure")
+	}
+}
+
+func TestCurrentHost(t *testing.T) {
+	noActivateSettings(t)
+	fake := runnertest.New()
+	fake.OnOK("defaults -currentHost read-type com.apple.controlcenter BatteryShowPercentage", "Type is boolean\n")
+	fake.OnOK("defaults -currentHost read com.apple.controlcenter BatteryShowPercentage", "0\n")
+	fake.OnOK("defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true", "")
+
+	m := &Module{Runner: fake, Defaults: []config.Default{
+		{Domain: "com.apple.controlcenter", Key: "BatteryShowPercentage", Value: true, CurrentHost: true},
+	}}
+	changes, err := m.Plan(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(changes) != 1 || changes[0].String() != "~ -currentHost com.apple.controlcenter BatteryShowPercentage (bool:0 → bool:1)" {
+		t.Fatalf("changes = %v", changes)
+	}
+	if err := engine.Apply(context.Background(), func(string) {}, engine.Plan{{Changes: changes}}); err != nil {
+		t.Fatal(err)
+	}
+	if !fake.Ran("defaults -currentHost write") {
+		t.Errorf("ran %v", fake.Lines())
+	}
+}
+
+func TestActivateSettingsAfterGlobalDomainWrite(t *testing.T) {
+	tool := filepath.Join(t.TempDir(), "activateSettings")
+	if err := os.WriteFile(tool, nil, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	old := ActivateSettings
+	ActivateSettings = tool
+	t.Cleanup(func() { ActivateSettings = old })
+
+	tests := []struct {
+		name   string
+		domain string
+		want   []string
+	}{
+		{"global domain", "NSGlobalDomain", []string{"~ NSGlobalDomain k", "! " + tool + " -u"}},
+		{"app domain", "com.apple.dock", []string{"~ com.apple.dock k", "! killall Dock"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fake := runnertest.New().On("defaults read-type "+tt.domain+" k", runner.Result{ExitCode: 1})
+			fake.On(tool+" -u", runner.Result{ExitCode: 1})
+			fake.OnOK("defaults write "+tt.domain+" k -int 1", "")
+			fake.On("killall Dock", runner.Result{})
+			m := &Module{Runner: fake, Defaults: []config.Default{{Domain: tt.domain, Key: "k", Value: 1}}}
+			changes, err := m.Plan(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got []string
+			for _, c := range changes {
+				got = append(got, string(c.Action)+" "+c.Target)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Fatalf("got %v, want %v", got, tt.want)
+			}
+			if err := engine.Apply(context.Background(), func(string) {}, engine.Plan{{Changes: changes}}); err != nil {
+				t.Errorf("apply: %v (activateSettings is best effort)", err)
+			}
+		})
 	}
 }

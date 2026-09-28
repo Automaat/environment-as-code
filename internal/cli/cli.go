@@ -251,7 +251,7 @@ func Modules(cfg *config.Config, env Env) []engine.Module {
 		mods = append(mods, &mise.Module{Mise: *cfg.Mise, Paths: paths, Runner: env.Runner})
 	}
 	return append(mods,
-		&commands.Module{Commands: cfg.Commands, Runner: env.Runner},
+		&commands.Module{Commands: cfg.Commands, Home: env.Home, Runner: env.Runner},
 		&defaults.Module{Defaults: cfg.Defaults, Runner: env.Runner},
 	)
 }
