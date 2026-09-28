@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.3.0](https://github.com/Automaat/environment-as-code/compare/v1.2.0...v1.3.0) (2026-09-28)
+
+
+### Features
+
+* **eac:** replace nix-darwin with a Go CLI ([#55](https://github.com/Automaat/environment-as-code/issues/55)) ([f32678b](https://github.com/Automaat/environment-as-code/commit/f32678b0c04b48e8a3098a3d0c88df5e0b80f70b))
+* **flake:** add omp and 1Password npm auth ([#48](https://github.com/Automaat/environment-as-code/issues/48)) ([e78acf0](https://github.com/Automaat/environment-as-code/commit/e78acf0d871946ae74695492812565cc75db9f65))
+* **mise:** add semgrep ([#57](https://github.com/Automaat/environment-as-code/issues/57)) ([433b41d](https://github.com/Automaat/environment-as-code/commit/433b41dd88414daae80d4c6ba77551b56693f4e1))
+* **packages:** add okta-aws-cli ([#36](https://github.com/Automaat/environment-as-code/issues/36)) ([99e6c10](https://github.com/Automaat/environment-as-code/commit/99e6c10a1a5bcfb7c03378978751bf88c83cba47))
+
+
+### Bug Fixes
+
+* **deps:** update module golang.org/x/sys to v0.48.0 ([#56](https://github.com/Automaat/environment-as-code/issues/56)) ([1e59b80](https://github.com/Automaat/environment-as-code/commit/1e59b807e9f56260b8ca3cc701d2b02532c60937))
+* **renovate:** move 1password CLI to brew, pin py ([#59](https://github.com/Automaat/environment-as-code/issues/59)) ([a8862a8](https://github.com/Automaat/environment-as-code/commit/a8862a89b14049c1981fdcce2f8f36f7a478e113))
+
 ## [1.2.0](https://github.com/Automaat/environment-as-code/compare/v1.1.0...v1.2.0) (2026-09-04)
 
 
