@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Automaat/environment-as-code/internal/config"
@@ -30,6 +31,11 @@ func (m *Module) Name() string { return "brew" }
 func (m *Module) Plan(ctx context.Context) ([]engine.Change, error) {
 	file := m.Paths.Src(m.Brew.File)
 	entries, err := ParseBrewfile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	trust, err := m.planTrust(ctx, entries)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +65,46 @@ func (m *Module) Plan(ctx context.Context) ([]engine.Change, error) {
 	if err != nil {
 		return nil, err
 	}
-	return append(install, cleanup...), nil
+	return append(append(trust, install...), cleanup...), nil
+}
+
+type trustJSON struct {
+	Taps []string `json:"taps"`
+}
+
+// planTrust trusts every tap the Brewfile lists: Homebrew refuses to load
+// formulae from untrusted third-party taps, and listing a tap in the
+// Brewfile already states the intent to use it.
+func (m *Module) planTrust(ctx context.Context, entries []Entry) ([]engine.Change, error) {
+	var taps []string
+	for _, e := range entries {
+		if e.Kind == "tap" && !strings.HasPrefix(e.Name, "homebrew/") {
+			taps = append(taps, e.Name)
+		}
+	}
+	if len(taps) == 0 {
+		return nil, nil
+	}
+	out, err := runner.Output(ctx, m.Runner, runner.Cmd{Name: "brew", Args: []string{"trust", "--json=v1"}, Env: noAutoUpdate})
+	if err != nil {
+		return nil, err
+	}
+	var trusted trustJSON
+	if err := json.Unmarshal([]byte(out), &trusted); err != nil {
+		return nil, fmt.Errorf("brew trust: %w", err)
+	}
+	var changes []engine.Change
+	for _, tap := range taps {
+		if slices.Contains(trusted.Taps, tap) {
+			continue
+		}
+		cmd := runner.Cmd{Name: "brew", Args: []string{"trust", "--tap", tap}, Env: noAutoUpdate}
+		changes = append(changes, engine.Change{
+			Action: engine.Create, Target: "trust tap " + tap,
+			Apply: func(ctx context.Context) error { return runner.Check(ctx, m.Runner, cmd) },
+		})
+	}
+	return changes, nil
 }
 
 func (m *Module) bundleInstall(file string) engine.Change {

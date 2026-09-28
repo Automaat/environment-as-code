@@ -78,6 +78,7 @@ func TestParseCleanup(t *testing.T) {
 
 func TestPlanUpToDate(t *testing.T) {
 	m, fake, file := newModule(t, config.Brew{Cleanup: config.CleanupZap})
+	fake.OnOK("brew trust --json=v1", `{"taps":["automaat/tap"],"formulae":[]}`)
 	fake.OnOK("brew bundle check --file "+file+" --verbose --no-upgrade", "The Brewfile's dependencies are satisfied.\n")
 	fake.OnOK("brew bundle cleanup --file "+file, "")
 
@@ -94,6 +95,8 @@ func TestPlanUpToDate(t *testing.T) {
 
 func TestPlanInstallUpgradeAndZap(t *testing.T) {
 	m, fake, file := newModule(t, config.Brew{Cleanup: config.CleanupZap, Upgrade: true})
+	fake.OnOK("brew trust --json=v1", `{"taps":[],"formulae":["automaat/tap/cache-buster"]}`)
+	fake.OnOK("brew trust --tap automaat/tap", "")
 	fake.On("brew bundle check --file "+file+" --verbose --no-upgrade", runner.Result{ExitCode: 1, Stdout: `brew bundle can't satisfy your Brewfile's dependencies.
 → Cask ghostty needs to be installed.
 → Formula jq needs to be installed or updated.
@@ -109,6 +112,7 @@ Satisfy missing dependencies with ` + "`brew bundle install`."})
 		t.Fatal(err)
 	}
 	want := []string{
+		"+ trust tap automaat/tap",
 		"+ cask ghostty", "+ formula jq", "+ tap new/tap",
 		"~ brew cache-buster", "~ cask ghostty",
 		"! brew bundle install",
@@ -123,7 +127,8 @@ Satisfy missing dependencies with ` + "`brew bundle install`."})
 		t.Fatal(err)
 	}
 	lines := fake.Lines()
-	if got := lines[len(lines)-2:]; !reflect.DeepEqual(got, []string{
+	if got := lines[len(lines)-3:]; !reflect.DeepEqual(got, []string{
+		"brew trust --tap automaat/tap",
 		"brew bundle install --file " + file,
 		"brew bundle cleanup --force --file " + file + " --zap",
 	}) {
@@ -133,6 +138,7 @@ Satisfy missing dependencies with ` + "`brew bundle install`."})
 
 func TestNoUpgradeAndNoCleanup(t *testing.T) {
 	m, fake, file := newModule(t, config.Brew{Cleanup: config.CleanupNone})
+	fake.OnOK("brew trust --json=v1", `{"taps":["automaat/tap"]}`)
 	fake.On("brew bundle check --file "+file+" --verbose --no-upgrade", runner.Result{ExitCode: 1, Stdout: "→ Formula jq needs to be installed.\n"})
 	fake.OnOK("brew bundle install --file "+file+" --no-upgrade", "")
 
@@ -153,6 +159,7 @@ func TestNoUpgradeAndNoCleanup(t *testing.T) {
 
 func TestCheckFailureWithoutMissingEntries(t *testing.T) {
 	m, fake, file := newModule(t, config.Brew{})
+	fake.OnOK("brew trust --json=v1", `{"taps":["automaat/tap"]}`)
 	fake.On("brew bundle check --file "+file+" --verbose --no-upgrade", runner.Result{ExitCode: 1, Stderr: "Error: invalid Brewfile"})
 
 	_, err := m.Plan(context.Background())

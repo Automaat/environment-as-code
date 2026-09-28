@@ -54,9 +54,11 @@ jobs:
           key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
           restore-keys: mise-tools-${{ runner.os }}-
 
+      # kong/* is a private tap the runner can't clone.
       - name: install formulae from the Brewfile
         run: |
-          grep -E '^(tap|brew) ' Brewfile > "$RUNNER_TEMP/Brewfile"
+          grep -E '^(tap|brew) ' Brewfile | grep -v '"kong/' > "$RUNNER_TEMP/Brewfile"
+          grep -E '^tap ' "$RUNNER_TEMP/Brewfile" | cut -d'"' -f2 | xargs -n1 brew trust --tap
           brew bundle install --file "$RUNNER_TEMP/Brewfile" --no-upgrade
 
       - name: apply
