@@ -17,6 +17,14 @@ My macOS setup as code. `eac` (Go, in this repo) converges the machine to `eac.y
 
 Installs Xcode CLI tools, Homebrew and mise, clones the repo to `~/sideprojects/environment-as-code`, creates an SSH key and waits until it's added to GitHub, then runs `eac apply`. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
 
+Git signs every commit with the GPG key in `dotfiles/git/config`, which bootstrap can't create. Until it's imported, `eac apply` fails on the `git signing key imported` command with the steps:
+
+```bash
+gpg --export-secret-keys --armor C25DFDF396ADF455 > key.asc   # on the old Mac
+gpg --import key.asc && rm key.asc                             # on the new one
+eac apply
+```
+
 ## Day to day
 
 ```bash

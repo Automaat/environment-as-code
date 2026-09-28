@@ -72,6 +72,15 @@ commands:
       launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.eac.check.plist" &&
       mkdir -p "$HOME/.local/state/eac" &&
       cp -f "$HOME/Library/LaunchAgents/dev.eac.check.plist" "$HOME/.local/state/eac/dev.eac.check.loaded.plist"
+  # dotfiles/git/config signs every commit with this key, so git can't
+  # commit until it's imported. Last: a failing command stops the ones after it.
+  - name: git signing key imported
+    check: gpg --list-secret-keys C25DFDF396ADF455 > /dev/null 2>&1
+    run: >-
+      echo "GPG key C25DFDF396ADF455 (signingKey in dotfiles/git/config) is missing; git commits will fail." >&2;
+      echo "Export it on the old Mac: gpg --export-secret-keys --armor C25DFDF396ADF455 > key.asc" >&2;
+      echo "Import it here: gpg --import key.asc && rm key.asc, then run eac apply again." >&2;
+      exit 1
 
 defaults:
   - {domain: com.apple.dock, key: autohide, value: true}
