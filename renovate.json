@@ -15,7 +15,7 @@
   "postUpdateOptions": ["gomodTidy"],
   "packageRules": [
     {
-      "description": "Batch routine CLI tool bumps from the global mise config into one weekly PR, gated by the tools CI job.",
+      "description": "Batch routine CLI tool bumps from the global mise config into one weekly PR, gated by the e2e CI job.",
       "matchManagers": ["mise"],
       "matchFileNames": ["dotfiles/mise/config.toml"],
       "matchUpdateTypes": ["minor", "patch"],
@@ -31,6 +31,12 @@
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "addLabels": ["mise", "major"]
+    },
+    {
+      "description": "Stay on Python 3.13, as the Nix setup did.",
+      "matchManagers": ["mise"],
+      "matchDepNames": ["python"],
+      "allowedVersions": "<3.14"
     },
     {
       "description": "eac's own Go toolchain and dependencies.",
