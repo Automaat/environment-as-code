@@ -3,9 +3,13 @@
 package mise
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -51,7 +55,7 @@ func (m *Module) Plan(ctx context.Context) ([]engine.Change, error) {
 	if !m.Mise.Prune {
 		return changes, nil
 	}
-	prune, err := m.planPrune(ctx)
+	prune, err := m.planPrune(ctx, len(changes) > 0)
 	if err != nil {
 		return nil, err
 	}
@@ -106,26 +110,59 @@ func ParsePrunable(out string) []string {
 	return res
 }
 
-func (m *Module) planPrune(ctx context.Context) ([]engine.Change, error) {
-	res, err := m.Runner.Run(ctx, m.cmd("prune", "--dry-run"))
+// planPrune asks mise what it would prune now, but mise also counts the
+// installed ~/.config/mise/config.toml, which still holds the old pins until
+// the files module replaces it. So when tools are being installed or that
+// copy is stale, prune is scheduled anyway: at apply time it runs after the
+// new config is in place and removes the superseded versions in one pass.
+func (m *Module) planPrune(ctx context.Context, installing bool) ([]engine.Change, error) {
+	dryRun := m.cmd("prune", "--dry-run")
+	res, err := m.Runner.Run(ctx, dryRun)
 	if err != nil {
 		return nil, err
 	}
-	if err := res.Err(m.cmd("prune", "--dry-run")); err != nil {
+	if err := res.Err(dryRun); err != nil {
 		return nil, err
 	}
 	prunable := ParsePrunable(res.Stdout + res.Stderr)
-	if len(prunable) == 0 {
+	stale, err := m.installedConfigStale()
+	if err != nil {
+		return nil, err
+	}
+	if len(prunable) == 0 && !installing && !stale {
 		return nil, nil
 	}
 	var changes []engine.Change
 	for _, p := range prunable {
 		changes = append(changes, engine.Change{Action: engine.Remove, Target: p})
 	}
+	detail := ""
+	if len(prunable) == 0 {
+		detail = "versions superseded by the config update"
+	}
 	prune := m.cmd("prune", "--yes")
 	prune.Stream = true
 	return append(changes, engine.Change{
-		Action: engine.Run, Target: "mise prune",
+		Action: engine.Run, Target: "mise prune", Detail: detail,
 		Apply: func(ctx context.Context) error { return runner.Check(ctx, m.Runner, prune) },
 	}), nil
+}
+
+// InstalledConfig is where mise reads the user's global config; the files
+// module keeps it in sync with the repo copy.
+const InstalledConfig = "~/.config/mise/config.toml"
+
+func (m *Module) installedConfigStale() (bool, error) {
+	want, err := os.ReadFile(m.Paths.Src(m.Mise.Config))
+	if err != nil {
+		return false, err
+	}
+	have, err := os.ReadFile(m.Paths.Dst(InstalledConfig))
+	if errors.Is(err, fs.ErrNotExist) {
+		return true, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return !bytes.Equal(want, have), nil
 }

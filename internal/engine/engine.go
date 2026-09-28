@@ -27,6 +27,7 @@ type Change struct {
 	Action Action
 	Target string
 	Detail string
+	Diff   string
 	Apply  func(ctx context.Context) error
 }
 
@@ -43,10 +44,12 @@ type Module interface {
 	Plan(ctx context.Context) ([]Change, error)
 }
 
-// ModulePlan is the plan for one module.
+// ModulePlan is the plan for one module. Err is set when the module could
+// not be planned; its changes are then unknown and nothing is applied for it.
 type ModulePlan struct {
 	Module  string
 	Changes []Change
+	Err     error
 }
 
 // Plan is the full set of pending changes, in module order.
@@ -66,30 +69,53 @@ func (p Plan) Count() int {
 	return n
 }
 
-// Build plans every module in order, stopping at the first failure.
-func Build(ctx context.Context, modules []Module) (Plan, error) {
+// Err joins the planning errors of all modules.
+func (p Plan) Err() error {
+	var errs []error
+	for _, mp := range p {
+		if mp.Err != nil {
+			errs = append(errs, fmt.Errorf("plan %s: %w", mp.Module, mp.Err))
+		}
+	}
+	return errors.Join(errs...)
+}
+
+// Build plans every module. A module that fails to plan is recorded and the
+// rest still plan, so one broken module (a brew network error, mise not yet
+// installed) doesn't block converging everything else.
+func Build(ctx context.Context, modules []Module) Plan {
 	plan := make(Plan, 0, len(modules))
 	for _, m := range modules {
 		changes, err := m.Plan(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("plan %s: %w", m.Name(), err)
-		}
-		plan = append(plan, ModulePlan{Module: m.Name(), Changes: changes})
+		plan = append(plan, ModulePlan{Module: m.Name(), Changes: changes, Err: err})
 	}
-	return plan, nil
+	return plan
 }
 
-// Print writes a human-readable plan.
-func Print(w io.Writer, p Plan) error {
+// Print writes a human-readable plan; with diffs it also shows the content
+// change of every file.
+func Print(w io.Writer, p Plan, diffs bool) error {
 	var b strings.Builder
 	for _, mp := range p {
-		if len(mp.Changes) == 0 {
+		switch {
+		case mp.Err != nil:
+			fmt.Fprintf(&b, "%s: plan failed: %v\n", mp.Module, mp.Err)
+			continue
+		case len(mp.Changes) == 0:
 			fmt.Fprintf(&b, "%s: up to date\n", mp.Module)
 			continue
 		}
 		fmt.Fprintf(&b, "%s:\n", mp.Module)
 		for _, c := range mp.Changes {
 			fmt.Fprintf(&b, "  %s\n", c)
+			if diffs && c.Diff != "" {
+				for line := range strings.Lines(c.Diff) {
+					fmt.Fprintf(&b, "      %s", line)
+				}
+				if !strings.HasSuffix(c.Diff, "\n") {
+					b.WriteString("\n")
+				}
+			}
 		}
 	}
 	_, err := io.WriteString(w, b.String())

@@ -41,7 +41,7 @@ Projects live in two roots. Don't search the filesystem â€” look here first.
 | deepgram-stt | Python | Deepgram speech-to-text for Home Assistant |
 | doctorine | Node | Doctorine |
 | drafts-mcp | Node | Drafts MCP server |
-| environment-as-code | Nix | This machine's Nix/darwin setup |
+| environment-as-code | Go | This machine's setup (`eac` CLI, dotfiles, Brewfile, mise) |
 | falasurf | Node | Fala Surf & Wind School site |
 | finance-buddy | Node | Finansowa Forteca (personal finance) |
 | flip | Node | Flip |
@@ -167,7 +167,7 @@ PR validation (currently disabled in klaudiush): title is conventional-commit â‰
 ## Hooks
 
 - Always fix the root cause; never `--no-verify` or work around
-- Nix: fix `.nix` files / `nix flake check` errors, don't skip `darwin-rebuild`
+- eac: dotfiles are locked copies; change them in the repo and run `eac apply`, never unlock and edit the installed file
 
 ## Testing
 

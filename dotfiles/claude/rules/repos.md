@@ -16,7 +16,7 @@ Projects live in two roots. Don't search the filesystem — look here first.
 | deepgram-stt | Python | Deepgram speech-to-text for Home Assistant |
 | doctorine | Node | Doctorine |
 | drafts-mcp | Node | Drafts MCP server |
-| environment-as-code | Nix | This machine's Nix/darwin setup |
+| environment-as-code | Go | This machine's setup (`eac` CLI, dotfiles, Brewfile, mise) |
 | falasurf | Node | Fala Surf & Wind School site |
 | finance-buddy | Node | Finansowa Forteca (personal finance) |
 | flip | Node | Flip |

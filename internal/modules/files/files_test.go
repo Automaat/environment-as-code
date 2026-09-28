@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Automaat/environment-as-code/internal/config"
@@ -81,5 +82,70 @@ func TestMissingSource(t *testing.T) {
 	}
 	if _, err := m.Plan(context.Background()); err == nil {
 		t.Error("expected error")
+	}
+}
+
+func TestRemovesFilesNoLongerManaged(t *testing.T) {
+	home, root := t.TempDir(), t.TempDir()
+	t.Cleanup(func() { _ = install.Unlock(home) })
+	for rel, body := range map[string]string{"zshrc": "z", "vimrc": "v", "themes/a": "a", "themes/b": "b"} {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	state, err := install.LoadState(install.StatePath(home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths := config.Paths{Home: home, Root: root}
+	in := &install.Installer{Paths: paths, State: state, Immutable: true}
+	template := filepath.Join(home, ".config/k9s/config.yaml")
+	if c, err := in.Plan(template, []byte("rendered"), 0o644); err != nil || c.Apply(context.Background()) != nil {
+		t.Fatalf("template setup: %v", err)
+	}
+	m := &Module{Paths: paths, Installer: in, Keep: []string{template}, Files: []config.Link{
+		{Src: "zshrc", Dst: "~/.zshrc"},
+		{Src: "vimrc", Dst: "~/.vimrc"},
+		{Src: "themes", Dst: "~/.themes"},
+	}}
+	apply := func() []engine.Change {
+		changes, err := m.Plan(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := engine.Apply(context.Background(), func(string) {}, engine.Plan{{Changes: changes}}); err != nil {
+			t.Fatal(err)
+		}
+		return changes
+	}
+	apply()
+
+	m.Files = m.Files[:1]
+	m.Files = append(m.Files, config.Link{Src: "themes", Dst: "~/.themes"})
+	if err := os.Remove(filepath.Join(root, "themes/b")); err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, c := range apply() {
+		got = append(got, string(c.Action)+" "+c.Target)
+	}
+	want := []string{"- ~/.themes/b", "- ~/.vimrc"}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("changes = %v, want %v", got, want)
+	}
+	for _, rel := range []string{".vimrc", ".themes/b"} {
+		if _, err := os.Lstat(filepath.Join(home, rel)); err == nil {
+			t.Errorf("%s still exists", rel)
+		}
+	}
+	if _, err := os.Stat(template); err != nil {
+		t.Errorf("template output must survive: %v", err)
+	}
+	if again, _ := m.Plan(context.Background()); len(again) != 0 {
+		t.Errorf("not converged: %v", again)
 	}
 }

@@ -13,8 +13,11 @@ import (
 	"github.com/Automaat/environment-as-code/internal/install"
 )
 
+// Module installs Files. Keep lists destinations the shared installer writes
+// for other modules (templates), so they aren't treated as orphans.
 type Module struct {
 	Files     []config.Link
+	Keep      []string
 	Paths     config.Paths
 	Installer *install.Installer
 }
@@ -22,6 +25,10 @@ type Module struct {
 func (m *Module) Name() string { return "files" }
 
 func (m *Module) Plan(_ context.Context) ([]engine.Change, error) {
+	wanted := map[string]bool{}
+	for _, k := range m.Keep {
+		wanted[k] = true
+	}
 	var changes []engine.Change
 	for _, f := range m.Files {
 		pairs, err := expand(m.Paths.Src(f.Src), m.Paths.Dst(f.Dst))
@@ -29,6 +36,7 @@ func (m *Module) Plan(_ context.Context) ([]engine.Change, error) {
 			return nil, err
 		}
 		for _, p := range pairs {
+			wanted[p.dst] = true
 			c, err := m.plan(p)
 			if err != nil {
 				return nil, err
@@ -37,6 +45,16 @@ func (m *Module) Plan(_ context.Context) ([]engine.Change, error) {
 				changes = append(changes, *c)
 			}
 		}
+	}
+	for _, dst := range m.Installer.State.Keys() {
+		if wanted[dst] {
+			continue
+		}
+		c, err := m.Installer.PlanRemove(dst)
+		if err != nil {
+			return nil, err
+		}
+		changes = append(changes, *c)
 	}
 	return changes, nil
 }
