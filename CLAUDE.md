@@ -45,7 +45,7 @@ Each apply is appended to `~/.local/state/eac/history.jsonl` (time, commit, chan
 | Dotfile | put under `dotfiles/`, add to `files` in `eac.yaml` (a dir src copies every file) |
 | Config an app must write itself | `links` in `eac.yaml` (plain symlink, unprotected) |
 | Dotfile needing `$HOME`/vars, or must be a real file | `templates` in `eac.yaml` (Go `text/template`: `.Home`, `.Vars.x`) |
-| macOS setting | `defaults` in `eac.yaml` (YAML type picks `-bool/-int/-float/-string`) |
+| macOS setting | `defaults` in `eac.yaml` (YAML type picks `-bool/-int/-float/-string`; `currentHost: true` for ByHost prefs) |
 | One-off setup step | `commands` in `eac.yaml` (`run` executes only while `check` fails; both run in `$HOME`, `check` times out after 30s) |
 
 Find a macOS preference key: `defaults read > a`, toggle in System Settings, `defaults read > b`, `diff a b`.

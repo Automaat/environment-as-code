@@ -20,14 +20,19 @@ func TestRealDefaults(t *testing.T) {
 	if _, err := exec.LookPath("defaults"); err != nil {
 		t.Skip("defaults CLI not available")
 	}
-	_ = exec.Command("defaults", "delete", domain).Run()
-	t.Cleanup(func() { _ = exec.Command("defaults", "delete", domain).Run() })
+	cleanup := func() {
+		_ = exec.Command("defaults", "delete", domain).Run()
+		_ = exec.Command("defaults", "-currentHost", "delete", domain).Run()
+	}
+	cleanup()
+	t.Cleanup(cleanup)
 
 	m := &Module{Runner: runner.NewExec(), Defaults: []config.Default{
 		{Domain: domain, Key: "b", Value: true},
 		{Domain: domain, Key: "i", Value: 15},
 		{Domain: domain, Key: "f", Value: 0.25},
 		{Domain: domain, Key: "s", Value: "~/Documents/screenshots"},
+		{Domain: domain, Key: "h", Value: 1, CurrentHost: true},
 	}}
 	ctx := context.Background()
 
@@ -35,7 +40,7 @@ func TestRealDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(changes) != 4 {
+	if len(changes) != 5 {
 		t.Fatalf("fresh domain: %v", changes)
 	}
 	if err := engine.Apply(ctx, func(string) {}, engine.Plan{{Changes: changes}}); err != nil {
@@ -43,6 +48,13 @@ func TestRealDefaults(t *testing.T) {
 	}
 	if again, err := m.Plan(ctx); err != nil || len(again) != 0 {
 		t.Fatalf("not idempotent: %v, %v", again, err)
+	}
+
+	if out, err := exec.Command("defaults", "-currentHost", "read", domain, "h").Output(); err != nil || string(out) != "1\n" {
+		t.Errorf("currentHost value not in ByHost prefs: %q, %v", out, err)
+	}
+	if err := exec.Command("defaults", "read", domain, "h").Run(); err == nil {
+		t.Error("currentHost value leaked into the any-host domain")
 	}
 
 	if err := exec.Command("defaults", "write", domain, "i", "-string", "15").Run(); err != nil {

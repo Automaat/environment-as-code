@@ -79,11 +79,13 @@ type Mise struct {
 // Default is one `defaults write` entry. The value's YAML type selects the
 // defaults type (bool, int, float, string). Restart names a process to
 // killall after the value changes; empty uses the built-in domain mapping.
+// CurrentHost targets the per-host (ByHost) preferences.
 type Default struct {
-	Domain  string `yaml:"domain"`
-	Key     string `yaml:"key"`
-	Value   any    `yaml:"value"`
-	Restart string `yaml:"restart"`
+	Domain      string `yaml:"domain"`
+	Key         string `yaml:"key"`
+	Value       any    `yaml:"value"`
+	Restart     string `yaml:"restart"`
+	CurrentHost bool   `yaml:"currentHost"`
 }
 
 type System struct {
