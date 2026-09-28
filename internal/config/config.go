@@ -109,8 +109,9 @@ type Command struct {
 	Run   string `yaml:"run"`
 }
 
-// Load reads and validates the config at path.
-func Load(path string) (*Config, error) {
+// Load reads and validates the config at path; home expands "~" in
+// destinations.
+func Load(path, home string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -126,7 +127,7 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 	c.Root = root
-	if err := c.Validate(); err != nil {
+	if err := c.Validate(home); err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
 	return &c, nil
@@ -158,14 +159,25 @@ func Find(dir string) (string, error) {
 }
 
 // Validate reports every structural problem at once.
-func (c *Config) Validate() error {
+func (c *Config) Validate(home string) error {
 	var errs []error
-	seen := map[string]bool{}
-	claim := func(dst, what string) {
-		if seen[dst] {
-			errs = append(errs, fmt.Errorf("%s: destination %q is managed twice", what, dst))
+	paths := Paths{Home: home, Root: c.Root}
+	var claimed []claim
+	claimDst := func(dst, what string) {
+		if dst == "" {
+			return
 		}
-		seen[dst] = true
+		if err := checkDst(paths, dst); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", what, err))
+			return
+		}
+		cl := claim{what: what, dst: dst, key: strings.ToLower(filepath.Clean(paths.Dst(dst)))}
+		for _, other := range claimed {
+			if overlaps(cl.key, other.key) {
+				errs = append(errs, fmt.Errorf("%s: destination %q overlaps %s %q", what, dst, other.what, other.dst))
+			}
+		}
+		claimed = append(claimed, cl)
 	}
 	for _, section := range []struct {
 		name    string
@@ -175,14 +187,17 @@ func (c *Config) Validate() error {
 			if l.Src == "" || l.Dst == "" {
 				errs = append(errs, fmt.Errorf("%s[%d]: src and dst are required", section.name, i))
 			}
-			claim(l.Dst, fmt.Sprintf("%s[%d]", section.name, i))
+			claimDst(l.Dst, fmt.Sprintf("%s[%d]", section.name, i))
 		}
 	}
 	for i, t := range c.Templates.Files {
 		if t.Src == "" || t.Dst == "" {
 			errs = append(errs, fmt.Errorf("templates.files[%d]: src and dst are required", i))
 		}
-		claim(t.Dst, fmt.Sprintf("templates.files[%d]", i))
+		claimDst(t.Dst, fmt.Sprintf("templates.files[%d]", i))
+		if t.Mode != 0 && (t.Mode&^0o777 != 0 || t.Mode&0o400 == 0) {
+			errs = append(errs, fmt.Errorf("templates.files[%d]: mode %s must be octal permissions readable by the owner, e.g. 0644", i, octal(t.Mode)))
+		}
 	}
 	if c.Brew != nil {
 		if c.Brew.File == "" {
@@ -197,9 +212,16 @@ func (c *Config) Validate() error {
 	if c.Mise != nil && c.Mise.Config == "" {
 		errs = append(errs, errors.New("mise.config is required"))
 	}
+	defaultsSeen := map[[2]string]int{}
 	for i, d := range c.Defaults {
 		if d.Domain == "" || d.Key == "" {
 			errs = append(errs, fmt.Errorf("defaults[%d]: domain and key are required", i))
+		}
+		key := [2]string{d.Domain, d.Key}
+		if first, dup := defaultsSeen[key]; dup {
+			errs = append(errs, fmt.Errorf("defaults[%d]: %s %s is already set by defaults[%d]", i, d.Domain, d.Key, first))
+		} else {
+			defaultsSeen[key] = i
 		}
 		switch d.Value.(type) {
 		case bool, int, float64, string:
@@ -210,10 +232,19 @@ func (c *Config) Validate() error {
 	for i, d := range c.System.Dirs {
 		if d.Path == "" {
 			errs = append(errs, fmt.Errorf("system.dirs[%d]: path is required", i))
+		} else if err := checkDst(paths, d.Path); err != nil {
+			errs = append(errs, fmt.Errorf("system.dirs[%d]: %w", i, err))
+		}
+		if d.Mode != 0 && (d.Mode&^0o777 != 0 || d.Mode&0o500 != 0o500) {
+			errs = append(errs, fmt.Errorf("system.dirs[%d]: mode %s must be octal permissions the owner can read and enter, e.g. 0700", i, octal(d.Mode)))
 		}
 	}
-	if k := c.System.SSHKey; k != nil && k.Path == "" {
-		errs = append(errs, errors.New("system.sshKey.path is required"))
+	if k := c.System.SSHKey; k != nil {
+		if k.Path == "" {
+			errs = append(errs, errors.New("system.sshKey.path is required"))
+		} else if err := checkDst(paths, k.Path); err != nil {
+			errs = append(errs, fmt.Errorf("system.sshKey: %w", err))
+		}
 	}
 	for i, cmd := range c.Commands {
 		if cmd.Name == "" || cmd.Check == "" || cmd.Run == "" {
@@ -221,6 +252,34 @@ func (c *Config) Validate() error {
 		}
 	}
 	return errors.Join(errs...)
+}
+
+type claim struct{ what, dst, key string }
+
+// overlaps compares case-folded paths, since APFS is case-insensitive by
+// default: two entries on one path, or one inside a directory the other
+// manages, would fight over the same files and backups.
+func overlaps(a, b string) bool {
+	sep := string(filepath.Separator)
+	return a == b || strings.HasPrefix(a, b+sep) || strings.HasPrefix(b, a+sep)
+}
+
+// checkDst requires a path that expands to an absolute one: "$VAR" is not
+// expanded, and a relative path would land wherever eac runs from.
+func checkDst(paths Paths, dst string) error {
+	if strings.Contains(dst, "$") {
+		return fmt.Errorf("path %q: environment variables are not expanded, use ~/", dst)
+	}
+	if !filepath.IsAbs(paths.Dst(dst)) {
+		return fmt.Errorf("path %q must be absolute or start with ~/", dst)
+	}
+	return nil
+}
+
+// octal shows a mode both ways: "mode: 644" without the leading 0 decodes as
+// decimal 644, i.e. octal 1204.
+func octal(m fs.FileMode) string {
+	return fmt.Sprintf("%d (octal %o)", uint32(m), uint32(m))
 }
 
 // Paths resolves user-facing paths: "~" against home, relative paths against

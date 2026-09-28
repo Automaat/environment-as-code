@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	udiff "github.com/aymanbagabas/go-udiff"
 
@@ -20,11 +19,13 @@ import (
 	"github.com/Automaat/environment-as-code/internal/engine"
 )
 
+// Installer writes protected copies. State is loaded from StatePath on first
+// use when not set, so a broken state file fails only the modules using it.
 type Installer struct {
 	Paths     config.Paths
 	State     *State
+	StatePath string
 	Immutable bool
-	Now       func() time.Time
 }
 
 // ReadOnly strips write bits, keeping read and execute bits of perm.
@@ -34,6 +35,12 @@ func ReadOnly(perm fs.FileMode) fs.FileMode {
 
 // Plan returns the change that makes dst a protected copy of want, or nil.
 func (in *Installer) Plan(dst string, want []byte, perm fs.FileMode) (*engine.Change, error) {
+	if err := in.loadState(); err != nil {
+		return nil, err
+	}
+	if err := CheckParents(in.Paths, dst); err != nil {
+		return nil, err
+	}
 	perm = ReadOnly(perm)
 	target := in.Paths.Pretty(dst)
 	change := func(a engine.Action, detail string, apply func(context.Context) error) *engine.Change {
@@ -43,7 +50,7 @@ func (in *Installer) Plan(dst string, want []byte, perm fs.FileMode) (*engine.Ch
 	info, err := os.Lstat(dst)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
-		c := change(engine.Create, "", in.install(dst, want, perm, ""))
+		c := change(engine.Create, "", in.install(dst, want, perm, false))
 		c.Diff = udiff.Unified("/dev/null", "repo", "", string(want))
 		return c, nil
 	case err != nil:
@@ -51,7 +58,7 @@ func (in *Installer) Plan(dst string, want []byte, perm fs.FileMode) (*engine.Ch
 	case info.IsDir():
 		return nil, fmt.Errorf("%s is a directory; move it away first", dst)
 	case info.Mode()&fs.ModeSymlink != 0:
-		c := change(engine.Update, "replace symlink", in.install(dst, want, perm, ""))
+		c := change(engine.Update, "replace symlink", in.install(dst, want, perm, false))
 		linked, _ := os.ReadFile(dst)
 		c.Diff = udiff.Unified(dst, "repo", string(linked), string(want))
 		return c, nil
@@ -81,14 +88,14 @@ func (in *Installer) Plan(dst string, want []byte, perm fs.FileMode) (*engine.Ch
 
 	recorded, known := in.State.Get(dst)
 	if known && recorded == Sum(have) {
-		return withDiff(change(engine.Update, "content", in.install(dst, want, perm, ""))), nil
+		return withDiff(change(engine.Update, "content", in.install(dst, want, perm, false))), nil
 	}
-	backup := BackupPath(dst, in.now())
 	why := "edited in place"
 	if !known {
 		why = "not managed yet"
 	}
-	return withDiff(change(engine.Update, fmt.Sprintf("%s, back up to %s", why, filepath.Base(backup)), in.install(dst, want, perm, backup))), nil
+	detail := fmt.Sprintf("%s, back up to %s", why, filepath.Base(BackupName(dst)))
+	return withDiff(change(engine.Update, detail, in.install(dst, want, perm, true))), nil
 }
 
 // PlanRemove handles a destination eac once wrote but no longer manages. A
@@ -96,6 +103,9 @@ func (in *Installer) Plan(dst string, want []byte, perm fs.FileMode) (*engine.Ch
 // anything that is no longer a regular file (e.g. now a link another module
 // owns) is only dropped from the state.
 func (in *Installer) PlanRemove(dst string) (*engine.Change, error) {
+	if err := in.loadState(); err != nil {
+		return nil, err
+	}
 	if !in.ownsPath(dst) {
 		return in.PlanForget(dst, "no longer managed, not under $HOME or reached through a symlinked directory, left in place"), nil
 	}
@@ -130,18 +140,11 @@ func (in *Installer) PlanRemove(dst string) (*engine.Change, error) {
 			},
 		}, nil
 	}
-	backup := BackupPath(dst, in.now())
 	return &engine.Change{
 		Action: engine.Remove, Target: target,
-		Detail: "no longer managed, edited: back up to " + filepath.Base(backup),
+		Detail: "no longer managed, edited: back up to " + filepath.Base(BackupName(dst)),
 		Apply: func(ctx context.Context) error {
-			if err := unlock(dst); err != nil {
-				return err
-			}
-			if err := os.Rename(dst, backup); err != nil {
-				return err
-			}
-			if err := os.Chmod(backup, 0o644); err != nil {
+			if _, err := Backup(dst); err != nil {
 				return err
 			}
 			return forget(ctx)
@@ -170,18 +173,15 @@ func (in *Installer) protectionDrift(dst string, have, want fs.FileMode) ([]stri
 	return reasons, nil
 }
 
-// install writes want to dst, first moving any existing file to backup when
-// one is given. The immutable flag is lifted only for the swap.
-func (in *Installer) install(dst string, want []byte, perm fs.FileMode, backup string) func(context.Context) error {
+// install writes want to dst, first moving any existing file aside when
+// backup is set. The immutable flag is lifted only for the swap.
+func (in *Installer) install(dst string, want []byte, perm fs.FileMode, backup bool) func(context.Context) error {
 	return func(context.Context) error {
 		if err := unlock(dst); err != nil {
 			return err
 		}
-		if backup != "" {
-			if err := os.Rename(dst, backup); err != nil {
-				return err
-			}
-			if err := os.Chmod(backup, 0o644); err != nil {
+		if backup {
+			if _, err := Backup(dst); err != nil {
 				return err
 			}
 		}
@@ -213,11 +213,24 @@ func (in *Installer) finish(dst string, want []byte) error {
 	return in.State.Record(dst, Sum(want))
 }
 
-func (in *Installer) now() time.Time {
-	if in.Now != nil {
-		return in.Now()
+func (in *Installer) loadState() error {
+	if in.State != nil {
+		return nil
 	}
-	return time.Now()
+	s, err := LoadState(in.StatePath)
+	if err != nil {
+		return fmt.Errorf("state %s: %w", in.StatePath, err)
+	}
+	in.State = s
+	return nil
+}
+
+// Tracked returns every destination the state records.
+func (in *Installer) Tracked() ([]string, error) {
+	if err := in.loadState(); err != nil {
+		return nil, err
+	}
+	return in.State.Keys(), nil
 }
 
 // unlock clears the immutable flag on an existing regular file so it can be
@@ -265,7 +278,7 @@ func (in *Installer) PlanForget(dst, detail string) *engine.Change {
 func (in *Installer) ownsPath(dst string) bool {
 	home := filepath.Clean(in.Paths.Home)
 	for dir := filepath.Dir(filepath.Clean(dst)); dir != home; dir = filepath.Dir(dir) {
-		if !strings.HasPrefix(dir, home+string(filepath.Separator)) {
+		if !within(dir, home) {
 			return false
 		}
 		info, err := os.Lstat(dir)
@@ -276,13 +289,75 @@ func (in *Installer) ownsPath(dst string) bool {
 	return true
 }
 
-// BackupPath picks a free backup name next to dst.
-func BackupPath(dst string, now time.Time) string {
-	p := dst + ".eac-bak"
-	if _, err := os.Lstat(p); errors.Is(err, fs.ErrNotExist) {
-		return p
+// CheckParents refuses a destination reached through a symlinked directory
+// under $HOME, or one resolving into the repo: writing through it would
+// change the link's target, e.g. repo sources after a directory moved from
+// links to files.
+func CheckParents(paths config.Paths, dst string) error {
+	home := filepath.Clean(paths.Home)
+	for dir := filepath.Dir(filepath.Clean(dst)); ; dir = filepath.Dir(dir) {
+		info, err := os.Lstat(dir)
+		if err == nil && info.Mode()&fs.ModeSymlink != 0 &&
+			(within(dir, home) || resolvesInto(dir, paths.Root)) {
+			return fmt.Errorf("parent %s of %s is a symlink; remove it", paths.Pretty(dir), paths.Pretty(dst))
+		}
+		if filepath.Dir(dir) == dir {
+			return nil
+		}
 	}
-	return fmt.Sprintf("%s.%d", p, now.Unix())
+}
+
+func within(path, dir string) bool {
+	return strings.HasPrefix(path, dir+string(filepath.Separator))
+}
+
+func resolvesInto(link, root string) bool {
+	if root == "" {
+		return false
+	}
+	resolved, err := filepath.EvalSymlinks(link)
+	root = filepath.Clean(root)
+	return err == nil && (resolved == root || within(resolved, root))
+}
+
+func backupName(path string, n int) string {
+	if n == 0 {
+		return path + ".eac-bak"
+	}
+	return fmt.Sprintf("%s.eac-bak.%d", path, n)
+}
+
+// BackupName is the name Backup would pick right now, for plan output.
+func BackupName(path string) string {
+	for n := 0; ; n++ {
+		name := backupName(path, n)
+		if _, err := os.Lstat(name); errors.Is(err, fs.ErrNotExist) {
+			return name
+		}
+	}
+}
+
+// Backup moves path to the first free <path>.eac-bak[.N] and makes the copy
+// writable. The name is taken at apply time with a hard link, which fails
+// instead of overwriting, so no earlier backup is ever clobbered.
+func Backup(path string) (string, error) {
+	if err := unlock(path); err != nil {
+		return "", err
+	}
+	for n := 0; ; n++ {
+		name := backupName(path, n)
+		err := os.Link(path, name)
+		if errors.Is(err, fs.ErrExist) {
+			continue
+		}
+		if err != nil {
+			return "", err
+		}
+		if err := os.Remove(path); err != nil {
+			return "", err
+		}
+		return name, os.Chmod(name, 0o644)
+	}
 }
 
 // writeAtomic replaces dst via rename so a failed write never leaves a
@@ -301,11 +376,25 @@ func writeAtomic(dst string, data []byte, perm fs.FileMode) (err error) {
 		}
 	}()
 	_, err = tmp.Write(data)
+	if err == nil {
+		err = tmp.Sync()
+	}
 	if err = errors.Join(err, tmp.Close()); err != nil {
 		return err
 	}
 	if err = os.Chmod(tmp.Name(), perm); err != nil {
 		return err
 	}
-	return os.Rename(tmp.Name(), dst)
+	if err = os.Rename(tmp.Name(), dst); err != nil {
+		return err
+	}
+	return syncDir(filepath.Dir(dst))
+}
+
+func syncDir(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	return errors.Join(d.Sync(), d.Close())
 }
