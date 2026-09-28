@@ -31,7 +31,7 @@ mise run test:integration     # + real `defaults` round-trip (macOS only)
 mise run lint
 ```
 
-Exit codes: 0 ok, 1 error, 2 drift (`check`), 64 usage. A module that fails to plan is reported and skipped; the others still apply, and the run exits 1.
+Exit codes: 0 ok, 1 error, 2 drift (`check`), 64 usage, 130 interrupted. A module that fails to plan is reported and skipped; the others still apply, and the run exits 1.
 
 Each apply is appended to `~/.local/state/eac/history.jsonl` (time, commit, changes, error). Applying from a dirty checkout, a branch other than `main`, or behind upstream prints a warning.
 
@@ -75,9 +75,10 @@ system → files → links → templates → brew → mise → commands → defa
 
 ## Rules
 
-- `plan`/`check` must never change the system; brew calls set `HOMEBREW_NO_AUTO_UPDATE=1`.
+- `plan`/`check` must never change the system; every brew call (apply too) sets `HOMEBREW_NO_AUTO_UPDATE=1`, so only `eac upgrade` refreshes Homebrew.
 - Replaced files that eac didn't write (or that were edited) are backed up to `<file>.eac-bak`, never deleted.
 - `brew.cleanup: zap` removes anything not in the Brewfile: read the `-` lines of `plan` before `apply`.
+- Every third-party `tap` in the Brewfile needs `trusted: true`: `brew bundle cleanup --force` resets Homebrew's trust store to the Brewfile, so trust granted elsewhere is lost (plan fails otherwise).
 - `mise.prune: true` removes installed tool versions no mise config on the machine references (other projects' configs count, so their tools stay).
 - The mise module runs mise from `/`: from `$HOME`, mise treats `~/.config/mise/config.toml` as a project config that outranks the repo file, hiding bumped pins until after `apply`.
 - Renovate bumps `dotfiles/mise/config.toml`, `go.mod`, `mise.toml`, GitHub Actions; CI job `e2e on a fresh Mac` applies the config to a clean macOS runner to gate them.
