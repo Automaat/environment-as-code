@@ -69,8 +69,11 @@ const (
 	CleanupZap       = "zap"
 )
 
+// Mise points at the global mise config. Prune removes installed versions no
+// mise config on the machine references anymore, like brew's zap cleanup.
 type Mise struct {
 	Config string `yaml:"config"`
+	Prune  bool   `yaml:"prune"`
 }
 
 // Default is one `defaults write` entry. The value's YAML type selects the
