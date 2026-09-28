@@ -9,10 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
-	"regexp"
-	"sort"
-	"strings"
+	"slices"
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
@@ -63,27 +62,14 @@ func (m *Module) Plan(ctx context.Context) ([]engine.Change, error) {
 }
 
 func (m *Module) planInstall(ctx context.Context) ([]engine.Change, error) {
-	out, err := runner.Output(ctx, m.Runner, m.cmd("ls", "--global", "--missing", "--json"))
+	tools, err := m.ls(ctx, "--global", "--missing")
 	if err != nil {
 		return nil, err
 	}
-	var tools map[string][]tool
-	if err := json.Unmarshal([]byte(out), &tools); err != nil {
-		return nil, fmt.Errorf("mise ls: %w", err)
-	}
-
-	names := make([]string, 0, len(tools))
-	for name := range tools {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-
 	var changes []engine.Change
-	for _, name := range names {
-		for _, t := range tools[name] {
-			if !t.Installed {
-				changes = append(changes, engine.Change{Action: engine.Create, Target: name + "@" + t.Version})
-			}
+	for _, t := range tools {
+		if !t.Installed {
+			changes = append(changes, engine.Change{Action: engine.Create, Target: t.Name + "@" + t.Version})
 		}
 	}
 	if len(changes) == 0 {
@@ -97,17 +83,28 @@ func (m *Module) planInstall(ctx context.Context) ([]engine.Change, error) {
 	}), nil
 }
 
-var prunableLine = regexp.MustCompile(`^(?:mise\s+)?(\S+@\S+) is prunable`)
+type namedTool struct {
+	tool
+	Name string
+}
 
-// ParsePrunable extracts tool@version entries from `mise prune --dry-run`.
-func ParsePrunable(out string) []string {
-	var res []string
-	for line := range strings.Lines(out) {
-		if g := prunableLine.FindStringSubmatch(strings.TrimSpace(line)); g != nil {
-			res = append(res, g[1])
+// ls returns the tool versions `mise ls` lists, sorted by name.
+func (m *Module) ls(ctx context.Context, flags ...string) ([]namedTool, error) {
+	out, err := runner.Output(ctx, m.Runner, m.cmd(append(append([]string{"ls"}, flags...), "--json")...))
+	if err != nil {
+		return nil, err
+	}
+	var tools map[string][]tool
+	if err := json.Unmarshal([]byte(out), &tools); err != nil {
+		return nil, fmt.Errorf("mise ls: %w", err)
+	}
+	var res []namedTool
+	for _, name := range slices.Sorted(maps.Keys(tools)) {
+		for _, t := range tools[name] {
+			res = append(res, namedTool{tool: t, Name: name})
 		}
 	}
-	return res
+	return res, nil
 }
 
 // planPrune asks mise what it would prune now, but mise also counts the
@@ -116,15 +113,10 @@ func ParsePrunable(out string) []string {
 // copy is stale, prune is scheduled anyway: at apply time it runs after the
 // new config is in place and removes the superseded versions in one pass.
 func (m *Module) planPrune(ctx context.Context, installing bool) ([]engine.Change, error) {
-	dryRun := m.cmd("prune", "--dry-run")
-	res, err := m.Runner.Run(ctx, dryRun)
+	prunable, err := m.ls(ctx, "--prunable")
 	if err != nil {
 		return nil, err
 	}
-	if err := res.Err(dryRun); err != nil {
-		return nil, err
-	}
-	prunable := ParsePrunable(res.Stdout + res.Stderr)
 	stale, err := m.installedConfigStale()
 	if err != nil {
 		return nil, err
@@ -133,12 +125,16 @@ func (m *Module) planPrune(ctx context.Context, installing bool) ([]engine.Chang
 		return nil, nil
 	}
 	var changes []engine.Change
-	for _, p := range prunable {
-		changes = append(changes, engine.Change{Action: engine.Remove, Target: p})
+	for _, t := range prunable {
+		changes = append(changes, engine.Change{Action: engine.Remove, Target: t.Name + "@" + t.Version})
 	}
 	detail := ""
-	if len(prunable) == 0 {
+	switch {
+	case !installing && !stale:
+	case len(prunable) == 0:
 		detail = "versions superseded by the config update"
+	default:
+		detail = "and versions superseded by the config update"
 	}
 	prune := m.cmd("prune", "--yes")
 	prune.Stream = true

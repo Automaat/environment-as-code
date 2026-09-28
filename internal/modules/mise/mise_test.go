@@ -108,29 +108,16 @@ func TestPlanErrors(t *testing.T) {
 	}
 }
 
-const pruneDryRun = `mise github:can1357/oh-my-pi@18.3.4 is prunable: github:can1357/oh-my-pi is required at 18.4.2 by ~/.config/mise/config.toml
-mise github:can1357/oh-my-pi@18.3.4 [dryrun]  uninstall
-mise github:can1357/oh-my-pi@18.3.4 [dryrun]  ✓ done
-mise pipx@1.17.6 is prunable: no tracked config or tool stub requires pipx
-mise pipx@1.17.6 [dryrun]  ✓ done
-`
-
-func TestParsePrunable(t *testing.T) {
-	got := ParsePrunable(pruneDryRun)
-	want := []string{"github:can1357/oh-my-pi@18.3.4", "pipx@1.17.6"}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
-	}
-	if got := ParsePrunable("mise all tools are installed\n"); got != nil {
-		t.Errorf("nothing prunable: %v", got)
-	}
-}
+const prunable = `{
+  "pipx": [{"version": "1.17.6", "installed": true, "active": false}],
+  "github:can1357/oh-my-pi": [{"version": "18.3.4", "installed": true, "active": false}]
+}`
 
 func TestPrune(t *testing.T) {
 	m, fake := newModule(t)
 	m.Mise.Prune = true
 	fake.OnOK("mise ls --global --missing --json", "{}")
-	fake.On("mise prune --dry-run", runner.Result{Stderr: pruneDryRun})
+	fake.OnOK("mise ls --prunable --json", prunable)
 	fake.OnOK("mise prune --yes", "")
 
 	changes, err := m.Plan(context.Background())
@@ -168,7 +155,7 @@ func TestPruneNothingToDo(t *testing.T) {
 	m, fake := newModule(t)
 	m.Mise.Prune = true
 	fake.OnOK("mise ls --global --missing --json", "{}")
-	fake.OnOK("mise prune --dry-run", "")
+	fake.OnOK("mise ls --prunable --json", "{}")
 	changes, err := m.Plan(context.Background())
 	if err != nil || len(changes) != 0 {
 		t.Errorf("changes = %v, err = %v", changes, err)
@@ -179,7 +166,7 @@ func TestPruneScheduledWhenInstalling(t *testing.T) {
 	m, fake := newModule(t)
 	m.Mise.Prune = true
 	fake.OnOK("mise ls --global --missing --json", `{"jq":[{"version":"1.8.3","installed":false}]}`)
-	fake.OnOK("mise prune --dry-run", "")
+	fake.OnOK("mise ls --prunable --json", "{}")
 	changes, err := m.Plan(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -187,6 +174,24 @@ func TestPruneScheduledWhenInstalling(t *testing.T) {
 	want := []string{"+ jq@1.8.3", "! mise install", "! mise prune"}
 	if got := targets(changes); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %v, want %v (prune must follow a bump in the same apply)", got, want)
+	}
+}
+
+func TestPruneReportsBothPrunableAndSuperseded(t *testing.T) {
+	m, fake := newModule(t)
+	m.Mise.Prune = true
+	fake.OnOK("mise ls --global --missing --json", `{"jq":[{"version":"1.8.3","installed":false}]}`)
+	fake.OnOK("mise ls --prunable --json", prunable)
+	changes, err := m.Plan(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"+ jq@1.8.3", "! mise install", "- github:can1357/oh-my-pi@18.3.4", "- pipx@1.17.6", "! mise prune"}
+	if got := targets(changes); !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	if changes[len(changes)-1].Detail == "" {
+		t.Error("prune must mention the versions the bump supersedes, not only those listed")
 	}
 }
 
@@ -207,7 +212,7 @@ func TestPruneScheduledWhenInstalledConfigStale(t *testing.T) {
 			m.Mise.Prune = true
 			setup(t, m)
 			fake.OnOK("mise ls --global --missing --json", "{}")
-			fake.OnOK("mise prune --dry-run", "")
+			fake.OnOK("mise ls --prunable --json", "{}")
 			changes, err := m.Plan(context.Background())
 			if err != nil {
 				t.Fatal(err)
