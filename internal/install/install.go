@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	udiff "github.com/aymanbagabas/go-udiff"
+
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
 )
@@ -41,37 +43,110 @@ func (in *Installer) Plan(dst string, want []byte, perm fs.FileMode) (*engine.Ch
 	info, err := os.Lstat(dst)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
-		return change(engine.Create, "", in.install(dst, want, perm, "")), nil
+		c := change(engine.Create, "", in.install(dst, want, perm, ""))
+		c.Diff = udiff.Unified("/dev/null", "repo", "", string(want))
+		return c, nil
 	case err != nil:
 		return nil, err
 	case info.IsDir():
 		return nil, fmt.Errorf("%s is a directory; move it away first", dst)
 	case info.Mode()&fs.ModeSymlink != 0:
-		return change(engine.Update, "replace symlink", in.install(dst, want, perm, "")), nil
+		c := change(engine.Update, "replace symlink", in.install(dst, want, perm, ""))
+		linked, _ := os.ReadFile(dst)
+		c.Diff = udiff.Unified(dst, "repo", string(linked), string(want))
+		return c, nil
 	}
 
 	have, err := os.ReadFile(dst)
 	if err != nil {
 		return nil, err
 	}
+	withDiff := func(c *engine.Change) *engine.Change {
+		c.Diff = udiff.Unified(dst, "repo", string(have), string(want))
+		return c
+	}
 	if bytes.Equal(have, want) {
 		reasons, err := in.protectionDrift(dst, info.Mode().Perm(), perm)
-		if err != nil || len(reasons) == 0 {
+		if err != nil {
 			return nil, err
+		}
+		if _, known := in.State.Get(dst); !known {
+			reasons = append(reasons, "already matches, start tracking")
+		}
+		if len(reasons) == 0 {
+			return nil, nil
 		}
 		return change(engine.Update, strings.Join(reasons, ", "), in.protect(dst, want, perm)), nil
 	}
 
 	recorded, known := in.State.Get(dst)
 	if known && recorded == Sum(have) {
-		return change(engine.Update, "content", in.install(dst, want, perm, "")), nil
+		return withDiff(change(engine.Update, "content", in.install(dst, want, perm, ""))), nil
 	}
 	backup := BackupPath(dst, in.now())
 	why := "edited in place"
 	if !known {
 		why = "not managed yet"
 	}
-	return change(engine.Update, fmt.Sprintf("%s, back up to %s", why, filepath.Base(backup)), in.install(dst, want, perm, backup)), nil
+	return withDiff(change(engine.Update, fmt.Sprintf("%s, back up to %s", why, filepath.Base(backup)), in.install(dst, want, perm, backup))), nil
+}
+
+// PlanRemove handles a destination eac once wrote but no longer manages. A
+// copy it still recognizes is deleted, an edited one is backed up first, and
+// anything that is no longer a regular file (e.g. now a link another module
+// owns) is only dropped from the state.
+func (in *Installer) PlanRemove(dst string) (*engine.Change, error) {
+	if !in.ownsPath(dst) {
+		return in.PlanForget(dst, "no longer managed, not under $HOME or reached through a symlinked directory, left in place"), nil
+	}
+	target := in.Paths.Pretty(dst)
+	forget := func(context.Context) error { return in.State.Forget(dst) }
+
+	info, err := os.Lstat(dst)
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+		return &engine.Change{Action: engine.Remove, Target: target, Detail: "already gone, forget", Apply: forget}, nil
+	case err != nil:
+		return nil, err
+	case !info.Mode().IsRegular():
+		return &engine.Change{Action: engine.Remove, Target: target, Detail: "no longer managed, left in place", Apply: forget}, nil
+	}
+
+	have, err := os.ReadFile(dst)
+	if err != nil {
+		return nil, err
+	}
+	if recorded, _ := in.State.Get(dst); recorded == Sum(have) {
+		return &engine.Change{
+			Action: engine.Remove, Target: target, Detail: "no longer managed",
+			Apply: func(ctx context.Context) error {
+				if err := unlock(dst); err != nil {
+					return err
+				}
+				if err := os.Remove(dst); err != nil {
+					return err
+				}
+				return forget(ctx)
+			},
+		}, nil
+	}
+	backup := BackupPath(dst, in.now())
+	return &engine.Change{
+		Action: engine.Remove, Target: target,
+		Detail: "no longer managed, edited: back up to " + filepath.Base(backup),
+		Apply: func(ctx context.Context) error {
+			if err := unlock(dst); err != nil {
+				return err
+			}
+			if err := os.Rename(dst, backup); err != nil {
+				return err
+			}
+			if err := os.Chmod(backup, 0o644); err != nil {
+				return err
+			}
+			return forget(ctx)
+		},
+	}, nil
 }
 
 func (in *Installer) protectionDrift(dst string, have, want fs.FileMode) ([]string, error) {
@@ -164,12 +239,41 @@ func unlock(path string) error {
 // Unlock clears the immutable flag on every file under root, for tests and for
 // tearing down a managed tree.
 func Unlock(root string) error {
+	if _, err := os.Lstat(root); errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
 	return filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
 		}
 		return unlock(path)
 	})
+}
+
+// PlanForget drops dst from the state without touching the file.
+func (in *Installer) PlanForget(dst, detail string) *engine.Change {
+	return &engine.Change{
+		Action: engine.Remove, Target: in.Paths.Pretty(dst), Detail: detail,
+		Apply: func(context.Context) error { return in.State.Forget(dst) },
+	}
+}
+
+// ownsPath reports whether dst is a path eac could have written itself:
+// under $HOME with no symlinked directory in between. A directory that moved
+// to links resolves into the repo, and deleting "through" it would remove
+// the repo's source file.
+func (in *Installer) ownsPath(dst string) bool {
+	home := filepath.Clean(in.Paths.Home)
+	for dir := filepath.Dir(filepath.Clean(dst)); dir != home; dir = filepath.Dir(dir) {
+		if !strings.HasPrefix(dir, home+string(filepath.Separator)) {
+			return false
+		}
+		info, err := os.Lstat(dir)
+		if err == nil && info.Mode()&fs.ModeSymlink != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 // BackupPath picks a free backup name next to dst.

@@ -17,13 +17,19 @@ type stubModule struct {
 func (s stubModule) Name() string                           { return s.name }
 func (s stubModule) Plan(context.Context) ([]Change, error) { return s.changes, s.err }
 
-func TestBuildStopsOnPlanError(t *testing.T) {
-	_, err := Build(context.Background(), []Module{
-		stubModule{name: "ok"},
+func TestBuildKeepsPlanningAfterAFailure(t *testing.T) {
+	plan := Build(context.Background(), []Module{
 		stubModule{name: "bad", err: errors.New("boom")},
+		stubModule{name: "ok", changes: []Change{{Action: Create, Target: "x"}}},
 	})
-	if err == nil || !strings.Contains(err.Error(), "plan bad: boom") {
-		t.Fatalf("err = %v", err)
+	if len(plan) != 2 || plan[1].Module != "ok" || len(plan[1].Changes) != 1 {
+		t.Fatalf("plan = %+v; a failing module must not stop the next one", plan)
+	}
+	if err := plan.Err(); err == nil || !strings.Contains(err.Error(), "plan bad: boom") {
+		t.Errorf("Err = %v", err)
+	}
+	if plan.Count() != 1 {
+		t.Errorf("Count = %d", plan.Count())
 	}
 }
 
@@ -62,14 +68,23 @@ func TestApply(t *testing.T) {
 }
 
 func TestPrint(t *testing.T) {
-	var out bytes.Buffer
-	err := Print(&out, Plan{
-		{Module: "links", Changes: []Change{{Action: Create, Target: "~/.zshrc", Detail: "→ x"}}},
+	plan := Plan{
+		{Module: "links", Changes: []Change{{Action: Create, Target: "~/.zshrc", Detail: "→ x", Diff: "-old\n+new\n"}}},
 		{Module: "brew"},
-	})
-	want := "links:\n  + ~/.zshrc (→ x)\nbrew: up to date\n"
-	if err != nil || out.String() != want {
-		t.Errorf("got:\n%s\nwant:\n%s", out.String(), want)
+		{Module: "mise", Err: errors.New("mise not found")},
+	}
+	tests := []struct {
+		diffs bool
+		want  string
+	}{
+		{false, "links:\n  + ~/.zshrc (→ x)\nbrew: up to date\nmise: plan failed: mise not found\n"},
+		{true, "links:\n  + ~/.zshrc (→ x)\n      -old\n      +new\nbrew: up to date\nmise: plan failed: mise not found\n"},
+	}
+	for _, tt := range tests {
+		var out bytes.Buffer
+		if err := Print(&out, plan, tt.diffs); err != nil || out.String() != tt.want {
+			t.Errorf("diffs=%v got:\n%s\nwant:\n%s", tt.diffs, out.String(), tt.want)
+		}
 	}
 }
 

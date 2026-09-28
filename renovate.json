@@ -7,13 +7,19 @@
     ":semanticCommitType(chore)",
     ":semanticCommitScope(deps)"
   ],
-  "labels": ["dependencies", "automerge"],
+  "labels": ["dependencies"],
   "reviewers": ["Automaat"],
-  "automerge": true,
+  "automerge": false,
   "automergeStrategy": "squash",
   "platformAutomerge": false,
   "postUpdateOptions": ["gomodTidy"],
   "packageRules": [
+    {
+      "description": "Non-major updates merge on their own once CI is green; the automerge label is what auto-merge.yml acts on.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "addLabels": ["automerge"]
+    },
     {
       "description": "Batch routine CLI tool bumps from the global mise config into one weekly PR, gated by the e2e CI job.",
       "matchManagers": ["mise"],
@@ -25,15 +31,13 @@
       "addLabels": ["mise"]
     },
     {
-      "description": "Major tool bumps can change CLI behavior; review them one at a time.",
-      "matchManagers": ["mise"],
-      "matchFileNames": ["dotfiles/mise/config.toml"],
+      "description": "Major bumps can change CLI or API behavior; review them one at a time.",
       "matchUpdateTypes": ["major"],
       "automerge": false,
-      "addLabels": ["mise", "major"]
+      "addLabels": ["major"]
     },
     {
-      "description": "Stay on Python 3.13, as the Nix setup did.",
+      "description": "Stay on Python 3.13.",
       "matchManagers": ["mise"],
       "matchDepNames": ["python"],
       "allowedVersions": "<3.14"

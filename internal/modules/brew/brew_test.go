@@ -103,7 +103,7 @@ func TestPlanInstallUpgradeAndZap(t *testing.T) {
 → Tap new/tap needs to be tapped.
 Satisfy missing dependencies with ` + "`brew bundle install`."})
 	fake.OnOK("brew outdated --json=v2", `{"formulae":[{"name":"cache-buster"},{"name":"not-in-brewfile"}],"casks":[{"name":"ghostty"}]}`)
-	fake.OnOK("brew bundle cleanup --file "+file, cleanupOut)
+	fake.On("brew bundle cleanup --file "+file, runner.Result{ExitCode: 1, Stdout: cleanupOut})
 	fake.OnOK("brew bundle install --file "+file, "")
 	fake.OnOK("brew bundle cleanup --force --file "+file+" --zap", "")
 
@@ -164,6 +164,18 @@ func TestCheckFailureWithoutMissingEntries(t *testing.T) {
 
 	_, err := m.Plan(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "invalid Brewfile") {
+		t.Errorf("err = %v", err)
+	}
+}
+
+func TestCleanupFailureWithoutListIsAnError(t *testing.T) {
+	m, fake, file := newModule(t, config.Brew{Cleanup: config.CleanupZap})
+	fake.OnOK("brew trust --json=v1", `{"taps":["automaat/tap"]}`)
+	fake.OnOK("brew bundle check --file "+file+" --verbose --no-upgrade", "")
+	fake.On("brew bundle cleanup --file "+file, runner.Result{ExitCode: 1, Stderr: "Error: No Brewfile found"})
+
+	_, err := m.Plan(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "No Brewfile found") {
 		t.Errorf("err = %v", err)
 	}
 }

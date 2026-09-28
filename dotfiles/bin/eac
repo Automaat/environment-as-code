@@ -7,5 +7,6 @@ if [ ! -f "$repo/eac.yaml" ]; then
     exit 1
 fi
 
-cd "$repo"
-exec mise exec -- go run ./cmd/eac -c "$repo/eac.yaml" "$@"
+bin="${XDG_CACHE_HOME:-$HOME/Library/Caches}/eac/eac"
+(cd "$repo" && mise exec -- go build -o "$bin" ./cmd/eac)
+exec "$bin" -c "$repo/eac.yaml" "$@"

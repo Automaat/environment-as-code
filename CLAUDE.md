@@ -21,16 +21,19 @@ Declarative macOS setup driven by `eac`, a small Go CLI that converges this Mac 
 ## Commands
 
 ```bash
-mise run plan                 # go run ./cmd/eac plan
-mise run apply                # plan, confirm, apply
-go run ./cmd/eac check        # exit 2 on drift
-go run ./cmd/eac plan --only brew,defaults
+eac plan [--diff]             # ~/.local/bin/eac wraps `go run ./cmd/eac` in the repo
+eac apply                     # plan, confirm, apply
+eac upgrade                   # brew update, then apply (casks and formulae pick up new versions)
+eac check                     # exit 2 on drift
+eac plan --only brew,defaults
 mise run test                 # unit + e2e (fake binaries, no system changes)
 mise run test:integration     # + real `defaults` round-trip (macOS only)
 mise run lint
 ```
 
-Exit codes: 0 ok, 1 error, 2 drift (`check`), 64 usage.
+Exit codes: 0 ok, 1 error, 2 drift (`check`), 64 usage. A module that fails to plan is reported and skipped; the others still apply, and the run exits 1.
+
+Each apply is appended to `~/.local/state/eac/history.jsonl` (time, commit, changes, error). Applying from a dirty checkout, a branch other than `main`, or behind upstream prints a warning.
 
 ## Where things go
 
@@ -55,6 +58,7 @@ eac records the hash of each file it writes. On `plan`/`check`:
 - repo changed → `~ … (content)`, overwritten
 - installed copy edited anyway → `~ … (edited in place, back up to X.eac-bak)`
 - protection removed → `~ … (mode 644 → 444)` / `(set immutable)`
+- file dropped from `files`/`templates` (or from a dir source) → `- … (no longer managed)`, deleted; backed up first if it was edited
 
 To hand-edit an installed file for a quick experiment: `chflags nouchg F && chmod u+w F`; `eac check` flags it until you port the change to the repo.
 

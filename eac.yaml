@@ -24,6 +24,7 @@ files:
   - {src: dotfiles/hammerspoon/desk-charger-battery.lua, dst: ~/.hammerspoon/desk-charger-battery.lua}
   - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
   - {src: dotfiles/bin/eac, dst: ~/.local/bin/eac}
+  - {src: dotfiles/bin/eac-check-notify, dst: ~/.local/bin/eac-check-notify}
 
 # The work Mac's device management forces ~/.ssh/config back to 600 every
 # ~15 minutes, which would undo the files protection.
@@ -33,6 +34,7 @@ links:
 templates:
   files:
     - {src: dotfiles/k9s/config.yaml.tmpl, dst: ~/.config/k9s/config.yaml}
+    - {src: dotfiles/launchd/dev.eac.check.plist.tmpl, dst: ~/Library/LaunchAgents/dev.eac.check.plist}
 
 brew:
   file: Brewfile
@@ -61,6 +63,15 @@ commands:
   - name: gke-gcloud-auth-plugin
     check: test -x /opt/homebrew/share/google-cloud-sdk/bin/gke-gcloud-auth-plugin
     run: gcloud components install gke-gcloud-auth-plugin --quiet
+  - name: daily drift notification
+    check: >-
+      launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1 &&
+      cmp -s "$HOME/Library/LaunchAgents/dev.eac.check.plist" "$HOME/.local/state/eac/dev.eac.check.loaded.plist"
+    run: >-
+      launchctl bootout "gui/$(id -u)/dev.eac.check" 2> /dev/null;
+      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.eac.check.plist" &&
+      mkdir -p "$HOME/.local/state/eac" &&
+      cp -f "$HOME/Library/LaunchAgents/dev.eac.check.plist" "$HOME/.local/state/eac/dev.eac.check.loaded.plist"
 
 defaults:
   - {domain: com.apple.dock, key: autohide, value: true}

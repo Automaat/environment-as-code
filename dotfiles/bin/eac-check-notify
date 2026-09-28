@@ -1,0 +1,14 @@
+#!/bin/sh
+PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH
+
+status=0
+eac check > /dev/null 2>&1 || status=$?
+
+case $status in
+    0) exit 0 ;;
+    2) message="This Mac drifted from eac.yaml. Run: eac plan" ;;
+    *) message="eac check failed (exit $status). Run: eac check" ;;
+esac
+
+osascript -e "display notification \"$message\" with title \"eac\""

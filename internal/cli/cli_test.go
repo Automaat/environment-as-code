@@ -3,11 +3,14 @@ package cli
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/Automaat/environment-as-code/internal/runner"
 	"github.com/Automaat/environment-as-code/internal/runner/runnertest"
 )
 
@@ -143,5 +146,113 @@ func TestOutputFailureFailsTheRun(t *testing.T) {
 	env.Args, env.Stdin, env.Stdout, env.Stderr = []string{"plan"}, strings.NewReader(""), brokenWriter{}, &bytes.Buffer{}
 	if code := Main(context.Background(), env); code != ExitErr {
 		t.Errorf("exit %d, want %d when stdout is broken", code, ExitErr)
+	}
+}
+
+const linksAndBrew = linksOnly + "brew: {file: Brewfile}\n"
+
+func TestPlanFailureDoesNotBlockOtherModules(t *testing.T) {
+	env, home := setup(t, linksAndBrew)
+	if err := os.WriteFile(filepath.Join(env.Cwd, "Brewfile"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	r := invoke(env, "", "apply", "-y")
+	if r.code != ExitErr {
+		t.Errorf("exit %d, want %d", r.code, ExitErr)
+	}
+	if !strings.Contains(r.stdout, "brew: plan failed") || !strings.Contains(r.stderr, "plan brew") {
+		t.Errorf("stdout: %s\nstderr: %s", r.stdout, r.stderr)
+	}
+	if _, err := os.Lstat(filepath.Join(home, ".zshrc")); err != nil {
+		t.Errorf("links must still apply when brew fails to plan: %v", err)
+	}
+	if r := invoke(env, "", "check"); r.code != ExitErr {
+		t.Errorf("check with a planning failure: exit %d, want %d", r.code, ExitErr)
+	}
+	if r := invoke(env, "", "plan"); r.code != ExitErr {
+		t.Errorf("plan with a planning failure: exit %d, want %d", r.code, ExitErr)
+	}
+}
+
+func TestApplyRecordsHistory(t *testing.T) {
+	env, home := setup(t, linksOnly)
+	env.Now = func() time.Time { return time.Date(2026, 9, 28, 12, 0, 0, 0, time.UTC) }
+	if r := invoke(env, "", "apply", "-y"); r.code != ExitOK {
+		t.Fatalf("%+v", r)
+	}
+	data, err := os.ReadFile(HistoryPath(home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var entry historyEntry
+	if err := json.Unmarshal(bytes.TrimSpace(data), &entry); err != nil {
+		t.Fatalf("%v in %q", err, data)
+	}
+	if !entry.Time.Equal(env.Now()) || len(entry.Changes) != 1 || !strings.HasPrefix(entry.Changes[0], "links: + ~/.zshrc") {
+		t.Errorf("entry = %+v", entry)
+	}
+	if r := invoke(env, "", "apply", "-y"); r.code != ExitOK || !strings.Contains(r.stdout, "nothing to do") {
+		t.Fatalf("%+v", r)
+	}
+	if data2, _ := os.ReadFile(HistoryPath(home)); !bytes.Equal(data, data2) {
+		t.Error("a no-op apply must not add history")
+	}
+}
+
+func TestRepoWarnings(t *testing.T) {
+	root := "/repo"
+	fake := runnertest.New().
+		OnOK("git -C /repo status --porcelain", " M eac.yaml\n").
+		OnOK("git -C /repo rev-parse --abbrev-ref HEAD", "feat/x\n").
+		OnOK("git -C /repo rev-list --count HEAD..@{upstream}", "3\n")
+	got := strings.Join(repoWarnings(context.Background(), fake, root), "\n")
+	for _, want := range []string{"uncommitted changes", "branch feat/x", "3 commit(s) behind"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("warnings %q missing %q", got, want)
+		}
+	}
+
+	clean := runnertest.New().
+		OnOK("git -C /repo status --porcelain", "").
+		OnOK("git -C /repo rev-parse --abbrev-ref HEAD", "main\n").
+		OnOK("git -C /repo rev-list --count HEAD..@{upstream}", "0\n")
+	if w := repoWarnings(context.Background(), clean, root); len(w) != 0 {
+		t.Errorf("clean main: %v", w)
+	}
+	if w := repoWarnings(context.Background(), runnertest.New(), root); len(w) != 0 {
+		t.Errorf("not a git repo must not warn: %v", w)
+	}
+}
+
+func TestUpgradeRefreshesBrewFirst(t *testing.T) {
+	env, _ := setup(t, linksOnly)
+	if r := invoke(env, "", "upgrade", "-y"); r.code != ExitUsage || !strings.Contains(r.stderr, "needs a brew section") {
+		t.Errorf("upgrade without brew: %+v", r)
+	}
+
+	env, _ = setup(t, linksAndBrew)
+	if err := os.WriteFile(filepath.Join(env.Cwd, "Brewfile"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	fake := runnertest.New().On("brew update --quiet", runner.Result{ExitCode: 1, Stderr: "offline"})
+	env.Runner = fake
+	r := invoke(env, "", "upgrade", "-y")
+	if r.code != ExitErr || !strings.Contains(r.stderr, "offline") {
+		t.Errorf("failed refresh must stop the upgrade: %+v", r)
+	}
+	if lines := fake.Lines(); len(lines) != 1 || lines[0] != "brew update --quiet" {
+		t.Errorf("ran %v; nothing may run after a failed refresh", lines)
+	}
+}
+
+func TestPlanDiff(t *testing.T) {
+	env, _ := setup(t, "files: [{src: dotfiles/zshrc, dst: ~/.zshrc}]\n")
+	r := invoke(env, "", "plan", "--diff")
+	if r.code != ExitOK || !strings.Contains(r.stdout, "+export EDITOR=vim") {
+		t.Errorf("%+v", r)
+	}
+	if r := invoke(env, "", "plan"); strings.Contains(r.stdout, "+export") {
+		t.Errorf("diff shown without --diff: %s", r.stdout)
 	}
 }

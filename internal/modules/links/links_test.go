@@ -200,3 +200,21 @@ func TestTakesOverProtectedFile(t *testing.T) {
 		t.Errorf("backup = %q, %v", got, err)
 	}
 }
+
+func TestBackupToleratesFileRemovedBeforeApply(t *testing.T) {
+	f := newFixture(t)
+	f.write(t, f.dst(), "managed copy")
+	changes, err := f.mod.Plan(context.Background())
+	if err != nil || len(changes) != 1 {
+		t.Fatalf("changes = %v, %v", changes, err)
+	}
+	if err := os.Remove(f.dst()); err != nil {
+		t.Fatal(err)
+	}
+	if err := changes[0].Apply(context.Background()); err != nil {
+		t.Fatalf("apply after the file was removed by an earlier module: %v", err)
+	}
+	if target, err := os.Readlink(f.dst()); err != nil || target != f.src() {
+		t.Errorf("link = %q, %v", target, err)
+	}
+}

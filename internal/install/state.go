@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 // State remembers the hash of every file eac wrote, so a later plan can tell
@@ -51,11 +52,31 @@ func (s *State) Get(dst string) (string, bool) {
 // Record stores the hash for dst and persists the state.
 func (s *State) Record(dst, sum string) error {
 	s.Files[dst] = sum
+	return s.save()
+}
+
+func (s *State) save() error {
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return err
 	}
 	return writeAtomic(s.path, append(data, '\n'), 0o644)
+}
+
+// Forget drops dst from the state and persists it.
+func (s *State) Forget(dst string) error {
+	delete(s.Files, dst)
+	return s.save()
+}
+
+// Keys returns every recorded destination, sorted.
+func (s *State) Keys() []string {
+	keys := make([]string, 0, len(s.Files))
+	for k := range s.Files {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 // Sum hashes file content.

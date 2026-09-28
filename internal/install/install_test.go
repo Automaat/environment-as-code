@@ -2,6 +2,8 @@ package install
 
 import (
 	"context"
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -271,5 +273,147 @@ func TestLoadStateCorrupt(t *testing.T) {
 	mustWrite(t, p, "{nope")
 	if _, err := LoadState(p); err == nil {
 		t.Error("expected error for corrupt state")
+	}
+}
+
+func TestPlanRemove(t *testing.T) {
+	tests := []struct {
+		name       string
+		setup      func(t *testing.T, in *Installer, dst string)
+		wantDetail string
+		wantGone   bool
+		wantBackup string
+	}{
+		{
+			name:       "unchanged copy is deleted",
+			setup:      func(t *testing.T, in *Installer, dst string) { converge(t, in, dst, "v1", 0o644) },
+			wantDetail: "no longer managed",
+			wantGone:   true,
+		},
+		{
+			name: "edited copy is backed up",
+			setup: func(t *testing.T, in *Installer, dst string) {
+				converge(t, in, dst, "v1", 0o644)
+				edit(t, dst, "my edit")
+			},
+			wantDetail: "no longer managed, edited: back up to .zshrc.eac-bak",
+			wantGone:   true,
+			wantBackup: "my edit",
+		},
+		{
+			name: "file now owned elsewhere is left alone",
+			setup: func(t *testing.T, in *Installer, dst string) {
+				converge(t, in, dst, "v1", 0o644)
+				if err := unlock(dst); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Remove(dst); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink("/elsewhere", dst); err != nil {
+					t.Fatal(err)
+				}
+			},
+			wantDetail: "no longer managed, left in place",
+		},
+		{
+			name: "already deleted file is only forgotten",
+			setup: func(t *testing.T, in *Installer, dst string) {
+				converge(t, in, dst, "v1", 0o644)
+				if err := unlock(dst); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Remove(dst); err != nil {
+					t.Fatal(err)
+				}
+			},
+			wantDetail: "already gone, forget",
+			wantGone:   true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			in, home := newInstaller(t, true)
+			dst := filepath.Join(home, ".zshrc")
+			tt.setup(t, in, dst)
+
+			c, err := in.PlanRemove(dst)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if c.Action != engine.Remove || c.Detail != tt.wantDetail {
+				t.Fatalf("change = %s, want detail %q", c, tt.wantDetail)
+			}
+			if err := c.Apply(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			if _, ok := in.State.Get(dst); ok {
+				t.Error("state still records dst")
+			}
+			if reloaded, _ := LoadState(StatePath(home)); len(reloaded.Files) != 0 {
+				t.Errorf("forget not persisted: %v", reloaded.Files)
+			}
+			_, err = os.Lstat(dst)
+			if gone := errors.Is(err, fs.ErrNotExist); gone != tt.wantGone {
+				t.Errorf("gone = %v, want %v", gone, tt.wantGone)
+			}
+			if tt.wantBackup != "" {
+				if got, err := os.ReadFile(dst + ".eac-bak"); err != nil || string(got) != tt.wantBackup {
+					t.Errorf("backup = %q, %v", got, err)
+				}
+			}
+		})
+	}
+}
+
+func TestDiffs(t *testing.T) {
+	in, home := newInstaller(t, false)
+	dst := filepath.Join(home, "f")
+
+	c := plan(t, in, dst, "a\nb\n", 0o644)
+	if !strings.Contains(c.Diff, "+a") || !strings.Contains(c.Diff, "+b") {
+		t.Errorf("create diff = %q", c.Diff)
+	}
+	if err := c.Apply(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	c = plan(t, in, dst, "a\nc\n", 0o644)
+	if !strings.Contains(c.Diff, "-b") || !strings.Contains(c.Diff, "+c") || strings.Contains(c.Diff, "+a") {
+		t.Errorf("update diff = %q", c.Diff)
+	}
+}
+
+func TestTracksMatchingUntrackedFile(t *testing.T) {
+	in, home := newInstaller(t, false)
+	dst := filepath.Join(home, "f")
+	mustWrite(t, dst, "same")
+	if err := os.Chmod(dst, 0o444); err != nil {
+		t.Fatal(err)
+	}
+	c := converge(t, in, dst, "same", 0o644)
+	if c == nil || c.Detail != "already matches, start tracking" {
+		t.Fatalf("change = %v", c)
+	}
+	if sum, _ := in.State.Get(dst); sum != Sum([]byte("same")) {
+		t.Error("not recorded")
+	}
+}
+
+func TestPlanRemoveOutsideHome(t *testing.T) {
+	in, _ := newInstaller(t, false)
+	outside := filepath.Join(t.TempDir(), "f")
+	mustWrite(t, outside, "keep")
+	if err := in.State.Record(outside, Sum([]byte("keep"))); err != nil {
+		t.Fatal(err)
+	}
+	c, err := in.PlanRemove(outside)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Apply(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(outside); err != nil {
+		t.Errorf("file outside $HOME must never be deleted: %v", err)
 	}
 }

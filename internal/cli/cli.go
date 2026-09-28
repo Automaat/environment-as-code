@@ -11,6 +11,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
@@ -32,9 +33,10 @@ Usage:
   eac [flags] <command>
 
 Commands:
-  plan    show pending changes
-  apply   show pending changes, confirm, apply them
-  check   exit 2 when anything drifted (for CI/cron)
+  plan     show pending changes
+  apply    show pending changes, confirm, apply them
+  upgrade  refresh Homebrew's package list, then apply (picks up new brew versions)
+  check    exit 2 when anything drifted (for CI/cron)
 
 Flags:
 `
@@ -58,6 +60,14 @@ type Env struct {
 	Cwd     string
 	Runner  runner.Runner
 	PAMFile string
+	Now     func() time.Time
+}
+
+func (e Env) now() time.Time {
+	if e.Now != nil {
+		return e.Now()
+	}
+	return time.Now()
 }
 
 // Main runs eac and returns the process exit code.
@@ -81,12 +91,13 @@ func run(ctx context.Context, env Env, out, errOut *console) int {
 	cfgPath := fs.String("c", "", "path to eac.yaml (default: search upward from cwd, then $EAC_CONFIG)")
 	only := fs.String("only", "", "comma-separated modules to run (default: all)")
 	yes := fs.Bool("y", false, "apply without asking for confirmation")
+	diff := fs.Bool("diff", false, "show the content diff of every file change")
 	cmd, ok := parseArgs(fs, env.Args)
 	if !ok {
 		fs.Usage()
 		return ExitUsage
 	}
-	if !slices.Contains([]string{"plan", "apply", "check"}, cmd) {
+	if !slices.Contains([]string{"plan", "apply", "upgrade", "check"}, cmd) {
 		errOut.printf("unknown command %q\n", cmd)
 		fs.Usage()
 		return ExitUsage
@@ -108,34 +119,60 @@ func run(ctx context.Context, env Env, out, errOut *console) int {
 		return ExitUsage
 	}
 
-	plan, err := engine.Build(ctx, mods)
-	if err != nil {
-		errOut.fail(err)
+	if cmd == "upgrade" {
+		if cfg.Brew == nil {
+			errOut.print("eac: upgrade needs a brew section in eac.yaml\n")
+			return ExitUsage
+		}
+		refresh := runner.Cmd{Name: "brew", Args: []string{"update", "--quiet"}, Stream: true}
+		if err := runner.Check(ctx, env.Runner, refresh); err != nil {
+			errOut.fail(err)
+			return ExitErr
+		}
+	}
+
+	plan := engine.Build(ctx, mods)
+	if err := engine.Print(out, plan, *diff); err != nil {
 		return ExitErr
 	}
-	if err := engine.Print(out, plan); err != nil {
-		return ExitErr
-	}
+	planErr := plan.Err()
 
 	switch cmd {
 	case "plan":
+		if planErr != nil {
+			return ExitErr
+		}
 		return ExitOK
 	case "check":
-		if plan.Empty() {
+		switch {
+		case planErr != nil:
+			return ExitErr
+		case plan.Empty():
 			return ExitOK
 		}
 		return ExitDrift
 	}
 
 	if plan.Empty() {
+		if planErr != nil {
+			errOut.fail(planErr)
+			return ExitErr
+		}
 		out.print("nothing to do\n")
 		return ExitOK
+	}
+	for _, w := range repoWarnings(ctx, env.Runner, cfg.Root) {
+		errOut.print("eac: warning: " + w + "\n")
 	}
 	if !*yes && !confirm(env.Stdin, out, plan.Count()) {
 		out.print("aborted\n")
 		return ExitErr
 	}
-	if err := engine.Apply(ctx, func(s string) { out.print(s + "\n") }, plan); err != nil {
+	applyErr := engine.Apply(ctx, func(s string) { out.print(s + "\n") }, plan)
+	if err := recordHistory(ctx, env, cfg.Root, plan, errors.Join(planErr, applyErr)); err != nil {
+		errOut.print("eac: warning: history not recorded: " + err.Error() + "\n")
+	}
+	if err := errors.Join(planErr, applyErr); err != nil {
 		errOut.fail(err)
 		return ExitErr
 	}
@@ -212,7 +249,7 @@ func Modules(cfg *config.Config, env Env) ([]engine.Module, error) {
 	installer := &install.Installer{Paths: paths, State: state, Immutable: cfg.Protect.Immutable}
 	mods := []engine.Module{
 		&system.Module{System: cfg.System, Paths: paths, Runner: env.Runner, PAMFile: env.PAMFile},
-		&files.Module{Files: cfg.Files, Paths: paths, Installer: installer},
+		&files.Module{Files: cfg.Files, Keep: templateDsts(cfg, paths), Paths: paths, Installer: installer},
 		&links.Module{Links: cfg.Links, Paths: paths},
 		&templates.Module{Templates: cfg.Templates, Paths: paths, Installer: installer},
 	}
@@ -226,6 +263,14 @@ func Modules(cfg *config.Config, env Env) ([]engine.Module, error) {
 		&commands.Module{Commands: cfg.Commands, Runner: env.Runner},
 		&defaults.Module{Defaults: cfg.Defaults, Runner: env.Runner},
 	), nil
+}
+
+func templateDsts(cfg *config.Config, paths config.Paths) []string {
+	var dsts []string
+	for _, t := range cfg.Templates.Files {
+		dsts = append(dsts, paths.Dst(t.Dst))
+	}
+	return dsts
 }
 
 func selectModules(all []engine.Module, only string) ([]engine.Module, error) {

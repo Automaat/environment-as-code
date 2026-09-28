@@ -39,14 +39,22 @@ jobs:
         run: mise run test:integration
 
       - name: config resolves on a real Mac
-        run: go run ./cmd/eac plan --only system,files,templates,defaults
+        run: go run ./cmd/eac plan --only system,files,links,templates,commands,defaults
+
+      # The brew module parses undocumented `brew bundle` output. The runner
+      # ships formulae the Brewfile doesn't list, so a working cleanup parser
+      # must report some; an empty list means the format changed.
+      - name: brew output parsers work against real Homebrew
+        run: |
+          go run ./cmd/eac plan --only brew | tee "$RUNNER_TEMP/brew.plan"
+          grep -qE '^  - (brew|cask) ' "$RUNNER_TEMP/brew.plan"
 
   e2e:
     name: e2e on a fresh Mac
     # Converges a clean macOS runner with the real config, the closest thing
     # to a new machine. Casks are skipped: several need GUI approval (kexts,
     # pkg installers) that a runner can't give. Also gates Renovate bumps of
-    # the pinned tools, the way the nix build gated flake.lock.
+    # the pinned tools.
     runs-on: macos-latest
     timeout-minutes: 90
     env:

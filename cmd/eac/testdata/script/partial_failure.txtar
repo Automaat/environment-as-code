@@ -1,0 +1,23 @@
+chmod 755 bin/brew
+
+! eac apply -y
+stdout 'brew: plan failed'
+stderr 'plan brew'
+linkto home/.zshrc dotfiles/zshrc
+exists home/.local/state/eac/history.jsonl
+
+! eac check
+stdout 'links: up to date'
+
+-- eac.yaml --
+links:
+  - {src: dotfiles/zshrc, dst: ~/.zshrc}
+brew: {file: Brewfile}
+-- Brewfile --
+brew "jq"
+-- dotfiles/zshrc --
+export EDITOR=vim
+-- bin/brew --
+#!/bin/sh
+echo "Error: Homebrew is offline" >&2
+exit 1
