@@ -30,23 +30,23 @@ jobs:
         run: mise run test:integration
 
       - name: config resolves on a real Mac
-        run: go run ./cmd/eac plan --only system,links,templates,defaults
+        run: go run ./cmd/eac plan --only system,files,templates,defaults
 
-  tools:
-    name: install pinned tools
-    # Proves every Renovate bump in the mise config installs, the way the
-    # old nix build gated flake.lock bumps.
+  e2e:
+    name: e2e on a fresh Mac
+    # Converges a clean macOS runner with the real config, the closest thing
+    # to a new machine. Casks are skipped: several need GUI approval (kexts,
+    # pkg installers) that a runner can't give. Also gates Renovate bumps of
+    # the pinned tools, the way the nix build gated flake.lock.
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
-      MISE_GLOBAL_CONFIG_FILE: ${{ github.workspace }}/dotfiles/mise/config.toml
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MISE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-        with:
-          install: false
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -54,13 +54,23 @@ jobs:
           key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
           restore-keys: mise-tools-${{ runner.os }}-
 
-      - name: install
-        working-directory: ${{ runner.temp }}
-        run: mise install --yes
-
-      - name: every tool is installed
-        working-directory: ${{ runner.temp }}
+      - name: install formulae from the Brewfile
         run: |
-          missing=$(mise ls --global --missing --json)
-          echo "$missing"
-          test "$missing" = "{}"
+          grep -E '^(tap|brew) ' Brewfile > "$RUNNER_TEMP/Brewfile"
+          brew bundle install --file "$RUNNER_TEMP/Brewfile" --no-upgrade
+
+      - name: apply
+        run: go run ./cmd/eac apply -y --only system,files,templates,mise,defaults
+
+      - name: nothing left to change
+        run: go run ./cmd/eac check --only system,files,templates,mise,defaults
+
+      - name: dotfiles are protected
+        run: |
+          if echo x >> "$HOME/.zshrc"; then echo "$HOME/.zshrc is writable"; exit 1; fi
+          stat -f %Sf "$HOME/.zshrc" | grep -q uchg
+
+      - name: login shell starts cleanly with the pinned tools
+        run: |
+          zsh -il -c 'for t in kubectl gh jq starship k9s helm fzf direnv op; do command -v $t >/dev/null || { echo "missing $t"; exit 1; }; done' 2> "$RUNNER_TEMP/zsh.err"
+          if [ -s "$RUNNER_TEMP/zsh.err" ]; then cat "$RUNNER_TEMP/zsh.err"; exit 1; fi

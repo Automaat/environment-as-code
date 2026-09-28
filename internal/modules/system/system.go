@@ -99,6 +99,9 @@ func (m *Module) pamFile() string {
 
 func (m *Module) planTouchID() (*engine.Change, error) {
 	file := m.pamFile()
+	if info, err := os.Lstat(file); err == nil && info.Mode()&fs.ModeSymlink != 0 {
+		return m.replacePAMSymlink(file), nil
+	}
 	enabled, err := HasTouchID(file)
 	if err != nil {
 		return nil, err
@@ -111,6 +114,22 @@ func (m *Module) planTouchID() (*engine.Change, error) {
 		Action: engine.Update, Target: file, Detail: "enable Touch ID for sudo",
 		Apply: func(ctx context.Context) error { return runner.Check(ctx, m.Runner, cmd) },
 	}, nil
+}
+
+// replacePAMSymlink swaps a nix-darwin symlink (into /etc/static, i.e. the
+// Nix store) for a real file; writing through it breaks once Nix is gone.
+func (m *Module) replacePAMSymlink(file string) *engine.Change {
+	rm := runner.Cmd{Name: "sudo", Args: []string{"rm", "-f", file}}
+	write := runner.Cmd{Name: "sudo", Args: []string{"tee", file}, Stdin: pamTouchID + "\n"}
+	return &engine.Change{
+		Action: engine.Update, Target: file, Detail: "replace symlink with real file, enable Touch ID for sudo",
+		Apply: func(ctx context.Context) error {
+			if err := runner.Check(ctx, m.Runner, rm); err != nil {
+				return err
+			}
+			return runner.Check(ctx, m.Runner, write)
+		},
+	}
 }
 
 // HasTouchID reports whether an active (uncommented) pam_tid line exists.

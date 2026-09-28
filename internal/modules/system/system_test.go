@@ -125,3 +125,25 @@ func TestSSHKey(t *testing.T) {
 		t.Errorf("existing key must not be regenerated: %v", again)
 	}
 }
+
+func TestTouchIDReplacesNixSymlink(t *testing.T) {
+	dir := t.TempDir()
+	pam := filepath.Join(dir, "sudo_local")
+	if err := os.Symlink("/etc/static/pam.d/sudo_local", pam); err != nil {
+		t.Fatal(err)
+	}
+	fake := runnertest.New().OnOK("sudo rm -f "+pam, "").OnOK("sudo tee "+pam, "")
+	m := &Module{Runner: fake, PAMFile: pam, System: config.System{SudoTouchID: true}}
+
+	changes, err := m.Plan(context.Background())
+	if err != nil || len(changes) != 1 {
+		t.Fatalf("changes = %v, %v", changes, err)
+	}
+	applyAll(t, changes)
+	if got := fake.Lines(); len(got) != 2 || got[0] != "sudo rm -f "+pam || got[1] != "sudo tee "+pam {
+		t.Errorf("ran %v; must remove the symlink, then write a real file (no -a)", got)
+	}
+	if fake.Calls[1].Stdin != pamTouchID+"\n" {
+		t.Errorf("stdin = %q", fake.Calls[1].Stdin)
+	}
+}
