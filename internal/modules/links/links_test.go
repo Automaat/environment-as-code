@@ -10,6 +10,7 @@ import (
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
+	"github.com/Automaat/environment-as-code/internal/install"
 )
 
 type fixture struct {
@@ -171,5 +172,31 @@ func TestLinkDirectory(t *testing.T) {
 	got, err := os.ReadFile(filepath.Join(f.home, ".hammerspoon/init.lua"))
 	if err != nil || string(got) != "lua" {
 		t.Errorf("read through dir link = %q, %v", got, err)
+	}
+}
+
+func TestTakesOverProtectedFile(t *testing.T) {
+	f := newFixture(t)
+	t.Cleanup(func() { _ = install.Unlock(f.home) })
+	state, err := install.LoadState(install.StatePath(f.home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	in := &install.Installer{Paths: f.mod.Paths, State: state, Immutable: true}
+	c, err := in.Plan(f.dst(), []byte("locked copy"), 0o644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Apply(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+
+	converge(t, f.mod)
+
+	if target, err := os.Readlink(f.dst()); err != nil || target != f.src() {
+		t.Errorf("link = %q, %v", target, err)
+	}
+	if got, err := os.ReadFile(f.dst() + ".eac-bak"); err != nil || string(got) != "locked copy" {
+		t.Errorf("backup = %q, %v", got, err)
 	}
 }

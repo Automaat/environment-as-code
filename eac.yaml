@@ -11,7 +11,6 @@ files:
   - {src: dotfiles/vim/vimrc, dst: ~/.vimrc}
   - {src: dotfiles/gnupg/gpg.conf, dst: ~/.gnupg/gpg.conf}
   - {src: dotfiles/gnupg/gpg-agent.conf, dst: ~/.gnupg/gpg-agent.conf}
-  - {src: dotfiles/ssh/config, dst: ~/.ssh/config}
   - {src: dotfiles/mise/config.toml, dst: ~/.config/mise/config.toml}
   - {src: dotfiles/starship/starship.toml, dst: ~/.config/starship.toml}
   - {src: dotfiles/ghostty/config, dst: ~/.config/ghostty/config}
@@ -24,6 +23,12 @@ files:
   - {src: dotfiles/hammerspoon/zoom-smart-plug.lua, dst: ~/.hammerspoon/zoom-smart-plug.lua}
   - {src: dotfiles/hammerspoon/desk-charger-battery.lua, dst: ~/.hammerspoon/desk-charger-battery.lua}
   - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
+  - {src: dotfiles/bin/eac, dst: ~/.local/bin/eac}
+
+# The work Mac's device management forces ~/.ssh/config back to 600 every
+# ~15 minutes, which would undo the files protection.
+links:
+  - {src: dotfiles/ssh/config, dst: ~/.ssh/config}
 
 templates:
   files:

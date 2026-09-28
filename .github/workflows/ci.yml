@@ -102,8 +102,10 @@ jobs:
           path: ~/.local/share/mise/installs
           key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
 
-      - name: nothing left to change
-        run: go run ./cmd/eac check --only system,files,templates,mise,defaults
+      - name: nothing left to change, checked via the installed eac command
+        env:
+          EAC_REPO: ${{ github.workspace }}
+        run: ~/.local/bin/eac check --only system,files,templates,mise,defaults
 
       - name: dotfiles are protected
         run: |

@@ -82,6 +82,9 @@ func (m *Module) plan(src, dst string) (*engine.Change, error) {
 		Action: engine.Update, Target: target,
 		Detail: fmt.Sprintf("back up to %s, link → %s", filepath.Base(backup), m.Paths.Pretty(src)),
 		Apply: func(ctx context.Context) error {
+			if err := install.Unlock(dst); err != nil {
+				return err
+			}
 			if err := os.Rename(dst, backup); err != nil {
 				return err
 			}
