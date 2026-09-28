@@ -6,14 +6,15 @@ Declarative macOS setup driven by `eac`, a small Go CLI that converges this Mac 
 
 | Path | What |
 |---|---|
-| `eac.yaml` | what eac manages: links, templates, brew, mise, defaults, system, commands |
+| `eac.yaml` | what eac manages: files, links, templates, brew, mise, defaults, system, commands |
 | `Brewfile` | GUI apps (casks) + formulae mise can't install |
 | `dotfiles/mise/config.toml` | pinned CLI tools (global mise config; Renovate bumps it) |
-| `dotfiles/` | source files symlinked or rendered into `$HOME` |
+| `dotfiles/` | sources installed into `$HOME` as protected copies |
 | `cmd/eac/` | entrypoint + testscript e2e tests (`testdata/script/*.txtar`) |
 | `internal/cli/` | flag parsing, module wiring, exit codes |
 | `internal/engine/` | `Module` interface, plan/apply |
 | `internal/modules/<name>/` | one package per module |
+| `internal/install/` | protected-copy writer + hash state (`~/.local/state/eac/files.json`) |
 | `internal/runner/` | exec abstraction; `runnertest.Fake` for tests |
 | `mise.toml` | repo toolchain (go, golangci-lint) + tasks |
 
@@ -38,16 +39,28 @@ Exit codes: 0 ok, 1 error, 2 drift (`check`), 64 usage.
 | CLI tool | `dotfiles/mise/config.toml` (pin exact version; prefer aqua/github backends) |
 | CLI tool not in mise registry / needs system libs | `Brewfile` `brew` |
 | GUI app, font | `Brewfile` `cask` |
-| Dotfile | put under `dotfiles/`, add to `links` in `eac.yaml` |
+| Dotfile | put under `dotfiles/`, add to `files` in `eac.yaml` (a dir src copies every file) |
+| Config an app must write itself | `links` in `eac.yaml` (plain symlink, unprotected) |
 | Dotfile needing `$HOME`/vars, or must be a real file | `templates` in `eac.yaml` (Go `text/template`: `.Home`, `.Vars.x`) |
 | macOS setting | `defaults` in `eac.yaml` (YAML type picks `-bool/-int/-float/-string`) |
 | One-off setup step | `commands` in `eac.yaml` (`run` executes only while `check` fails) |
 
 Find a macOS preference key: `defaults read > a`, toggle in System Settings, `defaults read > b`, `diff a b`.
 
+## Protected dotfiles
+
+Like the Nix store, installed dotfiles can't be edited in place: `files` and `templates` write copies with write bits stripped, and `protect.immutable` adds the macOS `uchg` flag (blocks `:w!`, `chmod`, `rm`). To change one: edit it under `dotfiles/`, then `eac apply`.
+
+eac records the hash of each file it writes. On `plan`/`check`:
+- repo changed → `~ … (content)`, overwritten
+- installed copy edited anyway → `~ … (edited in place, back up to X.eac-bak)`
+- protection removed → `~ … (mode 644 → 444)` / `(set immutable)`
+
+To hand-edit an installed file for a quick experiment: `chflags nouchg F && chmod u+w F`; `eac check` flags it until you port the change to the repo.
+
 ## Module order
 
-system → links → templates → brew → mise → commands → defaults. Links put the mise config in place; brew installs mise; commands may need tools from either.
+system → files → links → templates → brew → mise → commands → defaults. Files put the mise config in place; brew installs mise; commands may need tools from either.
 
 ## Adding a module
 
@@ -59,7 +72,7 @@ system → links → templates → brew → mise → commands → defaults. Link
 ## Rules
 
 - `plan`/`check` must never change the system; brew calls set `HOMEBREW_NO_AUTO_UPDATE=1`.
-- Existing regular files are backed up to `<file>.eac-bak` before linking, never deleted.
+- Replaced files that eac didn't write (or that were edited) are backed up to `<file>.eac-bak`, never deleted.
 - `brew.cleanup: zap` removes anything not in the Brewfile: read the `-` lines of `plan` before `apply`.
 - Renovate bumps `dotfiles/mise/config.toml`, `go.mod`, `mise.toml`, GitHub Actions; CI job `install pinned tools` installs every pinned tool on macOS to gate them.
 - Claude/Codex/Copilot config is linked by `dotfiles/claude/link.sh`, not eac.

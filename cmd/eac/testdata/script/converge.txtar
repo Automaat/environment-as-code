@@ -27,9 +27,23 @@ cmpenv calls calls.golden
 
 eac check
 stdout 'links: up to date'
+stdout 'files: up to date'
 stdout 'defaults: up to date'
 
+! exec sh -c 'echo "[core] editor = nano" >> home/.config/git/config'
+
+chmod 644 home/.config/git/config
+exec sh -c 'echo "[core] editor = nano" >> home/.config/git/config'
+! eac check
+stdout 'edited in place, back up to config.eac-bak'
+eac apply -y
+cmp home/.config/git/config dotfiles/gitconfig
+grep 'editor = nano' home/.config/git/config.eac-bak
+eac check
+
 -- eac.yaml --
+files:
+  - {src: dotfiles/gitconfig, dst: ~/.config/git/config}
 links:
   - {src: dotfiles/zshrc, dst: ~/.zshrc}
 templates:
@@ -42,6 +56,9 @@ defaults:
   - {domain: com.apple.dock, key: autohide, value: true}
 system:
   sudoTouchID: true
+-- dotfiles/gitconfig --
+[user]
+	name = Test
 -- dotfiles/zshrc --
 export EDITOR=vim
 -- dotfiles/k9s.yaml.tmpl --
@@ -57,6 +74,8 @@ user edits
 -- plan.golden --
 system:
   ~ $WORK/sudo_local (enable Touch ID for sudo)
+files:
+  + ~/.config/git/config
 links:
   ~ ~/.zshrc (back up to .zshrc.eac-bak, link → $WORK/dotfiles/zshrc)
 templates:

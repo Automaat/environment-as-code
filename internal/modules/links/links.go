@@ -1,4 +1,5 @@
-// Package links symlinks repo files into the home directory.
+// Package links symlinks repo files into the home directory, for configs
+// that apps must be able to write. Everything else belongs in files.
 package links
 
 import (
@@ -12,6 +13,7 @@ import (
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
+	"github.com/Automaat/environment-as-code/internal/install"
 )
 
 type Module struct {
@@ -75,7 +77,7 @@ func (m *Module) plan(src, dst string) (*engine.Change, error) {
 	if info.IsDir() {
 		return nil, fmt.Errorf("%s is a directory; move it away before linking", dst)
 	}
-	backup := m.backupPath(dst)
+	backup := install.BackupPath(dst, m.now())
 	return &engine.Change{
 		Action: engine.Update, Target: target,
 		Detail: fmt.Sprintf("back up to %s, link → %s", filepath.Base(backup), m.Paths.Pretty(src)),
@@ -86,14 +88,6 @@ func (m *Module) plan(src, dst string) (*engine.Change, error) {
 			return symlink(src, dst)
 		},
 	}, nil
-}
-
-func (m *Module) backupPath(dst string) string {
-	p := dst + ".eac-bak"
-	if _, err := os.Lstat(p); errors.Is(err, fs.ErrNotExist) {
-		return p
-	}
-	return fmt.Sprintf("%s.%d", p, m.now().Unix())
 }
 
 func (m *Module) now() time.Time {

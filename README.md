@@ -4,7 +4,7 @@ My macOS setup as code. `eac` (Go, in this repo) converges the machine to `eac.y
 
 - **brew**: GUI apps and a few formulae from `Brewfile` (`brew bundle`, with zap cleanup)
 - **mise**: every other CLI tool, pinned in `dotfiles/mise/config.toml` and bumped by Renovate
-- **links / templates**: dotfiles symlinked or rendered into `$HOME`
+- **files / templates**: dotfiles installed as read-only, immutable copies (like the Nix store); **links** for the few configs apps must write
 - **defaults**: macOS preferences
 - **system**: Touch ID for sudo, directories, SSH key
 - **commands**: guarded one-off steps
@@ -25,7 +25,7 @@ mise run apply    # show plan, confirm, apply
 go run ./cmd/eac check   # exit 2 when the machine drifted
 ```
 
-Edit a dotfile under `dotfiles/` and it's live immediately (symlink). Add a tool to `dotfiles/mise/config.toml` or `Brewfile`, then `mise run apply`.
+Installed dotfiles are read-only. Edit them under `dotfiles/` (or add a tool to `dotfiles/mise/config.toml` / `Brewfile`), then `mise run apply`. `check` reports any file edited in place; `apply` backs it up before restoring the repo version.
 
 ## Development
 

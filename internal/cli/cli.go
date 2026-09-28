@@ -14,9 +14,11 @@ import (
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
+	"github.com/Automaat/environment-as-code/internal/install"
 	"github.com/Automaat/environment-as-code/internal/modules/brew"
 	"github.com/Automaat/environment-as-code/internal/modules/commands"
 	"github.com/Automaat/environment-as-code/internal/modules/defaults"
+	"github.com/Automaat/environment-as-code/internal/modules/files"
 	"github.com/Automaat/environment-as-code/internal/modules/links"
 	"github.com/Automaat/environment-as-code/internal/modules/mise"
 	"github.com/Automaat/environment-as-code/internal/modules/system"
@@ -95,7 +97,12 @@ func run(ctx context.Context, env Env, out, errOut *console) int {
 		errOut.fail(err)
 		return ExitErr
 	}
-	mods, err := selectModules(Modules(cfg, env), *only)
+	all, err := Modules(cfg, env)
+	if err != nil {
+		errOut.fail(err)
+		return ExitErr
+	}
+	mods, err := selectModules(all, *only)
 	if err != nil {
 		errOut.fail(err)
 		return ExitUsage
@@ -194,14 +201,20 @@ func loadConfig(flagPath, cwd string) (*config.Config, error) {
 }
 
 // Modules returns every configured module in apply order. Order matters:
-// links put the mise config in place, brew installs mise, and commands may
+// files put the mise config in place, brew installs mise, and commands may
 // need tools from either.
-func Modules(cfg *config.Config, env Env) []engine.Module {
+func Modules(cfg *config.Config, env Env) ([]engine.Module, error) {
 	paths := config.Paths{Home: env.Home, Root: cfg.Root}
+	state, err := install.LoadState(install.StatePath(env.Home))
+	if err != nil {
+		return nil, err
+	}
+	installer := &install.Installer{Paths: paths, State: state, Immutable: cfg.Protect.Immutable}
 	mods := []engine.Module{
 		&system.Module{System: cfg.System, Paths: paths, Runner: env.Runner, PAMFile: env.PAMFile},
+		&files.Module{Files: cfg.Files, Paths: paths, Installer: installer},
 		&links.Module{Links: cfg.Links, Paths: paths},
-		&templates.Module{Templates: cfg.Templates, Paths: paths},
+		&templates.Module{Templates: cfg.Templates, Paths: paths, Installer: installer},
 	}
 	if cfg.Brew != nil {
 		mods = append(mods, &brew.Module{Brew: *cfg.Brew, Paths: paths, Runner: env.Runner})
@@ -212,7 +225,7 @@ func Modules(cfg *config.Config, env Env) []engine.Module {
 	return append(mods,
 		&commands.Module{Commands: cfg.Commands, Runner: env.Runner},
 		&defaults.Module{Defaults: cfg.Defaults, Runner: env.Runner},
-	)
+	), nil
 }
 
 func selectModules(all []engine.Module, only string) ([]engine.Module, error) {

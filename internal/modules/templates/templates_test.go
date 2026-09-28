@@ -9,6 +9,7 @@ import (
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
+	"github.com/Automaat/environment-as-code/internal/install"
 )
 
 func setup(t *testing.T, tmpl string, mode os.FileMode) (*Module, string) {
@@ -24,6 +25,11 @@ func setup(t *testing.T, tmpl string, mode os.FileMode) (*Module, string) {
 		},
 		Paths: config.Paths{Home: home, Root: root},
 	}
+	state, err := install.LoadState(install.StatePath(home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.Installer = &install.Installer{Paths: m.Paths, State: state}
 	return m, filepath.Join(home, ".config/k9s/config.yaml")
 }
 
@@ -60,7 +66,7 @@ func TestRenderAndConverge(t *testing.T) {
 	if string(got) != want {
 		t.Errorf("rendered %q, want %q", got, want)
 	}
-	if info, _ := os.Stat(dst); info.Mode().Perm() != 0o600 {
+	if info, _ := os.Stat(dst); info.Mode().Perm() != 0o400 {
 		t.Errorf("mode = %o", info.Mode().Perm())
 	}
 	if again := plan(t, m); len(again) != 0 {
@@ -74,16 +80,19 @@ func TestDrift(t *testing.T) {
 		drift      func(t *testing.T, dst string)
 		wantDetail string
 	}{
-		{"content edited", func(t *testing.T, dst string) {
+		{"edited in place", func(t *testing.T, dst string) {
+			if err := os.Chmod(dst, 0o644); err != nil {
+				t.Fatal(err)
+			}
 			if err := os.WriteFile(dst, []byte("edited"), 0o644); err != nil {
 				t.Fatal(err)
 			}
-		}, "content"},
-		{"mode changed", func(t *testing.T, dst string) {
-			if err := os.Chmod(dst, 0o600); err != nil {
+		}, "edited in place"},
+		{"made writable", func(t *testing.T, dst string) {
+			if err := os.Chmod(dst, 0o644); err != nil {
 				t.Fatal(err)
 			}
-		}, "mode 600 → 644"},
+		}, "mode 644 → 444"},
 		{"home-manager symlink", func(t *testing.T, dst string) {
 			if err := os.Remove(dst); err != nil {
 				t.Fatal(err)

@@ -17,6 +17,8 @@ import (
 const FileName = "eac.yaml"
 
 type Config struct {
+	Protect   Protect   `yaml:"protect"`
+	Files     []Link    `yaml:"files"`
 	Links     []Link    `yaml:"links"`
 	Templates Templates `yaml:"templates"`
 	Brew      *Brew     `yaml:"brew"`
@@ -29,6 +31,16 @@ type Config struct {
 	Root string `yaml:"-"`
 }
 
+// Protect controls how files and templates are locked down. Write bits are
+// always stripped; Immutable also sets the macOS uchg flag, so even the owner
+// can't edit or delete them without `chflags nouchg`.
+type Protect struct {
+	Immutable bool `yaml:"immutable"`
+}
+
+// Link maps a repo source to a home destination. Under `files` it is a
+// protected copy (directories are copied file by file); under `links` it is
+// a symlink, for configs that apps must be able to write.
 type Link struct {
 	Src string `yaml:"src"`
 	Dst string `yaml:"dst"`
@@ -152,11 +164,16 @@ func (c *Config) Validate() error {
 		}
 		seen[dst] = true
 	}
-	for i, l := range c.Links {
-		if l.Src == "" || l.Dst == "" {
-			errs = append(errs, fmt.Errorf("links[%d]: src and dst are required", i))
+	for _, section := range []struct {
+		name    string
+		entries []Link
+	}{{"files", c.Files}, {"links", c.Links}} {
+		for i, l := range section.entries {
+			if l.Src == "" || l.Dst == "" {
+				errs = append(errs, fmt.Errorf("%s[%d]: src and dst are required", section.name, i))
+			}
+			claim(l.Dst, fmt.Sprintf("%s[%d]", section.name, i))
 		}
-		claim(l.Dst, fmt.Sprintf("links[%d]", i))
 	}
 	for i, t := range c.Templates.Files {
 		if t.Src == "" || t.Dst == "" {

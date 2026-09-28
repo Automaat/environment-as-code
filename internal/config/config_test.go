@@ -18,6 +18,9 @@ func writeConfig(t *testing.T, body string) string {
 
 func TestLoad(t *testing.T) {
 	p := writeConfig(t, `
+protect: {immutable: true}
+files:
+  - {src: dotfiles/git/config, dst: ~/.config/git/config}
 links:
   - {src: dotfiles/zsh/.zshrc, dst: ~/.zshrc}
 templates:
@@ -44,6 +47,9 @@ commands:
 	}
 	if want, _ := filepath.EvalSymlinks(filepath.Dir(p)); c.Root != want {
 		t.Errorf("Root = %q, want %q", c.Root, want)
+	}
+	if !c.Protect.Immutable || len(c.Files) != 1 {
+		t.Errorf("protect/files not loaded: %+v %+v", c.Protect, c.Files)
 	}
 	if got := c.Templates.Files[0].Mode; got != 0o600 {
 		t.Errorf("template mode = %o, want 600", got)
@@ -88,6 +94,10 @@ func TestLoadRejects(t *testing.T) {
 		{"duplicate destination", `
 links: [{src: a, dst: ~/x}]
 templates: {files: [{src: b, dst: ~/x}]}`, []string{`destination "~/x" is managed twice`}},
+		{"duplicate across files and links", `
+files: [{src: a, dst: ~/x}]
+links: [{src: b, dst: ~/x}]`, []string{`destination "~/x" is managed twice`}},
+		{"missing file fields", "files: [{dst: ~/x}]", []string{"files[0]: src and dst are required"}},
 		{"bad cleanup", "brew: {file: B, cleanup: nuke}", []string{`brew.cleanup: "nuke"`}},
 		{"brew without file", "brew: {upgrade: true}", []string{"brew.file is required"}},
 		{"unsupported default", "defaults: [{domain: d, key: k, value: [1]}]", []string{"unsupported value"}},

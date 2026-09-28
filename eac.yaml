@@ -1,4 +1,7 @@
-links:
+protect:
+  immutable: true
+
+files:
   - {src: dotfiles/zsh/zshrc, dst: ~/.zshrc}
   - {src: dotfiles/zsh/zshenv, dst: ~/.zshenv}
   - {src: dotfiles/zsh/zprofile, dst: ~/.zprofile}
