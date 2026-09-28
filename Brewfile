@@ -1,7 +1,5 @@
 tap "automaat/tap", trusted: true
-tap "automaat/whisper-hotkey", trusted: true
 tap "kong/agent-auth-cli", trusted: true
-tap "shivammathur/php", trusted: true
 tap "smykla-skalski/tap", trusted: true
 
 brew "antidote"
@@ -22,8 +20,6 @@ brew "ffmpeg"
 brew "oniguruma"
 brew "ponysay"
 brew "postgresql@14"
-brew "pyenv"
-brew "rbenv"
 brew "rsync"
 brew "rustup"
 brew "tmux"
