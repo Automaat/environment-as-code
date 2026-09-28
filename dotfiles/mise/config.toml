@@ -18,7 +18,7 @@ pipx = "1.17.6"
 uv = "0.12.19"
 ruff = "0.16.9"
 "pipx:virtualenv" = "21.13.0"
-"pipx:ansible" = "14.4.0"
+"pypi:ansible" = { version = "14.4.0", expose = ["ansible-core"] }
 "pipx:gcalcli" = "4.5.1"
 "pipx:yubikey-manager" = "5.9.2"
 "pipx:b2" = "5.0.0"
@@ -66,7 +66,6 @@ skaffold = "2.25.0"
 consul = "2.0.4"
 
 docker-cli = "29.8.1"
-"aqua:docker/buildx" = "0.37.1"
 docker-compose = "5.5.1"
 lima = "2.2.0"
 
