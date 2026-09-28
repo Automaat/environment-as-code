@@ -52,9 +52,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       MISE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # No HOMEBREW_NO_AUTO_UPDATE: the runner image's formula index is stale,
-      # and a fresh Mac always installs current versions (e.g. a mise new
-      # enough for the pypi backend).
       HOMEBREW_NO_INSTALL_CLEANUP: "1"
       # The managed git config rewrites GitHub HTTPS to SSH; the runner has no
       # key on GitHub (bootstrap.sh registers one before installing tools).
@@ -82,9 +79,12 @@ jobs:
           key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
           restore-keys: mise-tools-${{ runner.os }}-
 
-      # kong/* is a private tap the runner can't clone.
+      # kong/* is a private tap the runner can't clone. The image pins
+      # HOMEBREW_NO_AUTO_UPDATE and ships a stale formula index (e.g. a mise
+      # too old for the pypi backend), so update first, as a fresh Mac would.
       - name: install formulae from the Brewfile
         run: |
+          brew update --quiet
           grep -E '^(tap|brew) ' Brewfile | grep -v '"kong/' > "$RUNNER_TEMP/Brewfile"
           grep -E '^tap ' "$RUNNER_TEMP/Brewfile" | cut -d'"' -f2 | xargs -n1 brew trust --tap
           brew bundle install --file "$RUNNER_TEMP/Brewfile" --no-upgrade
