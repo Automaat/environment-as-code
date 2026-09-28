@@ -9,7 +9,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
@@ -19,7 +18,6 @@ import (
 type Module struct {
 	Links []config.Link
 	Paths config.Paths
-	Now   func() time.Time
 }
 
 func (m *Module) Name() string { return "links" }
@@ -42,6 +40,9 @@ func (m *Module) Plan(_ context.Context) ([]engine.Change, error) {
 func (m *Module) plan(src, dst string) (*engine.Change, error) {
 	if _, err := os.Stat(src); err != nil {
 		return nil, fmt.Errorf("source %s: %w", src, err)
+	}
+	if err := install.CheckParents(m.Paths, dst); err != nil {
+		return nil, err
 	}
 	target := m.Paths.Pretty(dst)
 	link := func(ctx context.Context) error { return symlink(src, dst) }
@@ -77,27 +78,16 @@ func (m *Module) plan(src, dst string) (*engine.Change, error) {
 	if info.IsDir() {
 		return nil, fmt.Errorf("%s is a directory; move it away before linking", dst)
 	}
-	backup := install.BackupPath(dst, m.now())
 	return &engine.Change{
 		Action: engine.Update, Target: target,
-		Detail: fmt.Sprintf("back up to %s, link → %s", filepath.Base(backup), m.Paths.Pretty(src)),
+		Detail: fmt.Sprintf("back up to %s, link → %s", filepath.Base(install.BackupName(dst)), m.Paths.Pretty(src)),
 		Apply: func(ctx context.Context) error {
-			if err := install.Unlock(dst); err != nil {
-				return err
-			}
-			if err := os.Rename(dst, backup); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			if _, err := install.Backup(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
 			return symlink(src, dst)
 		},
 	}, nil
-}
-
-func (m *Module) now() time.Time {
-	if m.Now != nil {
-		return m.Now()
-	}
-	return time.Now()
 }
 
 func symlink(src, dst string) error {

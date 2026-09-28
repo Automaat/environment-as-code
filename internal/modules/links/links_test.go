@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
@@ -25,7 +24,6 @@ func newFixture(t *testing.T) *fixture {
 	f.mod = &Module{
 		Links: []config.Link{{Src: "dotfiles/zshrc", Dst: "~/.config/zsh/.zshrc"}},
 		Paths: config.Paths{Home: f.home, Root: f.root},
-		Now:   func() time.Time { return time.Unix(1700000000, 0) },
 	}
 	return f
 }
@@ -103,15 +101,15 @@ func TestLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "existing backup gets a timestamped name",
+			name: "existing backup gets a numbered name",
 			setup: func(t *testing.T, f *fixture) {
 				f.write(t, f.dst(), "new edits")
 				f.write(t, f.dst()+".eac-bak", "old backup")
 			},
 			wantAction: engine.Update,
-			wantDetail: "back up to .zshrc.eac-bak.1700000000",
+			wantDetail: "back up to .zshrc.eac-bak.1",
 			check: func(t *testing.T, f *fixture) {
-				got, _ := os.ReadFile(f.dst() + ".eac-bak.1700000000")
+				got, _ := os.ReadFile(f.dst() + ".eac-bak.1")
 				old, _ := os.ReadFile(f.dst() + ".eac-bak")
 				if string(got) != "new edits" || string(old) != "old backup" {
 					t.Errorf("backups = %q, %q", got, old)
@@ -148,6 +146,18 @@ func TestLinksErrors(t *testing.T) {
 		f := newFixture(t)
 		f.mod.Links[0].Src = "dotfiles/nope"
 		if _, err := f.mod.Plan(context.Background()); err == nil || !strings.Contains(err.Error(), "source") {
+			t.Errorf("err = %v", err)
+		}
+	})
+	t.Run("parent is a symlink into the repo", func(t *testing.T) {
+		f := newFixture(t)
+		if err := os.MkdirAll(filepath.Join(f.home, ".config"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(filepath.Join(f.root, "dotfiles"), filepath.Join(f.home, ".config/zsh")); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.mod.Plan(context.Background()); err == nil || !strings.Contains(err.Error(), "is a symlink") {
 			t.Errorf("err = %v", err)
 		}
 	})
