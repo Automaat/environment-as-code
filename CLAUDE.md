@@ -76,7 +76,9 @@ system → files → links → templates → brew → mise → commands → defa
 ## Rules
 
 - `plan`/`check` must never change the system; brew calls set `HOMEBREW_NO_AUTO_UPDATE=1`.
-- Replaced files that eac didn't write (or that were edited) are backed up to `<file>.eac-bak`, never deleted.
+- Replaced files that eac didn't write (or that were edited) are backed up to `<file>.eac-bak` (`.eac-bak.N` if taken), never deleted or overwritten.
+- `files`/`links`/`templates` destinations must be absolute or `~/…` (no `$VAR`) and must not overlap (same path, or one inside another's dir; case-insensitive). Modes are octal: `0644`, not `644`.
+- eac refuses to write through a symlinked parent dir under `$HOME` or one resolving into the repo (e.g. a dir moved from `links` to `files`): remove the old symlink first.
 - `brew.cleanup: zap` removes anything not in the Brewfile: read the `-` lines of `plan` before `apply`.
 - `mise.prune: true` removes installed tool versions no mise config on the machine references (other projects' configs count, so their tools stay).
 - The mise module runs mise from `/`: from `$HOME`, mise treats `~/.config/mise/config.toml` as a project config that outranks the repo file, hiding bumped pins until after `apply`.
