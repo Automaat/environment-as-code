@@ -85,7 +85,7 @@ func (m *Module) plan(src, dst string) (*engine.Change, error) {
 			if err := install.Unlock(dst); err != nil {
 				return err
 			}
-			if err := os.Rename(dst, backup); err != nil {
+			if err := os.Rename(dst, backup); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
 			return symlink(src, dst)

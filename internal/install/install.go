@@ -67,8 +67,14 @@ func (in *Installer) Plan(dst string, want []byte, perm fs.FileMode) (*engine.Ch
 	}
 	if bytes.Equal(have, want) {
 		reasons, err := in.protectionDrift(dst, info.Mode().Perm(), perm)
-		if err != nil || len(reasons) == 0 {
+		if err != nil {
 			return nil, err
+		}
+		if _, known := in.State.Get(dst); !known {
+			reasons = append(reasons, "already matches, start tracking")
+		}
+		if len(reasons) == 0 {
+			return nil, nil
 		}
 		return change(engine.Update, strings.Join(reasons, ", "), in.protect(dst, want, perm)), nil
 	}
@@ -90,6 +96,9 @@ func (in *Installer) Plan(dst string, want []byte, perm fs.FileMode) (*engine.Ch
 // anything that is no longer a regular file (e.g. now a link another module
 // owns) is only dropped from the state.
 func (in *Installer) PlanRemove(dst string) (*engine.Change, error) {
+	if !in.ownsPath(dst) {
+		return in.PlanForget(dst, "no longer managed, not under $HOME or reached through a symlinked directory, left in place"), nil
+	}
 	target := in.Paths.Pretty(dst)
 	forget := func(context.Context) error { return in.State.Forget(dst) }
 
@@ -230,12 +239,41 @@ func unlock(path string) error {
 // Unlock clears the immutable flag on every file under root, for tests and for
 // tearing down a managed tree.
 func Unlock(root string) error {
+	if _, err := os.Lstat(root); errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
 	return filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
 		}
 		return unlock(path)
 	})
+}
+
+// PlanForget drops dst from the state without touching the file.
+func (in *Installer) PlanForget(dst, detail string) *engine.Change {
+	return &engine.Change{
+		Action: engine.Remove, Target: in.Paths.Pretty(dst), Detail: detail,
+		Apply: func(context.Context) error { return in.State.Forget(dst) },
+	}
+}
+
+// ownsPath reports whether dst is a path eac could have written itself:
+// under $HOME with no symlinked directory in between. A directory that moved
+// to links resolves into the repo, and deleting "through" it would remove
+// the repo's source file.
+func (in *Installer) ownsPath(dst string) bool {
+	home := filepath.Clean(in.Paths.Home)
+	for dir := filepath.Dir(filepath.Clean(dst)); dir != home; dir = filepath.Dir(dir) {
+		if !strings.HasPrefix(dir, home+string(filepath.Separator)) {
+			return false
+		}
+		info, err := os.Lstat(dir)
+		if err == nil && info.Mode()&fs.ModeSymlink != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 // BackupPath picks a free backup name next to dst.

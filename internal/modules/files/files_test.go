@@ -149,3 +149,99 @@ func TestRemovesFilesNoLongerManaged(t *testing.T) {
 		t.Errorf("not converged: %v", again)
 	}
 }
+
+func newFilesModule(t *testing.T, sources map[string]string) (*Module, string, string) {
+	t.Helper()
+	home, root := t.TempDir(), t.TempDir()
+	t.Cleanup(func() { _ = install.Unlock(home) })
+	for rel, body := range sources {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	state, err := install.LoadState(install.StatePath(home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	paths := config.Paths{Home: home, Root: root}
+	return &Module{Paths: paths, Installer: &install.Installer{Paths: paths, State: state, Immutable: true}}, home, root
+}
+
+func applyModule(t *testing.T, m *Module) []engine.Change {
+	t.Helper()
+	changes, err := m.Plan(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := engine.Apply(context.Background(), func(string) {}, engine.Plan{{Changes: changes}}); err != nil {
+		t.Fatal(err)
+	}
+	return changes
+}
+
+func TestDirMovedToLinksKeepsRepoFiles(t *testing.T) {
+	m, home, root := newFilesModule(t, map[string]string{"d/a.md": "source"})
+	m.Files = []config.Link{{Src: "d", Dst: "~/.cfg/d"}}
+	applyModule(t, m)
+
+	installed := filepath.Join(home, ".cfg/d")
+	if err := install.Unlock(installed); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(installed); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(root, "d"), installed); err != nil {
+		t.Fatal(err)
+	}
+	m.Files = nil
+	changes := applyModule(t, m)
+
+	if len(changes) != 1 || !strings.Contains(changes[0].Detail, "left in place") {
+		t.Fatalf("changes = %v", changes)
+	}
+	if got, err := os.ReadFile(filepath.Join(root, "d/a.md")); err != nil || string(got) != "source" {
+		t.Fatalf("repo source file damaged: %q, %v", got, err)
+	}
+	if again, _ := m.Plan(context.Background()); len(again) != 0 {
+		t.Errorf("not converged: %v", again)
+	}
+}
+
+func caseInsensitive(t *testing.T, dir string) bool {
+	t.Helper()
+	p := filepath.Join(dir, "CaseProbe")
+	if err := os.WriteFile(p, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err := os.Stat(filepath.Join(dir, "caseprobe"))
+	if rmErr := os.Remove(p); rmErr != nil {
+		t.Fatal(rmErr)
+	}
+	return err == nil
+}
+
+func TestCaseOnlyRenameKeepsFile(t *testing.T) {
+	m, home, root := newFilesModule(t, map[string]string{"themes/Nord": "palette"})
+	if !caseInsensitive(t, home) {
+		t.Skip("case-sensitive filesystem")
+	}
+	m.Files = []config.Link{{Src: "themes", Dst: "~/.themes"}}
+	applyModule(t, m)
+
+	if err := os.Rename(filepath.Join(root, "themes/Nord"), filepath.Join(root, "themes/nord")); err != nil {
+		t.Fatal(err)
+	}
+	applyModule(t, m)
+
+	if got, err := os.ReadFile(filepath.Join(home, ".themes/nord")); err != nil || string(got) != "palette" {
+		t.Fatalf("managed file lost after case-only rename: %q, %v", got, err)
+	}
+	if again, _ := m.Plan(context.Background()); len(again) != 0 {
+		t.Errorf("not converged: %v", again)
+	}
+}

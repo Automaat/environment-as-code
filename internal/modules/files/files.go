@@ -50,6 +50,10 @@ func (m *Module) Plan(_ context.Context) ([]engine.Change, error) {
 		if wanted[dst] {
 			continue
 		}
+		if sameFileAsAny(dst, wanted) {
+			changes = append(changes, *m.Installer.PlanForget(dst, "renamed, same file as a managed path"))
+			continue
+		}
 		c, err := m.Installer.PlanRemove(dst)
 		if err != nil {
 			return nil, err
@@ -57,6 +61,22 @@ func (m *Module) Plan(_ context.Context) ([]engine.Change, error) {
 		changes = append(changes, *c)
 	}
 	return changes, nil
+}
+
+// sameFileAsAny catches an old name that is still the very file a wanted
+// path points at, e.g. a case-only rename on case-insensitive APFS, where
+// removing the old name would delete the managed file.
+func sameFileAsAny(dst string, wanted map[string]bool) bool {
+	old, err := os.Lstat(dst)
+	if err != nil {
+		return false
+	}
+	for w := range wanted {
+		if info, err := os.Lstat(w); err == nil && os.SameFile(old, info) {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *Module) plan(p pair) (*engine.Change, error) {

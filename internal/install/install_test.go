@@ -382,3 +382,38 @@ func TestDiffs(t *testing.T) {
 		t.Errorf("update diff = %q", c.Diff)
 	}
 }
+
+func TestTracksMatchingUntrackedFile(t *testing.T) {
+	in, home := newInstaller(t, false)
+	dst := filepath.Join(home, "f")
+	mustWrite(t, dst, "same")
+	if err := os.Chmod(dst, 0o444); err != nil {
+		t.Fatal(err)
+	}
+	c := converge(t, in, dst, "same", 0o644)
+	if c == nil || c.Detail != "already matches, start tracking" {
+		t.Fatalf("change = %v", c)
+	}
+	if sum, _ := in.State.Get(dst); sum != Sum([]byte("same")) {
+		t.Error("not recorded")
+	}
+}
+
+func TestPlanRemoveOutsideHome(t *testing.T) {
+	in, _ := newInstaller(t, false)
+	outside := filepath.Join(t.TempDir(), "f")
+	mustWrite(t, outside, "keep")
+	if err := in.State.Record(outside, Sum([]byte("keep"))); err != nil {
+		t.Fatal(err)
+	}
+	c, err := in.PlanRemove(outside)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Apply(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(outside); err != nil {
+		t.Errorf("file outside $HOME must never be deleted: %v", err)
+	}
+}
