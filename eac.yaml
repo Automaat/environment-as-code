@@ -18,7 +18,6 @@ files:
   - {src: dotfiles/k9s/skins/transparent.yaml, dst: ~/.config/k9s/skins/transparent.yaml}
   - {src: dotfiles/k9s/skins/everforest-light.yaml, dst: ~/.config/k9s/skins/everforest-light.yaml}
   - {src: dotfiles/k9s/skins/nord-light.yaml, dst: ~/.config/k9s/skins/nord-light.yaml}
-  - {src: dotfiles/klaudiush/config.toml, dst: ~/.config/klaudiush/config.toml}
   - {src: dotfiles/hammerspoon/init.lua, dst: ~/.hammerspoon/init.lua}
   - {src: dotfiles/hammerspoon/zoom-smart-plug.lua, dst: ~/.hammerspoon/zoom-smart-plug.lua}
   - {src: dotfiles/hammerspoon/desk-charger-battery.lua, dst: ~/.hammerspoon/desk-charger-battery.lua}
@@ -34,6 +33,7 @@ links:
 templates:
   files:
     - {src: dotfiles/k9s/config.yaml.tmpl, dst: ~/.config/k9s/config.yaml}
+    - {src: dotfiles/klaudiush/config.toml.tmpl, dst: ~/.config/klaudiush/config.toml}
     - {src: dotfiles/launchd/dev.eac.check.plist.tmpl, dst: ~/Library/LaunchAgents/dev.eac.check.plist}
 
 brew:
