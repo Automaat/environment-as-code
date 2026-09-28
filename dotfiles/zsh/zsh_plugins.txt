@@ -10,7 +10,7 @@ ohmyzsh/ohmyzsh path:plugins/kubectl
 ohmyzsh/ohmyzsh path:plugins/macos
 ohmyzsh/ohmyzsh path:plugins/pip
 ohmyzsh/ohmyzsh path:plugins/python
-ohmyzsh/ohmyzsh path:plugins/terraform
+ohmyzsh/ohmyzsh path:plugins/opentofu
 MichaelAquilina/zsh-you-should-use
 automaat/zsh-clean-history branch:main
 zsh-users/zsh-autosuggestions
