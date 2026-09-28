@@ -12,29 +12,36 @@
   "automerge": true,
   "automergeStrategy": "squash",
   "platformAutomerge": false,
-  "nix": {
-    "enabled": true
-  },
-  "lockFileMaintenance": {
-    "enabled": true,
-    "automerge": true,
-    "schedule": ["* 0-5 * * 1"],
-    "commitMessageTopic": "flake.lock"
-  },
+  "postUpdateOptions": ["gomodTidy"],
   "packageRules": [
     {
-      "description": "Keep Nix flake inputs updated as one tested toolchain bump.",
-      "matchManagers": ["nix"],
-      "groupName": "Nix flake inputs",
-      "groupSlug": "nix-flake-inputs",
-      "addLabels": ["nix"],
-      "automerge": true
+      "description": "Batch routine CLI tool bumps from the global mise config into one weekly PR, gated by the tools CI job.",
+      "matchManagers": ["mise"],
+      "matchFileNames": ["dotfiles/mise/config.toml"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "mise tools",
+      "groupSlug": "mise-tools",
+      "schedule": ["* 0-5 * * 1"],
+      "addLabels": ["mise"]
     },
     {
-      "description": "Keep CI actions that build the Nix system current.",
+      "description": "Major tool bumps can change CLI behavior; review them one at a time.",
+      "matchManagers": ["mise"],
+      "matchFileNames": ["dotfiles/mise/config.toml"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "addLabels": ["mise", "major"]
+    },
+    {
+      "description": "eac's own Go toolchain and dependencies.",
+      "matchFileNames": ["go.mod", "mise.toml"],
+      "groupName": "eac toolchain",
+      "groupSlug": "eac-toolchain",
+      "addLabels": ["go"]
+    },
+    {
       "matchManagers": ["github-actions"],
-      "addLabels": ["github-actions"],
-      "automerge": true
+      "addLabels": ["github-actions"]
     }
   ]
 }

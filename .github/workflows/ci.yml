@@ -1,0 +1,66 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+
+      - name: lint
+        run: mise run lint
+
+      - name: unit, e2e and integration tests
+        run: mise run test:integration
+
+      - name: config resolves on a real Mac
+        run: go run ./cmd/eac plan --only system,links,templates,defaults
+
+  tools:
+    name: install pinned tools
+    # Proves every Renovate bump in the mise config installs, the way the
+    # old nix build gated flake.lock bumps.
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      MISE_GLOBAL_CONFIG_FILE: ${{ github.workspace }}/dotfiles/mise/config.toml
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          install: false
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/mise/installs
+          key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
+          restore-keys: mise-tools-${{ runner.os }}-
+
+      - name: install
+        working-directory: ${{ runner.temp }}
+        run: mise install --yes
+
+      - name: every tool is installed
+        working-directory: ${{ runner.temp }}
+        run: |
+          missing=$(mise ls --global --missing --json)
+          echo "$missing"
+          test "$missing" = "{}"
