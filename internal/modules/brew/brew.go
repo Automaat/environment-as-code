@@ -183,11 +183,15 @@ func (m *Module) planCleanup(ctx context.Context, file string) ([]engine.Change,
 	if mode == "" || mode == config.CleanupNone {
 		return nil, nil
 	}
-	out, err := runner.Output(ctx, m.Runner, runner.Cmd{Name: "brew", Args: []string{"bundle", "cleanup", "--file", file}, Env: noAutoUpdate})
+	dryRun := runner.Cmd{Name: "brew", Args: []string{"bundle", "cleanup", "--file", file}, Env: noAutoUpdate}
+	res, err := m.Runner.Run(ctx, dryRun)
 	if err != nil {
 		return nil, err
 	}
-	removals := ParseCleanup(out)
+	removals := ParseCleanup(res.Stdout)
+	if res.ExitCode != 0 && len(removals) == 0 {
+		return nil, res.Err(dryRun)
+	}
 	if len(removals) == 0 {
 		return nil, nil
 	}
