@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 // Cmd describes one external command invocation. Env entries are appended to
@@ -66,8 +67,16 @@ func NewExec() *Exec {
 	return &Exec{Stdout: os.Stdout, Stderr: os.Stderr}
 }
 
+// WaitDelay is how long a cancelled command gets to exit after SIGINT
+// before it is killed.
+const WaitDelay = 30 * time.Second
+
+// Run interrupts the command when ctx is cancelled rather than killing it:
+// SIGKILL would leave brew or mise mid-install with locks and partial kegs.
 func (e *Exec) Run(ctx context.Context, c Cmd) (Result, error) {
 	cmd := exec.CommandContext(ctx, c.Name, c.Args...)
+	cmd.Cancel = func() error { return cmd.Process.Signal(os.Interrupt) }
+	cmd.WaitDelay = WaitDelay
 	cmd.Dir = c.Dir
 	cmd.Env = append(os.Environ(), c.Env...)
 	if c.Stdin != "" {
@@ -85,6 +94,9 @@ func (e *Exec) Run(ctx context.Context, c Cmd) (Result, error) {
 
 	err := cmd.Run()
 	res := Result{Stdout: stdout.String(), Stderr: stderr.String()}
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return res, fmt.Errorf("%s: %w", c, ctxErr)
+	}
 	var exitErr *exec.ExitError
 	if errors.As(err, &exitErr) {
 		res.ExitCode = exitErr.ExitCode()
