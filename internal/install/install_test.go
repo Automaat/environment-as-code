@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Automaat/environment-as-code/internal/config"
 	"github.com/Automaat/environment-as-code/internal/engine"
@@ -300,6 +301,53 @@ func TestBackupNameChosenAtApply(t *testing.T) {
 		}
 	}
 	assertProtected(t, dst, "new", 0o444, true)
+}
+
+func TestBackupNameStopsOnLstatError(t *testing.T) {
+	dst := filepath.Join(t.TempDir(), strings.Repeat("a", 250))
+	mustWrite(t, dst, "x")
+	done := make(chan string, 1)
+	go func() { done <- BackupName(dst) }()
+	select {
+	case got := <-done:
+		if want := backupName(dst, 0); got != want {
+			t.Errorf("BackupName = %s, want %s", got, want)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("BackupName loops when the backup name is too long")
+	}
+	if _, err := Backup(dst); err == nil {
+		t.Error("Backup of a too-long name: expected error")
+	}
+	if got, err := os.ReadFile(dst); err != nil || string(got) != "x" {
+		t.Errorf("original = %q, %v", got, err)
+	}
+}
+
+func TestBackupRefusesSymlink(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "target")
+	mustWrite(t, target, "x")
+	if err := os.Chmod(target, 0o444); err != nil {
+		t.Fatal(err)
+	}
+	dst := filepath.Join(dir, "f")
+	if err := os.Symlink(target, dst); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Backup(dst); err == nil {
+		t.Fatal("expected error")
+	}
+	info, err := os.Stat(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm() != 0o444 {
+		t.Errorf("target mode = %o, want 444", info.Mode().Perm())
+	}
+	if _, err := os.Lstat(backupName(dst, 0)); !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("backup created: %v", err)
+	}
 }
 
 func TestSymlinkedParentRefused(t *testing.T) {

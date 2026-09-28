@@ -327,11 +327,12 @@ func backupName(path string, n int) string {
 	return fmt.Sprintf("%s.eac-bak.%d", path, n)
 }
 
-// BackupName is the name Backup would pick right now, for plan output.
+// BackupName is the name Backup would pick right now, for plan output. Any
+// Lstat error ends the search: e.g. ENAMETOOLONG would repeat for every N.
 func BackupName(path string) string {
 	for n := 0; ; n++ {
 		name := backupName(path, n)
-		if _, err := os.Lstat(name); errors.Is(err, fs.ErrNotExist) {
+		if _, err := os.Lstat(name); err != nil {
 			return name
 		}
 	}
@@ -339,8 +340,17 @@ func BackupName(path string) string {
 
 // Backup moves path to the first free <path>.eac-bak[.N] and makes the copy
 // writable. The name is taken at apply time with a hard link, which fails
-// instead of overwriting, so no earlier backup is ever clobbered.
+// instead of overwriting, so no earlier backup is ever clobbered. Only
+// regular files: link(2) on macOS follows symlinks, so a symlink's backup
+// would alias its target and the chmod would change the target.
 func Backup(path string) (string, error) {
+	info, err := os.Lstat(path)
+	if err != nil {
+		return "", err
+	}
+	if !info.Mode().IsRegular() {
+		return "", fmt.Errorf("%s is not a regular file, not backing it up", path)
+	}
 	if err := unlock(path); err != nil {
 		return "", err
 	}
