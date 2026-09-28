@@ -14,6 +14,15 @@
   "platformAutomerge": true,
   "rebaseWhen": "behind-base-branch",
   "postUpdateOptions": ["gomodTidy"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Versions pinned in workflow inputs behind a `# renovate:` comment, e.g. mise in jdx/mise-action.",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": ["# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\s+version: (?<currentValue>\\S+)"],
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    }
+  ],
   "packageRules": [
     {
       "description": "Non-major updates merge on their own once the required checks pass, through GitHub native auto-merge.",
