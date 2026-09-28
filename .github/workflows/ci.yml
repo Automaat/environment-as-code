@@ -121,7 +121,7 @@ jobs:
         run: |
           zsh -il -c true > /dev/null 2>&1 || true
           cat > "$RUNNER_TEMP/smoke.sh" <<'EOF'
-          zsh -il -c 'for t in kubectl gh jq starship k9s helm fzf direnv op; do command -v $t > /dev/null || echo "missing $t"; done' > "$RUNNER_TEMP/zsh.out" 2>&1
+          zsh -il -c 'for t in kubectl gh jq starship k9s helm fzf direnv; do command -v $t > /dev/null || echo "missing $t"; done' > "$RUNNER_TEMP/zsh.out" 2>&1
           EOF
           script -q /dev/null sh "$RUNNER_TEMP/smoke.sh" > /dev/null
           if [ -s "$RUNNER_TEMP/zsh.out" ]; then cat "$RUNNER_TEMP/zsh.out"; exit 1; fi

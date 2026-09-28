@@ -35,6 +35,7 @@ brew "rtk"
 brew "smykla-skalski/tap/klaudiush"
 
 cask "1password"
+cask "1password-cli"
 cask "airbuddy"
 cask "bitwarden"
 cask "codex"
