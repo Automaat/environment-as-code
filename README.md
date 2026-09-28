@@ -1,351 +1,38 @@
 # environment-as-code
 
-Automated macOS environment setup using nix-darwin and home-manager.
+My macOS setup as code. `eac` (Go, in this repo) converges the machine to `eac.yaml`:
 
-## Features
+- **brew**: GUI apps and a few formulae from `Brewfile` (`brew bundle`, with zap cleanup)
+- **mise**: every other CLI tool, pinned in `dotfiles/mise/config.toml` and bumped by Renovate
+- **files / templates**: dotfiles installed as read-only, immutable copies (like the Nix store); **links** for the few configs apps must write
+- **defaults**: macOS preferences
+- **system**: Touch ID for sudo, directories, SSH key
+- **commands**: guarded one-off steps
 
-- **Declarative package management** - All packages defined in Nix
-- **Dotfiles management** - Managed via home-manager
-- **Reproducible setup** - Identical environments across machines
-- **Homebrew integration** - GUI apps installed via Homebrew casks
-- **Development tools** - Git, SSH, oh-my-zsh, vim, mise, Claude Code
-- **System configuration** - macOS defaults and preferences
-
-## Quick Setup
-
-### Automated Bootstrap (Recommended)
-
-Run this one-liner on a fresh Mac:
+## Fresh Mac
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yourusername/environment-as-code/main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Automaat/environment-as-code/main/bootstrap.sh | bash
 ```
 
-The script will:
-- Install Xcode CLI Tools
-- Install Nix with experimental features
-- Clone the repository
-- Prompt for your name/email
-- Auto-detect hostname and architecture
-- Build and activate the configuration
+Installs Xcode CLI tools, Homebrew and mise, clones the repo to `~/sideprojects/environment-as-code`, then runs `eac apply`.
 
-### Manual Installation
-
-#### Prerequisites
-
-1. Xcode Command Line Tools:
-   ```bash
-   xcode-select --install
-   ```
-
-2. Install Nix (using Determinate Systems installer):
-   ```bash
-   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-   ```
-
-#### Steps
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/yourusername/environment-as-code.git
-   cd environment-as-code
-   ```
-
-2. Configure your details:
-
-   a. Edit `modules/home.nix` and set your name/email:
-   ```nix
-   name = "Your Name";
-   email = "your.email@example.com";
-   ```
-
-   b. Get your hostname:
-   ```bash
-   scutil --get LocalHostName
-   ```
-
-   c. Update `flake.nix` with your hostname and architecture:
-   - Replace `"M-Skalski-MBP"` with your hostname
-   - Change `"aarch64-darwin"` to `"x86_64-darwin"` if Intel Mac
-
-3. Build and activate:
-   ```bash
-   nix run nix-darwin -- switch --flake .#$(scutil --get LocalHostName)
-   ```
-
-4. Restart your terminal and verify:
-   ```bash
-   darwin-rebuild switch --flake ~/.config/nix-darwin
-   ```
-
-### Post-Setup
+## Day to day
 
 ```bash
-# SSH key will be auto-generated if not present
-# Copy it to GitHub:
-cat ~/.ssh/id_ed25519.pub | pbcopy
-
-# PARA folders created automatically in ~/Documents/
-ls ~/Documents/
+mise run plan     # what would change
+mise run apply    # show plan, confirm, apply
+go run ./cmd/eac check   # exit 2 when the machine drifted
 ```
 
-## What Gets Installed
+Installed dotfiles are read-only. Edit them under `dotfiles/` (or add a tool to `dotfiles/mise/config.toml` / `Brewfile`), then `mise run apply`. `check` reports any file edited in place; `apply` backs it up before restoring the repo version.
 
-### CLI Tools (via Nix)
-
-**Development:**
-- go, node, python (3.10, 3.13, 3.14), rust, dart, deno
-- pyenv, rbenv, mise
-- gh, git, docker, docker-compose, lima, orbstack
-
-**Kubernetes/Cloud:**
-- kubectl, kubectx, kubie, helm, k9s, kind, minikube, skaffold, eksctl
-- consul, kumactl
-- awscli, aws-iam-authenticator, aws-sso-cli, saml2aws
-
-**CLI Utilities:**
-- bat, fzf, jq, tree, autojump, starship
-- pre-commit, shellcheck, actionlint, tflint, vale
-- ruff, uv, oxlint, yamlfmt, yamllint
-
-**Build Tools:**
-- cmake, ninja, autoconf, hugo, buf
-
-**Security:**
-- bitwarden-cli, gnupg, pinentry_mac, yubikey-manager
-
-### Applications (via Homebrew Cask)
-
-**Productivity:**
-- 1Password, Bitwarden, Todoist, Obsidian, Espanso, Contexts, Freedom
-
-**Development:**
-- Visual Studio Code, Ghostty, Insomnia, pgAdmin4, OrbStack
-
-**Browsers:**
-- Vivaldi
-
-**Cloud:**
-- Google Drive, Google Cloud SDK, Home Assistant
-
-**Communication:**
-- Discord, ChatGPT
-
-**Media:**
-- XnViewMP, Adobe Acrobat Reader, Elgato Stream Deck, Whisper Hotkey
-
-**Fonts:**
-- Fira Code Nerd Font, Iosevka, Iosevka Nerd Font
-
-**LaTeX:**
-- BasicTeX
-
-### Configurations
-
-**Shell (zsh):**
-- oh-my-zsh with plugins: git, brew, docker, golang, helm, kubectl, terraform, fzf
-- zsh-autosuggestions, zsh-syntax-highlighting
-- ZPlug plugins: you-should-use, clean-history
-- autojump, starship (disabled by default)
-
-**Git:**
-- User name/email (from env or defaults)
-- GPG signing enabled (key: 683BF754A0B005CD)
-- Pull rebase, sign-off, LFS support
-
-**Terminal (Ghostty):**
-- Iosevka 23pt font with Nerd Font symbols
-- Everforest Light theme
-- Performance optimized for Claude Code (200M scrollback)
-
-**Other:**
-- Vim with Darcula theme
-- K9s with Everforest skin
-- Mise config (Go 1.24.9, uv latest)
-- Claude Code settings, commands, and skills
-- Klaudiush validators
-
-**macOS Defaults:**
-- Dock autohide, no recents
-- Finder show all extensions
-- Fast key repeat
-- Touch ID for sudo
-
-## Structure
-
-```
-.
-├── flake.nix                    # Main entrypoint
-├── modules/
-│   ├── darwin.nix              # macOS system configuration
-│   ├── home.nix                # Home-manager configuration
-│   ├── packages.nix            # CLI packages list
-│   ├── casks.nix               # GUI apps list
-│   ├── programs/
-│   │   ├── zsh.nix            # Zsh + oh-my-zsh config
-│   │   ├── git.nix            # Git configuration
-│   │   ├── vim.nix            # Vim configuration
-│   │   └── vscode.nix         # VSCode (placeholder)
-│   └── dotfiles/
-│       ├── ghostty.nix        # Ghostty terminal config
-│       ├── k9s.nix            # K9s config + skin
-│       ├── mise.nix           # Mise tool versions
-│       ├── claude.nix         # Claude Code setup
-│       └── klaudiush.nix      # Klaudiush validators
-├── README.md                    # This file
-└── MIGRATION.md                 # Chezmoi → Nix guide
-```
-
-## Updating Configuration
-
-### Add/Remove Packages
-
-1. Edit package list:
-   ```bash
-   vim modules/packages.nix      # CLI tools
-   vim modules/casks.nix         # GUI apps
-   ```
-
-2. Apply changes:
-   ```bash
-   darwin-rebuild switch --flake ~/.config/nix-darwin
-   ```
-
-### Update Dotfiles
-
-1. Edit the relevant module:
-   ```bash
-   vim modules/programs/zsh.nix   # Shell config
-   vim modules/dotfiles/ghostty.nix  # Terminal config
-   ```
-
-2. Apply:
-   ```bash
-   darwin-rebuild switch --flake ~/.config/nix-darwin
-   ```
-
-### Update All Packages
+## Development
 
 ```bash
-# Update flake inputs (nixpkgs, nix-darwin, home-manager)
-nix flake update
-
-# Rebuild with new versions
-darwin-rebuild switch --flake ~/.config/nix-darwin
+mise run test               # unit + e2e with fake brew/mise/defaults
+mise run test:integration   # adds real `defaults` round-trip
+mise run lint
 ```
 
-### Sync Across Machines
-
-1. Commit changes:
-   ```bash
-   cd ~/sideprojects/environment-as-code
-   git add .
-   git commit -s -S -m "feat: update configuration"
-   git push
-   ```
-
-2. On other machine:
-   ```bash
-   cd ~/sideprojects/environment-as-code
-   git pull
-   darwin-rebuild switch --flake .#$(scutil --get LocalHostName)
-   ```
-
-## Customization
-
-### User Info
-
-Edit `modules/home.nix`:
-
-```nix
-let
-  name = "Your Name";
-  email = "your.email@example.com";
-in {
-  # ...
-}
-```
-
-### Machine-Specific Config
-
-Create per-host configs in `flake.nix`:
-
-```nix
-darwinConfigurations = {
-  "work-laptop" = darwin.lib.darwinSystem {
-    # work-specific config
-  };
-  "personal-mac" = darwin.lib.darwinSystem {
-    # personal config
-  };
-};
-```
-
-### Work-Specific Aliases
-
-The zsh config includes conditional aliases for Kong/Kuma work if `~/kong` directory exists.
-
-## Requirements
-
-- macOS (tested on Sequoia)
-- Apple Silicon (aarch64) or Intel (x86_64)
-- Admin access
-- Internet connection
-
-## Troubleshooting
-
-### Command Not Found After Install
-
-Restart terminal or reload PATH:
-
-```bash
-exec zsh
-```
-
-### Homebrew Casks Not Installing
-
-Check homebrew installation:
-
-```bash
-which brew
-brew --version
-```
-
-### Nix Daemon Issues
-
-Restart nix daemon:
-
-```bash
-sudo launchctl kickstart -k system/org.nixos.nix-daemon
-```
-
-### Rebuild From Scratch
-
-```bash
-# Remove nix-darwin state
-sudo rm -rf /etc/nix/nix.conf /run/current-system
-
-# Rebuild
-darwin-rebuild switch --flake ~/.config/nix-darwin
-```
-
-### Check What Changed
-
-```bash
-# See what would change (dry run)
-darwin-rebuild build --flake ~/.config/nix-darwin
-nix store diff-closures /run/current-system ./result
-```
-
-## Benefits
-
-- **Atomic updates**: Rollback if something breaks
-- **Reproducible**: Exact same environment on any machine
-- **Declarative**: Single source of truth for all config
-- **Faster**: Binary cache, parallel builds
-- **Version pinning**: Lock exact package versions
-- **System config**: Manage macOS settings declaratively
-
-## License
-
-MIT
+See [CLAUDE.md](CLAUDE.md) for layout and conventions.

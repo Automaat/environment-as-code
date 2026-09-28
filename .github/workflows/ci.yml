@@ -1,0 +1,127 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/Library/Caches/go-build
+            ~/Library/Caches/golangci-lint
+          key: go-test-${{ runner.os }}-${{ hashFiles('go.sum', 'mise.toml') }}
+          restore-keys: go-test-${{ runner.os }}-
+
+      - name: lint
+        run: mise run lint
+
+      - name: unit, e2e and integration tests
+        run: mise run test:integration
+
+      - name: config resolves on a real Mac
+        run: go run ./cmd/eac plan --only system,files,templates,defaults
+
+  e2e:
+    name: e2e on a fresh Mac
+    # Converges a clean macOS runner with the real config, the closest thing
+    # to a new machine. Casks are skipped: several need GUI approval (kexts,
+    # pkg installers) that a runner can't give. Also gates Renovate bumps of
+    # the pinned tools, the way the nix build gated flake.lock.
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MISE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      # The managed git config rewrites GitHub HTTPS to SSH; the runner has no
+      # key on GitHub (bootstrap.sh registers one before installing tools).
+      GIT_CONFIG_GLOBAL: /dev/null
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/Library/Caches/go-build
+          key: go-e2e-${{ runner.os }}-${{ hashFiles('go.sum', 'mise.toml') }}
+          restore-keys: go-e2e-${{ runner.os }}-
+
+      # Restore and save are split so tools downloaded by a run that later
+      # fails are still kept; the combined action only saves on success.
+      - name: restore pinned tools
+        id: tools
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/mise/installs
+          key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
+          restore-keys: mise-tools-${{ runner.os }}-
+
+      # kong/* is a private tap the runner can't clone. The image pins
+      # HOMEBREW_NO_AUTO_UPDATE and ships a stale formula index (e.g. a mise
+      # too old for the pypi backend), so update first, as a fresh Mac would.
+      - name: install formulae from the Brewfile
+        run: |
+          brew update --quiet
+          grep -E '^(tap|brew) ' Brewfile | grep -v '"kong/' > "$RUNNER_TEMP/Brewfile"
+          grep -E '^tap ' "$RUNNER_TEMP/Brewfile" | cut -d'"' -f2 | xargs -n1 brew trust --tap
+          brew bundle install --file "$RUNNER_TEMP/Brewfile" --no-upgrade
+
+      # apply is idempotent, so one rerun absorbs runner network flakes.
+      - name: apply
+        run: |
+          modules=system,files,templates,mise,defaults
+          go run ./cmd/eac apply -y --only "$modules" || go run ./cmd/eac apply -y --only "$modules"
+
+      - name: save pinned tools
+        if: always() && steps.tools.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/mise/installs
+          key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
+
+      - name: nothing left to change, checked via the installed eac command
+        env:
+          EAC_REPO: ${{ github.workspace }}
+        run: ~/.local/bin/eac check --only system,files,templates,mise,defaults
+
+      - name: dotfiles are protected
+        run: |
+          if echo x >> "$HOME/.zshrc"; then echo "$HOME/.zshrc is writable"; exit 1; fi
+          stat -f %Sf "$HOME/.zshrc" | grep -q uchg
+
+      # The first shell clones antidote plugins; the second must print nothing.
+      # script(1) gives zsh a terminal as a real session has; zsh's own output
+      # goes to a file so script's pty echo doesn't count as output.
+      - name: login shell starts cleanly with the pinned tools
+        env:
+          TERM: xterm-256color
+        run: |
+          zsh -il -c true > /dev/null 2>&1 || true
+          cat > "$RUNNER_TEMP/smoke.sh" <<'EOF'
+          zsh -il -c 'for t in kubectl gh jq starship k9s helm fzf direnv op; do command -v $t > /dev/null || echo "missing $t"; done' > "$RUNNER_TEMP/zsh.out" 2>&1
+          EOF
+          script -q /dev/null sh "$RUNNER_TEMP/smoke.sh" > /dev/null
+          if [ -s "$RUNNER_TEMP/zsh.out" ]; then cat "$RUNNER_TEMP/zsh.out"; exit 1; fi

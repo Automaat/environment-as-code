@@ -1,0 +1,62 @@
+typeset -U path fpath
+
+HISTFILE=~/.zsh_history
+HISTSIZE=100000000000000
+SAVEHIST=100000000000000
+setopt HIST_FCNTL_LOCK EXTENDED_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE SHARE_HISTORY
+
+ZSH_AUTOSUGGEST_STRATEGY=(history)
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main)
+
+source "$(brew --prefix antidote)/share/antidote/antidote.zsh"
+antidote load ~/.config/zsh/zsh_plugins.txt
+
+export PYENV_ROOT="$HOME/.pyenv"
+eval "$(pyenv init -)"
+eval "$(rbenv init - zsh)"
+[[ ! -r ~/.opam/opam-init/init.zsh ]] || source ~/.opam/opam-init/init.zsh > /dev/null 2> /dev/null
+
+alias sb="cd $HOME/Documents/secon-brain-sync"
+alias cs="carousel-splitter"
+alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
+if [[ -d "$HOME/kong" ]]; then
+  alias sync-kuma="gh repo sync automaat/kuma -b master"
+  alias sync-kuma-website="gh repo sync automaat/kuma-website -b master"
+  alias awsk="aws --profile saml --region us-west-1"
+  alias kol="bash $HOME/kong/konnect-on-call-tool-kit/cli/kolsch.sh"
+  alias kctl="$HOME/kong/mesh/kuma/build/artifacts-darwin-arm64/kumactl/kumactl"
+fi
+
+[[ ! -d "$HOME/.kuma-dev/kuma-master/bin" ]] || path=("$HOME/.kuma-dev/kuma-master/bin" $path)
+[[ ! -d "$HOME/.antigravity/antigravity/bin" ]] || path=("$HOME/.antigravity/antigravity/bin" $path)
+path=("$HOME/bin" "/opt/homebrew/opt/ruby/bin" $path "$HOME/go/bin" "$HOME/.local/bin" "/Applications/ToolHive.app/Contents/Resources/bin/darwin-arm64" "/opt/homebrew/share/google-cloud-sdk/bin")
+
+eval "$(mise activate zsh)"
+
+source <(fzf --zsh)
+source "$(brew --prefix autojump)/etc/profile.d/autojump.sh"
+eval "$(saml2aws --completion-script-zsh)"
+
+npm_token() {
+  [[ -n ${NPM_TOKEN:-} ]] && return 0
+  local acct=${OP_ACCOUNT:-}
+  local ref=${NPM_TOKEN_OP_REF:-}
+  [[ -n $ref && -n $acct ]] || return 0
+  local t
+  t=$(op read $ref --account $acct 2>/dev/null)
+  if [[ -z $t ]] && [[ -o interactive ]]; then
+    eval "$(op signin --account $acct)" 2>/dev/null
+    t=$(op read $ref --account $acct 2>/dev/null)
+  fi
+  if [[ -z $t ]]; then
+    print -u2 "NPM_TOKEN: 1Password did not answer. Try: eval \"\$(op signin --account $acct)\""
+    return 1
+  fi
+  export NPM_TOKEN=$t
+}
+
+eval "$(starship init zsh)"
+eval "$(direnv hook zsh)"
+export GPG_TTY=$TTY

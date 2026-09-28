@@ -1,0 +1,76 @@
+protect:
+  immutable: true
+
+files:
+  - {src: dotfiles/zsh/zshrc, dst: ~/.zshrc}
+  - {src: dotfiles/zsh/zshenv, dst: ~/.zshenv}
+  - {src: dotfiles/zsh/zprofile, dst: ~/.zprofile}
+  - {src: dotfiles/zsh/zsh_plugins.txt, dst: ~/.config/zsh/zsh_plugins.txt}
+  - {src: dotfiles/git/config, dst: ~/.config/git/config}
+  - {src: dotfiles/git/.gitignore_global, dst: ~/.gitignore_global}
+  - {src: dotfiles/vim/vimrc, dst: ~/.vimrc}
+  - {src: dotfiles/gnupg/gpg.conf, dst: ~/.gnupg/gpg.conf}
+  - {src: dotfiles/gnupg/gpg-agent.conf, dst: ~/.gnupg/gpg-agent.conf}
+  - {src: dotfiles/mise/config.toml, dst: ~/.config/mise/config.toml}
+  - {src: dotfiles/starship/starship.toml, dst: ~/.config/starship.toml}
+  - {src: dotfiles/ghostty/config, dst: ~/.config/ghostty/config}
+  - {src: dotfiles/ghostty/themes, dst: ~/.config/ghostty/themes}
+  - {src: dotfiles/k9s/skins/transparent.yaml, dst: ~/.config/k9s/skins/transparent.yaml}
+  - {src: dotfiles/k9s/skins/everforest-light.yaml, dst: ~/.config/k9s/skins/everforest-light.yaml}
+  - {src: dotfiles/k9s/skins/nord-light.yaml, dst: ~/.config/k9s/skins/nord-light.yaml}
+  - {src: dotfiles/klaudiush/config.toml, dst: ~/.config/klaudiush/config.toml}
+  - {src: dotfiles/hammerspoon/init.lua, dst: ~/.hammerspoon/init.lua}
+  - {src: dotfiles/hammerspoon/zoom-smart-plug.lua, dst: ~/.hammerspoon/zoom-smart-plug.lua}
+  - {src: dotfiles/hammerspoon/desk-charger-battery.lua, dst: ~/.hammerspoon/desk-charger-battery.lua}
+  - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
+  - {src: dotfiles/bin/eac, dst: ~/.local/bin/eac}
+
+# The work Mac's device management forces ~/.ssh/config back to 600 every
+# ~15 minutes, which would undo the files protection.
+links:
+  - {src: dotfiles/ssh/config, dst: ~/.ssh/config}
+
+templates:
+  files:
+    - {src: dotfiles/k9s/config.yaml.tmpl, dst: ~/.config/k9s/config.yaml}
+
+brew:
+  file: Brewfile
+  cleanup: zap
+  upgrade: true
+
+mise:
+  config: dotfiles/mise/config.toml
+
+system:
+  sudoTouchID: true
+  dirs:
+    - {path: ~/.ssh, mode: 0700}
+    - {path: ~/.gnupg, mode: 0700}
+    - {path: ~/Documents/1_Projects}
+    - {path: ~/Documents/2_Areas}
+    - {path: ~/Documents/3_Resources}
+    - {path: ~/Documents/4_Archive}
+    - {path: ~/Documents/screenshots}
+  sshKey:
+    path: ~/.ssh/id_ed25519
+    comment: skalskimarcin33@gmail.com
+
+commands:
+  - name: gke-gcloud-auth-plugin
+    check: test -x /opt/homebrew/share/google-cloud-sdk/bin/gke-gcloud-auth-plugin
+    run: gcloud components install gke-gcloud-auth-plugin --quiet
+
+defaults:
+  - {domain: com.apple.dock, key: autohide, value: true}
+  - {domain: com.apple.dock, key: show-recents, value: false}
+  - {domain: com.apple.dock, key: wvous-br-corner, value: 1}
+  - {domain: com.apple.finder, key: AppleShowAllExtensions, value: true}
+  - {domain: com.apple.finder, key: FXEnableExtensionChangeWarning, value: false}
+  - {domain: NSGlobalDomain, key: AppleShowAllExtensions, value: true}
+  - {domain: NSGlobalDomain, key: InitialKeyRepeat, value: 15}
+  - {domain: NSGlobalDomain, key: KeyRepeat, value: 2}
+  - {domain: NSGlobalDomain, key: AppleInterfaceStyle, value: Dark}
+  - {domain: NSGlobalDomain, key: com.apple.keyboard.fnState, value: true}
+  - {domain: com.apple.screencapture, key: location, value: ~/Documents/screenshots}
+  - {domain: com.apple.screencapture, key: type, value: png}

@@ -1,131 +1,53 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-echo "🚀 Bootstrapping macOS environment..."
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-error() { echo -e "${RED}❌ $1${NC}" >&2; exit 1; }
-success() { echo -e "${GREEN}✅ $1${NC}"; }
-info() { echo -e "${YELLOW}ℹ️  $1${NC}"; }
-
-# 1. Install Xcode CLI Tools
-if ! xcode-select -p &>/dev/null; then
-    info "Installing Xcode Command Line Tools..."
-    xcode-select --install
-    info "Press any key after installation completes..."
-    read -n 1 -s
-else
-    success "Xcode CLI Tools already installed"
-fi
-
-# 2. Install Nix
-if ! command -v nix &>/dev/null; then
-    info "Installing Nix..."
-    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-
-    # Source Nix
-    if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-        . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-    fi
-
-    # Verify Nix is available
-    if ! command -v nix &>/dev/null; then
-        error "Nix installation failed. Try restarting terminal and run script again."
-    fi
-    success "Nix installed"
-else
-    success "Nix already installed"
-fi
-
-# 3. Enable experimental features
-info "Enabling Nix experimental features..."
-sudo mkdir -p /etc/nix
-if ! grep -q "experimental-features = nix-command flakes" /etc/nix/nix.conf 2>/dev/null; then
-    echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf
-    sudo launchctl kickstart -k system/org.nixos.nix-daemon
-    sleep 2  # Wait for daemon to restart
-    success "Experimental features enabled"
-else
-    success "Experimental features already enabled"
-fi
-
-# 4. Clone repo
+REPO_URL="https://github.com/Automaat/environment-as-code.git"
 REPO_DIR="$HOME/sideprojects/environment-as-code"
-if [ ! -d "$REPO_DIR" ]; then
-    info "Cloning repository..."
-    mkdir -p "$HOME/sideprojects"
 
-    # Prompt for GitHub username
-    read -p "GitHub username (for git clone): " GITHUB_USER
-    git clone "https://github.com/$GITHUB_USER/environment-as-code.git" "$REPO_DIR"
-    success "Repository cloned"
-else
-    success "Repository already exists"
+info() { printf '\033[1;33m==> %s\033[0m\n' "$1"; }
+
+if ! xcode-select -p &>/dev/null; then
+    info "Installing Xcode Command Line Tools (finish the dialog, then press any key)"
+    xcode-select --install
+    read -r -n 1 -s
 fi
 
+if [ ! -x /opt/homebrew/bin/brew ]; then
+    info "Installing Homebrew"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+info "Installing mise"
+brew install mise
+
+if [ ! -d "$REPO_DIR" ]; then
+    info "Cloning $REPO_URL"
+    mkdir -p "$(dirname "$REPO_DIR")"
+    git clone "$REPO_URL" "$REPO_DIR"
+fi
 cd "$REPO_DIR"
 
-# 5. Configure personal details
-info "Configuring personal details..."
-read -p "Full name: " USER_NAME
-read -p "Email: " USER_EMAIL
+info "Installing the eac toolchain"
+mise trust --yes mise.toml
+mise install --yes
 
-# Get actual username and home directory
-ACTUAL_USER=$(whoami)
-ACTUAL_HOME="$HOME"
+info "Creating the SSH key"
+mise exec -- go run ./cmd/eac apply --only system
 
-info "Detected user: $ACTUAL_USER"
-info "Detected home: $ACTUAL_HOME"
+# The managed git config fetches GitHub over SSH, so tool installs need the
+# key registered first.
+until ssh -T -o StrictHostKeyChecking=accept-new git@github.com 2>&1 | grep -q "successfully authenticated"; do
+    pbcopy < "$HOME/.ssh/id_ed25519.pub"
+    info "Public key copied. Add it at https://github.com/settings/ssh/new, then press any key"
+    open "https://github.com/settings/ssh/new"
+    read -r -n 1 -s
+done
 
-# Update home.nix
-sed -i '' "s/^  fullName = \".*\";$/  fullName = \"$USER_NAME\";/" modules/home.nix
-sed -i '' "s/^  userEmail = \".*\";$/  userEmail = \"$USER_EMAIL\";/" modules/home.nix
-sed -i '' "s/^  home.username = \".*\";$/  home.username = \"$ACTUAL_USER\";/" modules/home.nix
-sed -i '' "s|^  home.homeDirectory = \".*\";$|  home.homeDirectory = \"$ACTUAL_HOME\";|" modules/home.nix
+info "Converging the machine"
+mise exec -- go run ./cmd/eac apply
 
-# Get hostname and architecture
-HOSTNAME=$(scutil --get LocalHostName)
-ARCH=$(uname -m)
-if [ "$ARCH" = "arm64" ]; then
-    NIX_ARCH="aarch64-darwin"
-else
-    NIX_ARCH="x86_64-darwin"
-fi
+info "Linking agent configs"
+./dotfiles/claude/link.sh
 
-info "Hostname: $HOSTNAME"
-info "Architecture: $NIX_ARCH"
-
-# Update darwin.nix
-sed -i '' "s/system.primaryUser = \".*\";/system.primaryUser = \"$ACTUAL_USER\";/" modules/darwin.nix
-sed -i '' "s/users.users.\".*\" = {/users.users.\"$ACTUAL_USER\" = {/" modules/darwin.nix
-sed -i '' "s|home = \"/Users/.*\";|home = \"$ACTUAL_HOME\";|" modules/darwin.nix
-
-# Update flake.nix
-sed -i '' "s/\"M-Skalski-MBP\"/\"$HOSTNAME\"/g" flake.nix
-sed -i '' "s/\"aarch64-darwin\"/\"$NIX_ARCH\"/g" flake.nix
-sed -i '' "s/\"marcin.skalski\"/\"$ACTUAL_USER\"/g" flake.nix
-
-success "Configuration updated"
-
-# 6. Build and activate
-info "Building nix-darwin configuration (this may take 10-15 minutes)..."
-info "Running with sudo (required for system activation)..."
-sudo --preserve-env=HOME nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake ".#$HOSTNAME"
-
-# 7. Link non-nix dotfiles (Claude/Codex/Copilot agent instructions)
-info "Linking agent-instruction configs (not nix-managed)..."
-"$REPO_DIR/dotfiles/claude/link.sh"
-success "Agent configs linked"
-
-success "🎉 Bootstrap complete!"
-echo ""
-info "Next steps:"
-echo "  1. Restart your terminal"
-echo "  2. Verify: darwin-rebuild switch --flake ~/.config/nix-darwin"
-echo "  3. Copy SSH key to GitHub: cat ~/.ssh/id_ed25519.pub | pbcopy"
-echo "  4. Commit personal changes: cd $REPO_DIR && git add . && git commit -s -S -m 'feat: personalize config'"
+info "Done. Open a new terminal."

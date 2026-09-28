@@ -1,0 +1,6 @@
+export EDITOR=vim
+export GOPRIVATE="github.com/Kong/*"
+export MISE_AUTO_INSTALL=1
+export XDG_CONFIG_HOME="$HOME/.config"
+
+[[ ! -r ~/.config/zsh/secrets.zsh ]] || source ~/.config/zsh/secrets.zsh

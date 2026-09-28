@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+repo="${EAC_REPO:-$HOME/sideprojects/environment-as-code}"
+if [ ! -f "$repo/eac.yaml" ]; then
+    echo "eac: no eac.yaml in $repo (set EAC_REPO)" >&2
+    exit 1
+fi
+
+cd "$repo"
+exec mise exec -- go run ./cmd/eac -c "$repo/eac.yaml" "$@"

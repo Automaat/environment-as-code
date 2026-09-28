@@ -32,10 +32,6 @@ Temporary Items
 
 # End of https://www.toptal.com/developers/gitignore/api/osx
 
-# Nix
-result
-result-*
-.nix-profile
 
 # Secrets
 *.secret
@@ -47,3 +43,6 @@ dotfiles/vscode/
 
 # Claude Code local settings
 .claude/
+
+# eac
+*.eac-bak*
