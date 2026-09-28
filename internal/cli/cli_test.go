@@ -223,6 +223,40 @@ func TestApplyRecordsHistory(t *testing.T) {
 	}
 }
 
+// cancelAware fails once ctx is done, as exec does.
+type cancelAware struct{ runner.Runner }
+
+func (r cancelAware) Run(ctx context.Context, c runner.Cmd) (runner.Result, error) {
+	if err := ctx.Err(); err != nil {
+		return runner.Result{}, err
+	}
+	return r.Runner.Run(ctx, c)
+}
+
+func TestInterruptedApplyRecordsCommit(t *testing.T) {
+	home := t.TempDir()
+	fake := runnertest.New().
+		OnOK("git -C /repo rev-parse HEAD", "abc123\n").
+		OnOK("git -C /repo status --porcelain", "")
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	env := Env{Home: home, Runner: cancelAware{fake}}
+	if err := recordHistory(ctx, env, "/repo", nil, ctx.Err()); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(HistoryPath(home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var entry historyEntry
+	if err := json.Unmarshal(bytes.TrimSpace(data), &entry); err != nil {
+		t.Fatal(err)
+	}
+	if entry.Commit != "abc123" || entry.Error == "" {
+		t.Errorf("entry = %+v", entry)
+	}
+}
+
 func TestRepoWarnings(t *testing.T) {
 	root := "/repo"
 	fake := runnertest.New().

@@ -54,7 +54,10 @@ func repoWarnings(ctx context.Context, r runner.Runner, root string) []string {
 	return warnings
 }
 
+// recordHistory ignores cancellation, so an interrupted apply still records
+// its commit.
 func recordHistory(ctx context.Context, env Env, root string, plan engine.Plan, applyErr error) error {
+	ctx = context.WithoutCancel(ctx)
 	entry := historyEntry{Time: env.now()}
 	entry.Commit, _ = git(ctx, env.Runner, root, "rev-parse", "HEAD")
 	if status, ok := git(ctx, env.Runner, root, "status", "--porcelain"); ok {
