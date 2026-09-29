@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Automaat/zakwas/main/schema/zakwas.schema.json
 protect:
   immutable: true
 
@@ -47,8 +48,8 @@ mise:
 system:
   sudoTouchID: true
   dirs:
-    - {path: ~/.ssh, mode: 0700}
-    - {path: ~/.gnupg, mode: 0700}
+    - {path: ~/.ssh, mode: 0o700}
+    - {path: ~/.gnupg, mode: 0o700}
     - {path: ~/Documents/1_Projects}
     - {path: ~/Documents/2_Areas}
     - {path: ~/Documents/3_Resources}

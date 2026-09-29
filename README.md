@@ -1,6 +1,8 @@
 # environment-as-code
 
-My macOS setup as code: the config for [zakwas](https://github.com/Automaat/zakwas), which converges the machine to `zakwas.yaml`:
+My macOS setup as code: the config for [zakwas](https://github.com/Automaat/zakwas), which converges the machine to `zakwas.yaml`. It's also a real-world example of a zakwas config (~65 pinned CLI tools, casks, dotfiles, macOS defaults, a daily drift check); for a fresh one, `zakwas init` builds a starter repo from your own Mac.
+
+What it manages:
 
 - **brew**: GUI apps and a few formulae from `Brewfile` (`brew bundle`, with zap cleanup)
 - **mise**: every other CLI tool, pinned in `dotfiles/mise/config.toml` and bumped by Renovate
