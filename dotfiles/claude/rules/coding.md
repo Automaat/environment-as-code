@@ -19,7 +19,7 @@
 ## Hooks
 
 - Always fix the root cause; never `--no-verify` or work around
-- eac: dotfiles are locked copies; change them in the repo and run `eac apply`, never unlock and edit the installed file
+- zakwas: dotfiles are locked copies; change them in the repo and run `zakwas apply`, never unlock and edit the installed file
 
 ## Testing
 

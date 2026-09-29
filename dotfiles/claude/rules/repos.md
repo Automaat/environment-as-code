@@ -16,7 +16,7 @@ Projects live in two roots. Don't search the filesystem — look here first.
 | deepgram-stt | Python | Deepgram speech-to-text for Home Assistant |
 | doctorine | Node | Doctorine |
 | drafts-mcp | Node | Drafts MCP server |
-| environment-as-code | Go | This machine's setup (`eac` CLI, dotfiles, Brewfile, mise) |
+| environment-as-code | config | This machine's setup (zakwas config: dotfiles, Brewfile, mise) |
 | falasurf | Node | Fala Surf & Wind School site |
 | finance-buddy | Node | Finansowa Forteca (personal finance) |
 | flip | Node | Flip |
@@ -42,6 +42,7 @@ Projects live in two roots. Don't search the filesystem — look here first.
 | sybra-website | Node | Sybra site |
 | synapse | Go | Synapse |
 | vault | docs | Second Brain (Obsidian, PARA) |
+| zakwas | Go | Declarative macOS setup CLI (OSS; config lives in environment-as-code) |
 | zsh-clean-history | Rust | zsh history cleaner |
 
 ## Work projects (Kong) — `~/kong/`

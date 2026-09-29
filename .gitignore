@@ -44,5 +44,6 @@ dotfiles/vscode/
 # Claude Code local settings
 .claude/
 
-# eac
+# zakwas
+*.zakwas-bak*
 *.eac-bak*
