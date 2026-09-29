@@ -2,7 +2,7 @@
 idiomatic_version_file_enable_tools = ["ruby"]
 
 [tools]
-"github:Automaat/zakwas" = "0.3.0"
+"github:Automaat/zakwas" = "0.4.0"
 go = "1.27.1"
 node = "24.21.0"
 python = "3.13.15"
