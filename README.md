@@ -15,7 +15,7 @@ My macOS setup as code: the config for [zakwas](https://github.com/Automaat/zakw
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Automaat/environment-as-code/main/bootstrap.sh)"
 ```
 
-Runs the zakwas installer (Xcode CLI tools, Homebrew, mise, zakwas) with the pinned zakwas release, clones the repo to `~/sideprojects/environment-as-code`, creates an SSH key and waits until it's added to GitHub, then runs `zakwas apply` and links the agent configs. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
+Runs the zakwas installer (Xcode CLI tools, pinned zakwas release to `~/.local/bin`), clones the repo to `~/sideprojects/environment-as-code`, creates an SSH key and waits until it's added to GitHub, then runs `zakwas apply` (which installs Homebrew and mise itself) and links the agent configs. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
 
 Git signs every commit with the GPG key in `dotfiles/git/config`, which bootstrap can't create. Until it's imported, `zakwas apply` fails on the `git signing key imported` command with the steps:
 

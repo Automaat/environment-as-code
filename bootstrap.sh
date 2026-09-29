@@ -29,8 +29,7 @@ main() {
         sed -n 's|^"github:Automaat/zakwas" = "\(.*\)"$|\1|p')
 
     curl -fsSL "$INSTALLER" | bash -s -- --repo "$REPO_URL" --dir "$REPO_DIR" --version "$version" --no-apply
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-    zakwas() { mise exec "github:Automaat/zakwas@$version" -- zakwas "$@"; }
+    zakwas() { "$HOME/.local/bin/zakwas" "$@"; }
     cd "$REPO_DIR"
 
     info "Creating the SSH key"
@@ -55,6 +54,7 @@ main() {
         fi
     fi
 
+    # Installs Homebrew and mise first, then everything else.
     info "Converging the machine"
     zakwas apply
 
