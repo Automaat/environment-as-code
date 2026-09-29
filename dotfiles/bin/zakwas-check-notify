@@ -1,0 +1,16 @@
+#!/bin/sh
+PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH
+ZAKWAS_CONFIG="${ZAKWAS_CONFIG:-$HOME/sideprojects/environment-as-code/zakwas.yaml}"
+export ZAKWAS_CONFIG
+
+status=0
+mise exec -- zakwas check > /dev/null 2>&1 || status=$?
+
+case $status in
+    0) exit 0 ;;
+    2) message="This Mac drifted from zakwas.yaml. Run: zakwas plan" ;;
+    *) message="zakwas check failed (exit $status). Run: zakwas check" ;;
+esac
+
+osascript -e "display notification \"$message\" with title \"zakwas\""

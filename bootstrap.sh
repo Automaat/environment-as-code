@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPO_URL="https://github.com/Automaat/environment-as-code.git"
 REPO_DIR="$HOME/sideprojects/environment-as-code"
+INSTALLER="https://raw.githubusercontent.com/Automaat/zakwas/main/install.sh"
 
 info() { printf '\033[1;33m==> %s\033[0m\n' "$1"; }
 
@@ -22,34 +23,17 @@ main() {
         exec </dev/tty
     fi
 
-    if ! xcode-select -p &>/dev/null; then
-        info "Installing Xcode Command Line Tools (finish the dialog, then press any key)"
-        xcode-select --install
-        read -r -n 1 -s
-    fi
+    # The pinned release, so a fresh Mac runs what this config was tested with.
+    local version
+    version=$(curl -fsSL "https://raw.githubusercontent.com/Automaat/environment-as-code/main/dotfiles/mise/config.toml" |
+        sed -n 's|^"github:Automaat/zakwas" = "\(.*\)"$|\1|p')
 
-    if [ ! -x /opt/homebrew/bin/brew ]; then
-        info "Installing Homebrew"
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    fi
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-
-    info "Installing mise"
-    brew install mise
-
-    if [ ! -d "$REPO_DIR" ]; then
-        info "Cloning $REPO_URL"
-        mkdir -p "$(dirname "$REPO_DIR")"
-        git clone "$REPO_URL" "$REPO_DIR"
-    fi
+    curl -fsSL "$INSTALLER" | bash -s -- --repo "$REPO_URL" --dir "$REPO_DIR" --version "$version" --no-apply
+    zakwas() { "$HOME/.local/bin/zakwas" "$@"; }
     cd "$REPO_DIR"
 
-    info "Installing the eac toolchain"
-    mise trust --yes mise.toml
-    mise install --yes
-
     info "Creating the SSH key"
-    mise exec -- go run ./cmd/eac apply --only system
+    zakwas apply -y --only system
 
     # The managed git config fetches GitHub over SSH, so tool installs need
     # the key registered first.
@@ -70,8 +54,9 @@ main() {
         fi
     fi
 
+    # Installs Homebrew and mise first, then everything else.
     info "Converging the machine"
-    mise exec -- go run ./cmd/eac apply
+    zakwas apply
 
     info "Linking agent configs"
     ./dotfiles/claude/link.sh

@@ -26,18 +26,6 @@ jobs:
           # renovate: datasource=github-releases depName=jdx/mise
           version: 2026.9.16
 
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/Library/Caches/go-build
-            ~/Library/Caches/golangci-lint
-          key: go-test-${{ runner.os }}-${{ hashFiles('go.sum', 'mise.toml') }}
-          restore-keys: go-test-${{ runner.os }}-
-
-      - name: lint
-        run: mise run lint
-
       - name: shellcheck
         run: shellcheck bootstrap.sh dotfiles/claude/*.sh dotfiles/bin/*
 
@@ -56,18 +44,15 @@ jobs:
           done
           git diff --exit-code -- dotfiles/claude/AGENTS.md
 
-      - name: unit, e2e and integration tests
-        run: mise run test:integration
-
       - name: config resolves on a real Mac
-        run: go run ./cmd/eac plan --only system,files,links,templates,commands,defaults
+        run: zakwas plan --only system,files,links,templates,commands,defaults
 
       # The brew module parses undocumented `brew bundle` output. The runner
       # ships formulae the Brewfile doesn't list, so a working cleanup parser
       # must report some; an empty list means the format changed.
       - name: brew output parsers work against real Homebrew
         run: |
-          go run ./cmd/eac plan --only brew | tee "$RUNNER_TEMP/brew.plan"
+          zakwas plan --only brew | tee "$RUNNER_TEMP/brew.plan"
           grep -qE '^  - (brew|cask) ' "$RUNNER_TEMP/brew.plan"
 
   e2e:
@@ -93,14 +78,6 @@ jobs:
           # renovate: datasource=github-releases depName=jdx/mise
           version: 2026.9.16
 
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/Library/Caches/go-build
-          key: go-e2e-${{ runner.os }}-${{ hashFiles('go.sum', 'mise.toml') }}
-          restore-keys: go-e2e-${{ runner.os }}-
-
       # Restore and save are split so tools downloaded by a run that later
       # fails are still kept; the combined action only saves on success.
       - name: restore pinned tools
@@ -125,7 +102,7 @@ jobs:
       - name: apply
         run: |
           modules=system,files,templates,mise,defaults
-          go run ./cmd/eac apply -y --only "$modules" || go run ./cmd/eac apply -y --only "$modules"
+          zakwas apply -y --only "$modules" || zakwas apply -y --only "$modules"
 
       - name: save pinned tools
         if: always() && steps.tools.outputs.cache-hit != 'true'
@@ -134,10 +111,12 @@ jobs:
           path: ~/.local/share/mise/installs
           key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
 
-      - name: nothing left to change, checked via the installed eac command
+      # The applied global mise config pins zakwas too.
+      - name: nothing left to change, checked via the globally pinned zakwas
+        working-directory: /
         env:
-          EAC_REPO: ${{ github.workspace }}
-        run: ~/.local/bin/eac check --only system,files,templates,mise,defaults
+          ZAKWAS_CONFIG: ${{ github.workspace }}/zakwas.yaml
+        run: mise exec -- zakwas check --only system,files,templates,mise,defaults
 
       - name: dotfiles are protected
         run: |

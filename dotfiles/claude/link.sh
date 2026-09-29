@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Install direct symlinks for the agent-instruction configs (Claude, Codex,
-# Copilot, opencode). eac doesn't manage these: agents write next to them, so
+# Copilot, opencode). zakwas doesn't manage these: agents write next to them, so
 # they stay plain symlinks. Edit the sources in this repo and re-run.
 # Idempotent; backs up any real (non-symlink) file it replaces.
 set -euo pipefail
@@ -14,8 +14,8 @@ link() { # link <target> <linkpath>
   local target="$1" path="$2"
   mkdir -p "$(dirname "$path")"
   if [ -e "$path" ] && [ ! -L "$path" ]; then
-    mv "$path" "$path.pre-eac.bak"
-    echo "backed up $path -> $path.pre-eac.bak"
+    mv "$path" "$path.pre-zakwas.bak"
+    echo "backed up $path -> $path.pre-zakwas.bak"
   fi
   ln -sfn "$target" "$path"
   echo "linked $path -> $target"

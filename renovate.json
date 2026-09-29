@@ -13,7 +13,6 @@
   "automergeStrategy": "squash",
   "platformAutomerge": true,
   "rebaseWhen": "behind-base-branch",
-  "postUpdateOptions": ["gomodTidy"],
   "customManagers": [
     {
       "customType": "regex",
@@ -52,21 +51,13 @@
       "allowedVersions": "<3.14"
     },
     {
-      "description": "eac's own Go toolchain and dependencies.",
-      "matchFileNames": ["go.mod", "mise.toml"],
-      "groupName": "eac toolchain",
-      "groupSlug": "eac-toolchain",
-      "addLabels": ["go"]
-    },
-    {
-      "description": "Go is pinned in both mise configs; bump them in one PR so eac and the global toolchain never drift apart.",
+      "description": "zakwas is pinned in both mise configs; bump them in one PR so CI and the machine run the same release.",
       "matchManagers": ["mise"],
-      "matchDepNames": ["go"],
-      "matchFileNames": ["mise.toml", "dotfiles/mise/config.toml"],
-      "groupName": "go",
-      "groupSlug": "go",
+      "matchDepNames": ["github:Automaat/zakwas", "Automaat/zakwas"],
+      "groupName": "zakwas",
+      "groupSlug": "zakwas",
       "schedule": ["at any time"],
-      "addLabels": ["go"]
+      "addLabels": ["zakwas"]
     },
     {
       "matchManagers": ["github-actions"],

@@ -22,8 +22,7 @@ files:
   - {src: dotfiles/hammerspoon/zoom-smart-plug.lua, dst: ~/.hammerspoon/zoom-smart-plug.lua}
   - {src: dotfiles/hammerspoon/desk-charger-battery.lua, dst: ~/.hammerspoon/desk-charger-battery.lua}
   - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
-  - {src: dotfiles/bin/eac, dst: ~/.local/bin/eac}
-  - {src: dotfiles/bin/eac-check-notify, dst: ~/.local/bin/eac-check-notify}
+  - {src: dotfiles/bin/zakwas-check-notify, dst: ~/.local/bin/zakwas-check-notify}
 
 # The work Mac's device management forces ~/.ssh/config back to 600 every
 # ~15 minutes, which would undo the files protection.
@@ -34,7 +33,7 @@ templates:
   files:
     - {src: dotfiles/k9s/config.yaml.tmpl, dst: ~/.config/k9s/config.yaml}
     - {src: dotfiles/klaudiush/config.toml.tmpl, dst: ~/.config/klaudiush/config.toml}
-    - {src: dotfiles/launchd/dev.eac.check.plist.tmpl, dst: ~/Library/LaunchAgents/dev.eac.check.plist}
+    - {src: dotfiles/launchd/dev.zakwas.check.plist.tmpl, dst: ~/Library/LaunchAgents/dev.zakwas.check.plist}
 
 brew:
   file: Brewfile
@@ -65,13 +64,17 @@ commands:
     run: gcloud components install gke-gcloud-auth-plugin --quiet
   - name: daily drift notification
     check: >-
-      launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1 &&
-      cmp -s "$HOME/Library/LaunchAgents/dev.eac.check.plist" "$HOME/.local/state/eac/dev.eac.check.loaded.plist"
+      launchctl print "gui/$(id -u)/dev.zakwas.check" > /dev/null 2>&1 &&
+      cmp -s "$HOME/Library/LaunchAgents/dev.zakwas.check.plist" "$HOME/.local/state/zakwas/dev.zakwas.check.loaded.plist"
     run: >-
-      launchctl bootout "gui/$(id -u)/dev.eac.check" 2> /dev/null;
-      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.eac.check.plist" &&
-      mkdir -p "$HOME/.local/state/eac" &&
-      cp -f "$HOME/Library/LaunchAgents/dev.eac.check.plist" "$HOME/.local/state/eac/dev.eac.check.loaded.plist"
+      launchctl bootout "gui/$(id -u)/dev.zakwas.check" 2> /dev/null;
+      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.zakwas.check.plist" &&
+      mkdir -p "$HOME/.local/state/zakwas" &&
+      cp -f "$HOME/Library/LaunchAgents/dev.zakwas.check.plist" "$HOME/.local/state/zakwas/dev.zakwas.check.loaded.plist"
+  # Pre-rename agent: removing its plist doesn't unload it.
+  - name: old eac drift agent unloaded
+    check: '! launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1'
+    run: launchctl bootout "gui/$(id -u)/dev.eac.check"
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
@@ -79,7 +82,7 @@ commands:
     run: >-
       echo "GPG key C25DFDF396ADF455 (signingKey in dotfiles/git/config) is missing; git commits will fail." >&2;
       echo "Export it on the old Mac: gpg --export-secret-keys --armor C25DFDF396ADF455 > key.asc" >&2;
-      echo "Import it here: gpg --import key.asc && rm key.asc, then run eac apply again." >&2;
+      echo "Import it here: gpg --import key.asc && rm key.asc, then run zakwas apply again." >&2;
       exit 1
 
 defaults:
