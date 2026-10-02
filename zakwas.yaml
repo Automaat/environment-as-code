@@ -16,6 +16,10 @@ files:
   - {src: dotfiles/starship/starship.toml, dst: ~/.config/starship.toml}
   - {src: dotfiles/ghostty/config, dst: ~/.config/ghostty/config}
   - {src: dotfiles/ghostty/themes, dst: ~/.config/ghostty/themes}
+  # Calibrite display profiles; after recalibrating, copy the new .icc here
+  # and drop the old one (once no display uses it). Installed copies are
+  # locked, so save a recalibration under a new name, not over an old one.
+  - {src: dotfiles/colorsync, dst: ~/Library/ColorSync/Profiles}
   - {src: dotfiles/k9s/skins/transparent.yaml, dst: ~/.config/k9s/skins/transparent.yaml}
   - {src: dotfiles/k9s/skins/everforest-light.yaml, dst: ~/.config/k9s/skins/everforest-light.yaml}
   - {src: dotfiles/k9s/skins/nord-light.yaml, dst: ~/.config/k9s/skins/nord-light.yaml}

@@ -71,6 +71,7 @@ cask "tailscale-app"
 cask "wch-ch34x-usb-serial-driver"
 
 cask "adobe-acrobat-reader"
+cask "calibrite-profiler"
 cask "elgato-stream-deck"
 cask "xnviewmp"
 
