@@ -1,0 +1,16 @@
+{
+  "name": "kong-ai-intel",
+  "description": "Digest new Kong Slack messages about agentic AI, Claude Code and AI agents since the last run, filtered for kreview/ksai, internal AI adoption and agentic tooling.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/kong-ai-intel",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "slack",
+    "digest",
+    "ai",
+    "kong"
+  ]
+}

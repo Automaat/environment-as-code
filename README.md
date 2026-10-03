@@ -42,6 +42,19 @@ Installed dotfiles are read-only. Edit them under `dotfiles/` (or add a tool to 
 
 A launchd agent runs `zakwas check` every day at 10:00 and shows a notification when the Mac drifted.
 
+## Agent skills
+
+`plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo is a marketplace for Claude Code and Codex:
+
+```bash
+claude plugin marketplace add ~/sideprojects/environment-as-code
+claude plugin install fix-review@environment-as-code    # agent-md-gen, go-code-review, kong-ai-intel
+codex plugin marketplace add ~/sideprojects/environment-as-code
+codex plugin add fix-review@environment-as-code
+```
+
+opencode loads the skill dirs as they are; `dotfiles/claude/link.sh` links them into `~/.claude/skills`.
+
 ## Development
 
 ```bash

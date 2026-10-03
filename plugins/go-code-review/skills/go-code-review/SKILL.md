@@ -2,7 +2,6 @@
 name: go-code-review
 description: Auto-review Go code for 100+ common mistakes when analyzing .go files, discussing Go patterns, or reviewing PRs with Go code. Checks error handling, concurrency, interfaces, performance, testing, and stdlib usage.
 allowed-tools: Read
-user-invocable: true
 ---
 
 # Go Code Review Skill

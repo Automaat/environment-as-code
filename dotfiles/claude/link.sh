@@ -6,16 +6,20 @@
 set -euo pipefail
 
 src_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_dir="$(cd "$src_dir/../.." && pwd)"
 
 # Regenerate the flat, self-contained AGENTS.md from CLAUDE.md + rules/.
 "$src_dir/build-agents.sh"
 
-link() { # link <target> <linkpath>
+link() { # link <target> <linkpath> [backup]
   local target="$1" path="$2"
+  local backup="$path.pre-zakwas.bak"
+  if [ "$#" -ge 3 ]; then backup="$3"; fi
   mkdir -p "$(dirname "$path")"
   if [ -e "$path" ] && [ ! -L "$path" ]; then
-    mv "$path" "$path.pre-zakwas.bak"
-    echo "backed up $path -> $path.pre-zakwas.bak"
+    mkdir -p "$(dirname "$backup")"
+    mv "$path" "$backup"
+    echo "backed up $path -> $backup"
   fi
   ln -sfn "$target" "$path"
   echo "linked $path -> $target"
@@ -31,7 +35,7 @@ prune_dangling() { # prune_dangling <dir>
     [ -L "$existing" ] || continue
     [ -e "$existing" ] && continue
     case "$(readlink "$existing")" in
-      "$src_dir"/*) ;;
+      "$repo_dir"/*) ;;
       *) continue ;;
     esac
     rm -f "$existing"
@@ -44,19 +48,18 @@ link "$src_dir/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 link "$src_dir/rules" "$HOME/.claude/rules"
 link "$src_dir/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
 
-# Claude skills and commands — linked one by one; both directories also hold
-# entries installed by plugins and other repos.
+# Claude skills (opencode reads them too) — linked one by one from the
+# marketplace plugins; the directory also holds entries installed by plugins and
+# other repos. Backups go outside it: agents would load a backed-up skill dir.
 prune_dangling "$HOME/.claude/skills"
-for skill in "$src_dir"/skills/*/; do
+for skill in "$repo_dir"/plugins/*/skills/*/; do
   [ -d "$skill" ] || continue
   skill="${skill%/}"
-  link "$skill" "$HOME/.claude/skills/$(basename "$skill")"
+  name="$(basename "$skill")"
+  link "$skill" "$HOME/.claude/skills/$name" "$HOME/.claude/skills.pre-zakwas.bak/$name"
 done
+# No commands ship any more; this only prunes links to removed ones.
 prune_dangling "$HOME/.claude/commands"
-for cmd in "$src_dir"/commands/*.md; do
-  [ -e "$cmd" ] || continue
-  link "$cmd" "$HOME/.claude/commands/$(basename "$cmd")"
-done
 
 # Codex (global) — flat AGENTS.md; Codex does not follow markdown links.
 link "$src_dir/AGENTS.md" "$HOME/.codex/AGENTS.md"
@@ -71,12 +74,6 @@ link "$src_dir/AGENTS.md" "$HOME/AGENTS.md"
 # opencode's ~/.claude/CLAUDE.md fallback, which loses the rules/ links.
 link "$src_dir/AGENTS.md" "$HOME/.config/opencode/AGENTS.md"
 
-# opencode commands — opencode has no .claude/commands fallback.
-oc_commands="$HOME/.config/opencode/commands"
-prune_dangling "$oc_commands"
-for cmd in "$src_dir"/commands/*.md; do
-  [ -e "$cmd" ] || continue
-  link "$cmd" "$oc_commands/$(basename "$cmd")"
-done
+prune_dangling "$HOME/.config/opencode/commands"
 
 echo "done."

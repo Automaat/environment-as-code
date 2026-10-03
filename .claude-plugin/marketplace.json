@@ -1,0 +1,71 @@
+{
+  "name": "environment-as-code",
+  "owner": {
+    "name": "Marcin Skalski"
+  },
+  "metadata": {
+    "description": "Marcin's personal agent skills, portable across Claude Code, Codex and opencode"
+  },
+  "plugins": [
+    {
+      "name": "agent-md-gen",
+      "source": "./plugins/agent-md-gen",
+      "description": "Generate a project-specific CLAUDE.md with domain instructions, workflows and templates from codebase analysis and a few clarifying questions. Ships the claude-md-gen skill.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "claude-md",
+        "agents-md",
+        "instructions",
+        "scaffold"
+      ]
+    },
+    {
+      "name": "go-code-review",
+      "source": "./plugins/go-code-review",
+      "description": "Review Go code for 100+ common mistakes from 100go.co: error handling, concurrency, interfaces, performance, testing and stdlib usage.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "go",
+        "golang",
+        "code-review",
+        "100go"
+      ]
+    },
+    {
+      "name": "fix-review",
+      "source": "./plugins/fix-review",
+      "description": "Fix unresolved GitHub PR review comments non-interactively: apply valid fixes, push, and reply to every thread. Runs only when invoked explicitly.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "github",
+        "pull-request",
+        "code-review",
+        "automation"
+      ]
+    },
+    {
+      "name": "kong-ai-intel",
+      "source": "./plugins/kong-ai-intel",
+      "description": "Digest new Kong Slack messages about agentic AI, Claude Code and AI agents since the last run, filtered for kreview/ksai, internal AI adoption and agentic tooling.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "productivity",
+      "tags": [
+        "slack",
+        "digest",
+        "ai",
+        "kong"
+      ]
+    }
+  ]
+}

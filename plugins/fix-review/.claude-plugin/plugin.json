@@ -1,0 +1,16 @@
+{
+  "name": "fix-review",
+  "description": "Fix unresolved GitHub PR review comments non-interactively: apply valid fixes, push, and reply to every thread. Runs only when invoked explicitly.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/fix-review",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "github",
+    "pull-request",
+    "code-review",
+    "automation"
+  ]
+}

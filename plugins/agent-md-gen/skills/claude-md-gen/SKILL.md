@@ -1,13 +1,18 @@
 ---
 name: claude-md-gen
 description: Generate project-specific CLAUDE.md with domain instructions, workflows, templates. Analyzes codebase, asks clarifying questions, produces tailored instructions.
-argument-hint: [project-path] [--type cli-tool|web-app|python-cli|research|api-service|library|mixed]
-allowed-tools: Read, Grep, Glob, Bash, AskUserQuestion, Write
+allowed-tools: Read Grep Glob Bash AskUserQuestion Write
 ---
 
 # CLAUDE.md Generator Skill
 
 Generate project-specific CLAUDE.md files through codebase analysis, targeted questions, and pattern selection.
+
+## Arguments
+
+Read them from the user's request: an optional project path (default: the current directory) and an optional `--type cli-tool|web-app|python-cli|research|api-service|library|mixed` (default: auto-detect).
+
+Where this skill says AskUserQuestion and the agent has no such tool, ask the same questions in chat and wait for the answers.
 
 ## Critical Requirements
 
