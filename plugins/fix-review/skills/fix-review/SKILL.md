@@ -117,7 +117,7 @@ For each unresolved comment:
 
 If no valid fix was applied, make no commit and no push; go to Phase 4.
 
-Otherwise list the files you edited in Phase 2 as `<paths>`. Never `git add .`, and leave anything already staged alone: only `<paths>` go into this commit. Run `git add` only for new files among `<paths>` so git tracks them.
+Otherwise list the files you edited in Phase 2 as `<paths>`. Never `git add .`, and leave anything already staged alone: only `<paths>` go into this commit.
 
 ### Commit message
 
@@ -135,7 +135,9 @@ Format: `<type>(<scope>): <description>`, title ≤50 characters, no PR refs, no
 - **description**: imperative, lowercase, no trailing period; name what the fixes changed (e.g. `fix(auth): handle nil token in refresh`), not that review comments were addressed. For several unrelated fixes, name the most significant one or the common theme.
 - Count the full title; if it exceeds 50 characters, shorten the description, not the scope.
 
-Keep apostrophes, backticks, `$` and `!` out of the title (write "do not", not "don't"), then commit signed with the title in single quotes, limited to `<paths>` so nothing else in the index is committed: `git commit -s -S -m '<title>' -- <paths>`.
+Keep apostrophes, backticks, `$` and `!` out of the title (write "do not", not "don't"), then stage and commit `<paths>` in one command, signed, with the title in single quotes. The trailing `-- <paths>` keeps anything else in the index out of the commit:
+
+`git add -- <paths> && git commit -s -S -m '<title>' -- <paths>`
 
 ### Commit failure
 
