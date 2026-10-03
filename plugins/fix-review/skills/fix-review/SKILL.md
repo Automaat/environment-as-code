@@ -135,11 +135,13 @@ Format: `<type>(<scope>): <description>`, title ≤50 characters, no PR refs, no
 - **description**: imperative, lowercase, no trailing period; name what the fixes changed (e.g. `fix(auth): handle nil token in refresh`), not that review comments were addressed. For several unrelated fixes, name the most significant one or the common theme.
 - Count the full title; if it exceeds 50 characters, shorten the description, not the scope.
 
-Commit signed, with the title as the message: `git commit -s -S -m '<title>'` (single quotes, so backticks and `$` stay literal).
+Keep apostrophes, backticks, `$` and `!` out of the title (write "do not", not "don't"), then commit signed with the title in single quotes: `git commit -s -S -m '<title>'`.
 
-### Hook rejection
+### Commit failure
 
-If a hook rejects the commit, read its error, adjust the message (or fix the flagged content and re-stage those files with `git add`) to satisfy it, and retry. Never use `--no-verify`, never disable hooks, never drop `-s -S`. After three failed attempts, stop committing: leave the fixes uncommitted, still post the Phase 4 replies for questionable and invalid threads, post no **Applied** replies (there is no SHA), and report the uncommitted fixes plus the hook output in the Phase 5 summary.
+Check the exit code. If the commit fails for any reason (hook rejection, signing error, shell error), read the error and fix the cause: adjust the message, or fix the flagged content and re-stage those files with `git add`, then retry. Never use `--no-verify`, never disable hooks, never drop `-s -S`.
+
+After three failed attempts, stop committing and do not push. Leave the fixes uncommitted, still reply to every thread in Phase 4 (applied fixes use the **Fixed, not pushed** template), and report the uncommitted fixes plus the last error in the Phase 5 summary.
 
 ### Push
 
@@ -147,7 +149,7 @@ If a hook rejects the commit, read its error, adjust the message (or fix the fla
 git push
 ```
 
-Never use `git push --no-verify`. If a pre-push hook rejects the push, fix what it flags, commit with the rules above, and retry, at most three times. If the push still fails, handle the replies the same way as a failed commit and report the unpushed commit.
+Never use `git push --no-verify`. If a pre-push hook rejects the push, fix what it flags, commit with the rules above, and retry, at most three times. If the push still fails, reply as for a failed commit (applied fixes use **Fixed, not pushed**, naming the local SHA) and report the unpushed commit.
 
 Push is required before replying so reviewers see the new SHA alongside the replies.
 
@@ -159,6 +161,12 @@ For **every** thread processed in Phase 1 — applied, questionable, or invalid 
 
 ```
 **Applied** — <one-line description of the change> (<short-sha>).
+```
+
+Only when Phase 3 could not commit or push:
+
+```
+**Fixed, not pushed** — <one-line description of the change>. <Why it is not on the PR yet, e.g. the hook error>. Will follow up.
 ```
 
 ```
