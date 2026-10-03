@@ -49,6 +49,46 @@ mise:
   config: dotfiles/mise/config.toml
   prune: true
 
+# Agent plugins for Claude Code, Codex and opencode. Entries without their own
+# providers target all three. Codex and opencode are named so zakwas manages
+# them strictly instead of skipping them. opencode can't keep a skill from
+# running on its own, so skills with side effects skip it.
+agents:
+  providers: [claude, codex, opencode]
+  upgrade: true
+  prune: true
+  marketplaces:
+    sai: smykla-skalski/sai
+    environment-as-code: ./
+    claude-plugins-official: {source: anthropics/claude-plugins-official, providers: [claude]}
+    ksai: {source: Kong/ksai, providers: [claude]}
+    slack: {source: slackapi/slack-skills-plugin, providers: [codex]}
+  plugins:
+    - adversarial-review@sai
+    - adversarial-test@sai
+    - ai-daily-digest@sai
+    - humanize@sai
+    - kubecon-cfp@sai
+    - plan-critic@sai
+    - promptgen@sai
+    - refactor-council@sai
+    - review-claude-md@sai
+    - ship-issue@sai
+    - staff-resume@sai
+    - technical-debt-manager@sai
+    - test-writer@sai
+    - youtube-summary@sai
+    - {id: council@sai, providers: [codex]}
+    - {id: staff-code-review@sai, providers: [codex]}
+    - agent-md-gen@environment-as-code
+    - go-code-review@environment-as-code
+    - kong-ai-intel@environment-as-code
+    - {id: fix-review@environment-as-code, providers: [claude, codex]}
+    - gopls-lsp@claude-plugins-official
+    - slack@claude-plugins-official
+    - issue-authoring@ksai
+    - slack@slack
+
 system:
   sudoTouchID: true
   dirs:
