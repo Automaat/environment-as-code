@@ -53,6 +53,7 @@ agents:
   providers: [claude, codex, opencode]   # the default for every entry
   marketplaces:
     sai: smykla-skalski/sai                                       # all providers
+    environment-as-code: ./                                       # this repo
     ksai: {source: Kong/ksai, providers: [claude]}                # Claude Code only
   plugins:
     - humanize@sai                                                # Claude Code, Codex and opencode
