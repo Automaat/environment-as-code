@@ -96,6 +96,8 @@ For each unresolved comment:
 
 ## Phase 2: Apply Fixes
 
+Before the first edit, record the files that already have staged changes: `git diff --cached --name-only`. Do not edit those files; skip such a fix as questionable ("file has staged changes not from this run").
+
 ### Process Order
 1. Critical (bugs, security, correctness)
 2. Major (refactoring, performance)
@@ -123,7 +125,7 @@ Otherwise list the files you edited in Phase 2 as `<paths>`. Never `git add .`, 
 
 Format: `<type>(<scope>): <description>`, title ≤50 characters, no PR refs, no AI attribution.
 
-- **type**: `fix` by default; `docs`, `test`, `refactor`, `style`, `perf`, `ci`, or `build` when every fix is of that kind.
+- **type**: `fix` by default; `docs`, `test`, `refactor`, `style`, `perf`, `ci`, or `build` when every fix is of that kind. If the scope is `ci`, `test`, `docs`, or `build`, use it as the type too (`test(test): ...`, never `fix(test): ...`).
 - **scope**: reuse a scope from recent subjects that matches the touched paths:
 
   ```bash
@@ -131,7 +133,7 @@ Format: `<type>(<scope>): <description>`, title ≤50 characters, no PR refs, no
   git diff --name-only -- <paths>
   ```
 
-  Prefer the scope of recent commits that touched the same files (`git log -n 20 --format=%s -- <path>`). If no recent scope fits, use the narrowest directory name that contains every file in `<paths>` (e.g. `auth` for `internal/auth/*`). If that directory is the repo root, use the top-level directory of the most significant fix, or the repo name for root-only files. Never leave the scope empty. Lowercase, no spaces.
+  Prefer the scope of recent commits that touched the same files (`git log -n 20 --format=%s -- <path>`). If no recent scope fits, use the narrowest directory name that contains every file in `<paths>` (e.g. `auth` for `internal/auth/*`). If that directory is the repo root, use the top-level directory of the most significant fix, or the repo name for root-only files. Never leave the scope empty. Use only lowercase letters, digits, `-`, `_` and `/`: drop leading dots and turn other dots into `-` (`.github` becomes `github`, `api.v2` becomes `api-v2`).
 - **description**: imperative, lowercase, no trailing period; name what the fixes changed (e.g. `fix(auth): handle nil token in refresh`), not that review comments were addressed. For several unrelated fixes, name the most significant one or the common theme.
 - Count the full title; if it exceeds 50 characters, shorten the description, not the scope.
 
@@ -151,7 +153,7 @@ After three failed attempts, stop committing and do not push. Leave the fixes un
 git push
 ```
 
-Never use `git push --no-verify`. If a pre-push hook rejects the push, fix what it flags, commit with the rules above, and retry, at most three times. If the push still fails, reply as for a failed commit (applied fixes use **Fixed, not pushed**, naming the local SHA) and report the unpushed commit.
+Never use `git push --no-verify`. If a pre-push hook rejects the push, fix what it flags, commit with the rules above, and retry, at most three times. As for commits, change only lines you edited in Phase 2; if the hook flags other code, do not touch it and count the attempt as failed. If the push still fails, reply as for a failed commit (applied fixes use **Fixed, not pushed**, naming the local SHA) and report the unpushed commit.
 
 Push is required before replying so reviewers see the new SHA alongside the replies.
 
