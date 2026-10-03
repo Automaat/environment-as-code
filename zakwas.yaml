@@ -120,6 +120,15 @@ commands:
   - name: old eac drift agent unloaded
     check: '! launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1'
     run: launchctl bootout "gui/$(id -u)/dev.eac.check"
+  # technical-debt-manager and youtube-summary used to be linked from
+  # research-machine; they're SAI plugins now, so the old links would load twice.
+  - name: old research-machine skill links removed
+    check: >-
+      for l in .claude/skills/technical-debt-manager .claude/skills/youtube-summary .codex/skills/technical-debt-manager;
+      do case "$(readlink "$HOME/$l")" in */research-machine/*) exit 1 ;; esac; done
+    run: >-
+      for l in .claude/skills/technical-debt-manager .claude/skills/youtube-summary .codex/skills/technical-debt-manager;
+      do case "$(readlink "$HOME/$l")" in */research-machine/*) rm -f "$HOME/$l" ;; esac; done
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
