@@ -52,7 +52,8 @@ mise:
 # Agent plugins for Claude Code, Codex and opencode. Entries without their own
 # providers target all three. Codex and opencode are named so zakwas manages
 # them strictly instead of skipping them. opencode can't keep a skill from
-# running on its own, so skills set to disable-model-invocation skip it.
+# running on its own, so skills that run only on request skip it
+# (disable-model-invocation, or Codex allow_implicit_invocation: false).
 agents:
   providers: [claude, codex, opencode]
   upgrade: true
@@ -73,7 +74,7 @@ agents:
     - promptgen@sai
     - refactor-council@sai
     - review-claude-md@sai
-    - ship-issue@sai
+    - {id: ship-issue@sai, providers: [claude, codex]}
     - staff-resume@sai
     - technical-debt-manager@sai
     - test-writer@sai
