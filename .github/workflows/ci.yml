@@ -38,8 +38,17 @@ jobs:
         env:
           HOME: ${{ runner.temp }}/h
         run: |
+          # Links to removed sources must be pruned, not left dangling.
+          gone="$PWD/dotfiles/claude/commands/removed.md"
+          mkdir -p "$HOME/.claude/skills" "$HOME/.claude/commands" "$HOME/.config/opencode/commands"
+          ln -s "$PWD/dotfiles/claude/skills/removed" "$HOME/.claude/skills/removed"
+          ln -s "$gone" "$HOME/.claude/commands/removed.md"
+          ln -s "$gone" "$HOME/.config/opencode/commands/removed.md"
           ./dotfiles/claude/link.sh
-          for p in .claude/CLAUDE.md .claude/rules .claude/skills/go-code-review .claude/commands/go-review.md .codex/AGENTS.md .config/opencode/commands/go-review.md; do
+          for p in .claude/skills/removed .claude/commands/removed.md .config/opencode/commands/removed.md; do
+            if [ -L "$HOME/$p" ]; then echo "stale link $HOME/$p not pruned"; exit 1; fi
+          done
+          for p in .claude/CLAUDE.md .claude/rules .claude/skills/go-code-review .claude/commands/fix-review-auto.md .codex/AGENTS.md .config/opencode/commands/fix-review-auto.md; do
             if [ ! -L "$HOME/$p" ] || [ ! -e "$HOME/$p" ]; then echo "missing link $HOME/$p"; exit 1; fi
           done
           git diff --exit-code -- dotfiles/claude/AGENTS.md
