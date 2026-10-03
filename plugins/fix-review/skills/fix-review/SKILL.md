@@ -117,7 +117,7 @@ For each unresolved comment:
 
 If no valid fix was applied, make no commit and no push; go to Phase 4.
 
-Otherwise stage only the files you edited in Phase 2 (never `git add .`), then write the message.
+Otherwise list the files you edited in Phase 2 as `<paths>`. Never `git add .`, and leave anything already staged alone: only `<paths>` go into this commit. Run `git add` only for new files among `<paths>` so git tracks them.
 
 ### Commit message
 
@@ -128,18 +128,18 @@ Format: `<type>(<scope>): <description>`, title ≤50 characters, no PR refs, no
 
   ```bash
   git log -n 50 --format=%s
-  git diff --cached --name-only
+  git diff --name-only -- <paths>
   ```
 
-  Prefer the scope of recent commits that touched the same files (`git log -n 20 --format=%s -- <path>`). If no recent scope fits, use the narrowest directory name that contains every staged file (e.g. `auth` for `internal/auth/*`). If that directory is the repo root, use the top-level directory of the most significant fix, or the repo name for root-only files. Never leave the scope empty. Lowercase, no spaces.
+  Prefer the scope of recent commits that touched the same files (`git log -n 20 --format=%s -- <path>`). If no recent scope fits, use the narrowest directory name that contains every file in `<paths>` (e.g. `auth` for `internal/auth/*`). If that directory is the repo root, use the top-level directory of the most significant fix, or the repo name for root-only files. Never leave the scope empty. Lowercase, no spaces.
 - **description**: imperative, lowercase, no trailing period; name what the fixes changed (e.g. `fix(auth): handle nil token in refresh`), not that review comments were addressed. For several unrelated fixes, name the most significant one or the common theme.
 - Count the full title; if it exceeds 50 characters, shorten the description, not the scope.
 
-Keep apostrophes, backticks, `$` and `!` out of the title (write "do not", not "don't"), then commit signed with the title in single quotes: `git commit -s -S -m '<title>'`.
+Keep apostrophes, backticks, `$` and `!` out of the title (write "do not", not "don't"), then commit signed with the title in single quotes, limited to `<paths>` so nothing else in the index is committed: `git commit -s -S -m '<title>' -- <paths>`.
 
 ### Commit failure
 
-Check the exit code. If the commit fails for any reason (hook rejection, signing error, shell error), read the error and fix the cause: adjust the message, or fix the flagged content and re-stage those files with `git add`, then retry. Never use `--no-verify`, never disable hooks, never drop `-s -S`.
+Check the exit code. If the commit fails for any reason (hook rejection, signing error, shell error), read the error and fix the cause: adjust the message, or fix the flagged content, then retry. Change only lines you edited in Phase 2; if a hook flags other code, do not touch it and count the attempt as failed. Never use `--no-verify`, never disable hooks, never drop `-s -S`.
 
 After three failed attempts, stop committing and do not push. Leave the fixes uncommitted, still reply to every thread in Phase 4 (applied fixes use the **Fixed, not pushed** template), and report the uncommitted fixes plus the last error in the Phase 5 summary.
 
