@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "fix-review",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Fix unresolved GitHub PR review comments non-interactively: apply valid fixes, push, and reply to every thread. Runs only when invoked explicitly.",
   "author": {
     "name": "Marcin Skalski"

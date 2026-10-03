@@ -96,6 +96,8 @@ For each unresolved comment:
 
 ## Phase 2: Apply Fixes
 
+Before the first edit, record the files that already have local changes, staged or not: `git status --porcelain`. Do not edit those files; skip such a fix as questionable ("file has local changes not from this run") so the user's work never lands in the fix commit.
+
 ### Process Order
 1. Critical (bugs, security, correctness)
 2. Major (refactoring, performance)
@@ -115,13 +117,51 @@ For each unresolved comment:
 
 ## Phase 3: Commit
 
-After all valid fixes applied:
+If no valid fix was applied, make no commit and no push; go to Phase 4.
+
+Otherwise list the files you edited in Phase 2 as `<paths>`. Never `git add .`, and leave anything already staged alone: only `<paths>` go into this commit.
+
+### Commit message
+
+Format: `<type>(<scope>): <description>`, title ≤50 characters, no PR refs, no AI attribution.
+
+- **type**: `fix` by default; `docs`, `test`, `refactor`, `style`, `perf`, `ci`, or `build` when every fix is of that kind. If the scope is `ci`, `test`, `docs`, or `build`, use it as the type too (`test(test): ...`, never `fix(test): ...`).
+- **scope**: reuse a scope from recent subjects that matches the touched paths:
+
+  ```bash
+  git log -n 50 --format=%s
+  git diff --name-only -- <paths>
+  ```
+
+  Prefer the scope of recent commits that touched the same files (`git log -n 20 --format=%s -- <path>`). If no recent scope fits, use the narrowest directory name that contains every file in `<paths>` (e.g. `auth` for `internal/auth/*`). If that directory is the repo root, use the top-level directory of the most significant fix, or the repo name for root-only files. Never leave the scope empty. Use only lowercase letters, digits, `-`, `_` and `/`: drop leading dots and turn other dots into `-` (`.github` becomes `github`, `api.v2` becomes `api-v2`).
+- **description**: imperative, lowercase, no trailing period; name what the fixes changed (e.g. `fix(auth): handle nil token in refresh`), not that review comments were addressed. For several unrelated fixes, name the most significant one or the common theme.
+- Count the full title; if it exceeds 50 characters, shorten the description, not the scope.
+
+Keep apostrophes, backticks, `$` and `!` out of the title (write "do not", not "don't"), then stage and commit `<paths>` in one command, signed, with the title in single quotes. The trailing `-- <paths>` keeps anything else in the index out of the commit:
+
+`git add -- <paths> && git commit -s -S -m '<title>' -- <paths>`
+
+Files you removed with `git rm` are already staged: keep them in the trailing `-- <paths>` of `git commit` but leave them out of `git add`.
+
+### Commit failure
+
+Check the exit code. If the commit fails for any reason (hook rejection, signing error, shell error), read the error and fix the cause: adjust the message, or fix the flagged content, then retry. Change only lines you edited in Phase 2; if a hook flags other code, do not touch it and count the attempt as failed. Never use `--no-verify`, never disable hooks, never drop `-s -S`.
+
+After three failed attempts, stop committing and do not push. Unstage with `git reset -q -- <paths>` and leave the fixes in the working tree for the user to commit, still reply to every thread in Phase 4 (applied fixes use the **Fixed, not pushed** template), and report the uncommitted fixes plus the last error in the Phase 5 summary.
+
+### Push
 
 ```bash
-git add .
-git commit -s -S -m "fix: address PR review comments"
 git push
 ```
+
+Check the exit code. If the push fails for any reason, read the error, fix the cause, and retry, at most three attempts in total. Never use `--no-verify` or `--force`.
+
+- **Hook or remote rule rejects the fix commit** (message or content): fix it on that same unpushed commit with `git commit --amend -s -S` (new message via `-m '<title>'` under the rules above, or re-staged content), so the rejected version never stays in the pushed range. Change only lines you edited in Phase 2; if the hook flags other code, do not touch it and count the attempt as failed.
+- **Non-fast-forward**: `git pull --rebase`, then retry. On a rebase conflict, `git rebase --abort` and count the attempt as failed.
+- **Authentication, permission, or network error**: retry once if it looks transient; otherwise count it as failed, since the skill cannot fix it.
+
+If the push still fails, reply as for a failed commit (applied fixes use **Fixed, not pushed**, naming the local SHA) and report the unpushed commit.
 
 Push is required before replying so reviewers see the new SHA alongside the replies.
 
@@ -133,6 +173,12 @@ For **every** thread processed in Phase 1 — applied, questionable, or invalid 
 
 ```
 **Applied** — <one-line description of the change> (<short-sha>).
+```
+
+Only when Phase 3 could not commit or push:
+
+```
+**Fixed, not pushed** — <one-line description of the change>. <Why it is not on the PR yet, e.g. the hook error>. The change is ready locally and needs a manual commit or push.
 ```
 
 ```
@@ -180,6 +226,9 @@ Applied (replied + pushed in <sha>):
 ✓ <thread1>: <one-liner>
 ✓ ...
 
+Fixed, not pushed (only when Phase 3 failed; <last commit or push error>):
+! <thread4>: <one-liner> — in working tree / local commit <sha>
+
 Skipped (replied with reasoning):
 ? <thread2>: <one-liner> — questionable, awaiting reviewer
 ✗ <thread3>: <one-liner> — invalid, <evidence>
@@ -193,7 +242,7 @@ Threads replied: N+X+Y / total processed
 - Research each comment before acting
 - Search codebase for patterns
 - Apply only clearly valid fixes
-- Commit with -s -S flags
+- Commit with -s -S flags and a scoped `type(scope): description` title of at most 50 chars
 - **Reply to every processed thread** — applied, questionable, invalid
 - Reference fix SHA in applied replies
 - Log all decisions
@@ -203,5 +252,6 @@ Threads replied: N+X+Y / total processed
 - Ask for user input
 - Apply questionable fixes
 - Use linter skip/disable directives
+- Bypass git hooks (commit or push), or commit when no fix was applied
 - Mark review threads as resolved
 - Silently drop a comment — if you read it, you reply to it
