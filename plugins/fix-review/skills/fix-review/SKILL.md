@@ -115,11 +115,35 @@ For each unresolved comment:
 
 ## Phase 3: Commit
 
-After all valid fixes applied:
+If no valid fix was applied, make no commit and no push; go to Phase 4.
+
+Otherwise stage only the files you edited in Phase 2 (never `git add .`), then write the message.
+
+### Commit message
+
+Format: `<type>(<scope>): <description>`, title ≤50 characters, no PR refs, no AI attribution.
+
+- **type**: `fix` by default; `docs`, `test`, `refactor`, `style`, `perf`, `ci`, or `build` when every fix is of that kind.
+- **scope**: reuse a scope from recent subjects that matches the touched paths:
+
+  ```bash
+  git log -n 50 --format=%s
+  git diff --cached --name-only
+  ```
+
+  Prefer the scope of recent commits that touched the same files (`git log -n 20 --format=%s -- <path>`). If no recent scope fits, use the narrowest directory name that contains every staged file (e.g. `auth` for `internal/auth/*`). Lowercase, no spaces.
+- **description**: imperative, lowercase, no trailing period; name what the fixes changed (e.g. `fix(auth): handle nil token in refresh`), not that review comments were addressed. For several unrelated fixes, name the most significant one or the common theme.
+- Count the full title; if it exceeds 50 characters, shorten the description, not the scope.
+
+Commit signed, with the title as the message: `git commit -s -S -m "<title>"`.
+
+### Hook rejection
+
+If a commit hook rejects the commit, read its error, adjust the message (or fix the flagged content) to satisfy it, and retry. Never use `--no-verify`, never disable hooks, never drop `-s -S`. Stop and report the hook output after three failed attempts.
+
+### Push
 
 ```bash
-git add .
-git commit -s -S -m "fix: address PR review comments"
 git push
 ```
 
@@ -193,7 +217,7 @@ Threads replied: N+X+Y / total processed
 - Research each comment before acting
 - Search codebase for patterns
 - Apply only clearly valid fixes
-- Commit with -s -S flags
+- Commit with -s -S flags and a scoped `type(scope): description` title of at most 50 chars
 - **Reply to every processed thread** — applied, questionable, invalid
 - Reference fix SHA in applied replies
 - Log all decisions
@@ -203,5 +227,6 @@ Threads replied: N+X+Y / total processed
 - Ask for user input
 - Apply questionable fixes
 - Use linter skip/disable directives
+- Bypass commit hooks or commit when no fix was applied
 - Mark review threads as resolved
 - Silently drop a comment — if you read it, you reply to it
