@@ -155,7 +155,13 @@ After three failed attempts, stop committing and do not push. Unstage with `git 
 git push
 ```
 
-Never use `git push --no-verify`. If a pre-push hook rejects the push, fix what it flags, commit with the rules above, and retry, at most three times. As for commits, change only lines you edited in Phase 2; if the hook flags other code, do not touch it and count the attempt as failed. If the push still fails, reply as for a failed commit (applied fixes use **Fixed, not pushed**, naming the local SHA) and report the unpushed commit.
+Check the exit code. If the push fails for any reason, read the error, fix the cause, and retry, at most three attempts in total. Never use `--no-verify` or `--force`.
+
+- **Hook or remote rule rejects the fix commit** (message or content): fix it on that same unpushed commit with `git commit --amend -s -S` (new message via `-m '<title>'` under the rules above, or re-staged content), so the rejected version never stays in the pushed range. Change only lines you edited in Phase 2; if the hook flags other code, do not touch it and count the attempt as failed.
+- **Non-fast-forward**: `git pull --rebase`, then retry. On a rebase conflict, `git rebase --abort` and count the attempt as failed.
+- **Authentication, permission, or network error**: retry once if it looks transient; otherwise count it as failed, since the skill cannot fix it.
+
+If the push still fails, reply as for a failed commit (applied fixes use **Fixed, not pushed**, naming the local SHA) and report the unpushed commit.
 
 Push is required before replying so reviewers see the new SHA alongside the replies.
 
