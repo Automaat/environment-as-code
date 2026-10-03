@@ -130,6 +130,10 @@ jobs:
           ZAKWAS_CONFIG: ${{ github.workspace }}/zakwas.yaml
         run: mise exec -- zakwas check --only system,files,templates,mise,defaults
 
+      - name: Claude Code CLI runs from the global mise config
+        working-directory: /
+        run: mise exec -- claude --version
+
       - name: dotfiles are protected
         run: |
           if echo x >> "$HOME/.zshrc"; then echo "$HOME/.zshrc is writable"; exit 1; fi

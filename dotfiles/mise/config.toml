@@ -48,6 +48,7 @@ opentofu = "1.12.6"
 tflint = "0.64.0"
 "github:stacklok/toolhive" = "0.51.4"
 "github:can1357/oh-my-pi" = "18.4.2"
+"aqua:anthropics/claude-code" = "2.1.287"
 
 awscli = "2.37.4"
 aws-iam-authenticator = "0.7.20"
