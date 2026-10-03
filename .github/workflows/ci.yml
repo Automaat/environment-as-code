@@ -44,7 +44,10 @@ jobs:
           ln -s "$PWD/dotfiles/claude/skills/removed" "$HOME/.claude/skills/removed"
           ln -s "$gone" "$HOME/.claude/commands/removed.md"
           ln -s "$gone" "$HOME/.config/opencode/commands/removed.md"
+          # Links owned by plugins or other repos must survive even if dangling.
+          ln -s /nonexistent/foreign.md "$HOME/.claude/commands/foreign.md"
           ./dotfiles/claude/link.sh
+          if [ ! -L "$HOME/.claude/commands/foreign.md" ]; then echo "foreign link pruned"; exit 1; fi
           for p in .claude/skills/removed .claude/commands/removed.md .config/opencode/commands/removed.md; do
             if [ -L "$HOME/$p" ]; then echo "stale link $HOME/$p not pruned"; exit 1; fi
           done
