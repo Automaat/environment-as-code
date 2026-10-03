@@ -54,12 +54,18 @@ main() {
         fi
     fi
 
-    # Installs Homebrew and mise first, then everything else.
+    # Installs Homebrew and mise first, then everything else. zakwas plans
+    # every module before applying any, so agents waits for a second apply:
+    # its plan needs the claude, codex and opencode CLIs this one installs.
     info "Converging the machine"
-    zakwas apply
+    zakwas apply --only system,files,links,templates,brew,mise,defaults
+    export PATH="$HOME/.local/share/mise/shims:/opt/homebrew/bin:$PATH"
 
     info "Linking agent configs"
     ./dotfiles/claude/link.sh
+
+    info "Installing agent plugins"
+    zakwas apply
 
     info "Done. Open a new terminal."
 }

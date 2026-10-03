@@ -49,6 +49,47 @@ mise:
   config: dotfiles/mise/config.toml
   prune: true
 
+# Agent plugins for Claude Code, Codex and opencode. Entries without their own
+# providers target all three. Codex and opencode are named so zakwas manages
+# them strictly instead of skipping them. opencode can't keep a skill from
+# running on its own, so skills that run only on request skip it
+# (disable-model-invocation, or Codex allow_implicit_invocation: false).
+agents:
+  providers: [claude, codex, opencode]
+  upgrade: true
+  prune: true
+  marketplaces:
+    sai: smykla-skalski/sai
+    environment-as-code: ./
+    claude-plugins-official: {source: anthropics/claude-plugins-official, providers: [claude]}
+    ksai: {source: Kong/ksai, providers: [claude]}
+    slack: {source: slackapi/slack-skills-plugin, providers: [codex]}
+  plugins:
+    - adversarial-review@sai
+    - adversarial-test@sai
+    - {id: ai-daily-digest@sai, providers: [claude, codex]}
+    - humanize@sai
+    - {id: kubecon-cfp@sai, providers: [claude, codex]}
+    - plan-critic@sai
+    - promptgen@sai
+    - refactor-council@sai
+    - review-claude-md@sai
+    - {id: ship-issue@sai, providers: [claude, codex]}
+    - staff-resume@sai
+    - technical-debt-manager@sai
+    - test-writer@sai
+    - youtube-summary@sai
+    - {id: council@sai, providers: [codex]}
+    - {id: staff-code-review@sai, providers: [codex]}
+    - agent-md-gen@environment-as-code
+    - go-code-review@environment-as-code
+    - kong-ai-intel@environment-as-code
+    - {id: fix-review@environment-as-code, providers: [claude, codex]}
+    - gopls-lsp@claude-plugins-official
+    - slack@claude-plugins-official
+    - issue-authoring@ksai
+    - slack@slack
+
 system:
   sudoTouchID: true
   dirs:
@@ -80,6 +121,15 @@ commands:
   - name: old eac drift agent unloaded
     check: '! launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1'
     run: launchctl bootout "gui/$(id -u)/dev.eac.check"
+  # technical-debt-manager and youtube-summary used to be linked from
+  # research-machine; they're SAI plugins now, so the old links would load twice.
+  - name: old research-machine skill links removed
+    check: >-
+      for l in .claude/skills/technical-debt-manager .claude/skills/youtube-summary .codex/skills/technical-debt-manager;
+      do case "$(readlink "$HOME/$l")" in */research-machine/*) exit 1 ;; esac; done
+    run: >-
+      for l in .claude/skills/technical-debt-manager .claude/skills/youtube-summary .codex/skills/technical-debt-manager;
+      do case "$(readlink "$HOME/$l")" in */research-machine/*) rm -f "$HOME/$l" ;; esac; done
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported

@@ -38,25 +38,27 @@ jobs:
         env:
           HOME: ${{ runner.temp }}/h
         run: |
-          # Links to removed sources must be pruned, not left dangling.
-          gone="$PWD/dotfiles/claude/commands/removed.md"
+          # Skills and commands come from plugins now: link.sh must remove the
+          # links it used to make there, live or dangling.
           mkdir -p "$HOME/.claude/skills" "$HOME/.claude/commands" "$HOME/.config/opencode/commands"
+          ln -s "$PWD/plugins/kong-ai-intel/skills/kong-ai-intel" "$HOME/.claude/skills/kong-ai-intel"
           ln -s "$PWD/plugins/removed/skills/removed" "$HOME/.claude/skills/removed"
-          ln -s "$gone" "$HOME/.claude/commands/removed.md"
-          ln -s "$gone" "$HOME/.config/opencode/commands/removed.md"
-          # Links owned by plugins or other repos must survive even if dangling.
+          ln -s "$PWD/dotfiles/claude/commands/removed.md" "$HOME/.claude/commands/removed.md"
+          ln -s "$PWD/dotfiles/claude/commands/removed.md" "$HOME/.config/opencode/commands/removed.md"
+          # Links owned by plugins or other repos must survive, even dangling,
+          # and so must real skill dirs.
           ln -s /nonexistent/foreign.md "$HOME/.claude/commands/foreign.md"
-          # A real skill dir is backed up outside the skills dir, where agents
-          # would load it as a duplicate.
-          mkdir -p "$HOME/.claude/skills/kong-ai-intel"
-          echo 2026-01-01 > "$HOME/.claude/skills/kong-ai-intel/last_run.txt"
+          ln -s /nonexistent/foreign "$HOME/.claude/skills/foreign"
+          mkdir -p "$HOME/.claude/skills/mine"
           ./dotfiles/claude/link.sh
-          test -f "$HOME/.claude/skills.pre-zakwas.bak/kong-ai-intel/last_run.txt"
-          if [ ! -L "$HOME/.claude/commands/foreign.md" ]; then echo "foreign link pruned"; exit 1; fi
-          for p in .claude/skills/removed .claude/commands/removed.md .config/opencode/commands/removed.md; do
-            if [ -L "$HOME/$p" ]; then echo "stale link $HOME/$p not pruned"; exit 1; fi
+          for p in .claude/commands/foreign.md .claude/skills/foreign; do
+            if [ ! -L "$HOME/$p" ]; then echo "foreign link $HOME/$p pruned"; exit 1; fi
           done
-          for p in .claude/CLAUDE.md .claude/rules .claude/skills/claude-md-gen .claude/skills/go-code-review .claude/skills/fix-review .claude/skills/kong-ai-intel .codex/AGENTS.md; do
+          test -d "$HOME/.claude/skills/mine"
+          for p in .claude/skills/kong-ai-intel .claude/skills/removed .claude/commands/removed.md .config/opencode/commands/removed.md; do
+            if [ -L "$HOME/$p" ]; then echo "old link $HOME/$p not pruned"; exit 1; fi
+          done
+          for p in .claude/CLAUDE.md .claude/rules .claude/statusline-command.sh .codex/AGENTS.md .copilot/instructions/global.instructions.md AGENTS.md .config/opencode/AGENTS.md; do
             if [ ! -L "$HOME/$p" ] || [ ! -e "$HOME/$p" ]; then echo "missing link $HOME/$p"; exit 1; fi
           done
           git diff --exit-code -- dotfiles/claude/AGENTS.md

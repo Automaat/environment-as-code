@@ -17,7 +17,7 @@ What it manages:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Automaat/environment-as-code/main/bootstrap.sh)"
 ```
 
-Runs the zakwas installer (Xcode CLI tools, pinned zakwas release to `~/.local/bin`), clones the repo to `~/sideprojects/environment-as-code`, creates an SSH key and waits until it's added to GitHub, then runs `zakwas apply` (which installs Homebrew and mise itself) and links the agent configs. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
+Runs the zakwas installer (Xcode CLI tools, pinned zakwas release to `~/.local/bin`), clones the repo to `~/sideprojects/environment-as-code`, creates an SSH key and waits until it's added to GitHub, then runs `zakwas apply` (which installs Homebrew and mise itself), links the agent configs and runs `zakwas apply` again for the agent plugins, whose plan needs the CLIs the first one installed. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
 
 Git signs every commit with the GPG key in `dotfiles/git/config`, which bootstrap can't create. Until it's imported, `zakwas apply` fails on the `git signing key imported` command with the steps:
 
@@ -42,18 +42,36 @@ Installed dotfiles are read-only. Edit them under `dotfiles/` (or add a tool to 
 
 A launchd agent runs `zakwas check` every day at 10:00 and shows a notification when the Mac drifted.
 
-## Agent skills
+## Agent plugins
 
-`plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo is a marketplace for Claude Code and Codex:
+The `agents` section of `zakwas.yaml` declares the plugins of Claude Code, Codex and opencode and the marketplaces they come from. `zakwas apply` installs what's missing, updates plugins to their marketplace versions and, with `prune: true`, removes user-scope plugins and marketplaces that aren't declared. Plugins installed for a single project are left alone. opencode has no plugin system, so zakwas links each declared plugin's skills into `~/.config/opencode/skills`.
 
-```bash
-claude plugin marketplace add ~/sideprojects/environment-as-code
-claude plugin install fix-review@environment-as-code    # agent-md-gen, go-code-review, kong-ai-intel
-codex plugin marketplace add ~/sideprojects/environment-as-code
-codex plugin add fix-review@environment-as-code
+To add a plugin, list it under `agents.plugins` as `name@marketplace` (the marketplace must be declared under `agents.marketplaces`), then `zakwas apply`:
+
+```yaml
+agents:
+  providers: [claude, codex, opencode]   # the default for every entry
+  marketplaces:
+    sai: smykla-skalski/sai                                       # all providers
+    environment-as-code: ./                                       # this repo
+    ksai: {source: Kong/ksai, providers: [claude]}                # Claude Code only
+  plugins:
+    - humanize@sai                                                # Claude Code, Codex and opencode
+    - {id: fix-review@environment-as-code, providers: [claude, codex]}
+    - issue-authoring@ksai                                        # follows its marketplace: Claude Code only
 ```
 
-opencode loads the skill dirs as they are; `dotfiles/claude/link.sh` links them into `~/.claude/skills`.
+`plan` and `apply` read the local copy of each marketplace and never fetch it, so a plugin added to its marketplace after that copy fails the plan with "not in marketplace". `zakwas upgrade` refreshes the marketplaces first, then applies.
+
+A plugin targets its marketplace's providers unless it lists its own, which must be a subset. Skills that must run only on request (`disable-model-invocation`, or Codex `allow_implicit_invocation: false`; usually for side effects like pushing commits or writing notes) skip opencode, which can't keep a skill from running on its own. A marketplace source is a GitHub `owner/repo`, a git URL or a local path; its name must match the `name` in its manifest.
+
+`plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo itself is the `environment-as-code` marketplace (`.claude-plugin/marketplace.json` for Claude Code, `.agents/plugins/marketplace.json` for Codex), declared in `zakwas.yaml` as a local path.
+
+`dotfiles/claude/link.sh` links only the instruction files (`CLAUDE.md`, the rules, the status line, `AGENTS.md`); it removes links it used to make for skills and commands. On a Mac set up before plugins, run it once after the first `zakwas upgrade` so those old links don't load next to the plugin copies:
+
+```bash
+./dotfiles/claude/link.sh
+```
 
 ## Development
 
