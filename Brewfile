@@ -8,6 +8,8 @@ brew "git-lfs"
 brew "mise"
 brew "vim"
 
+brew "kumactl"
+
 brew "gnupg"
 brew "pinentry-mac"
 
@@ -34,6 +36,7 @@ cask "1password"
 cask "1password-cli"
 cask "airbuddy"
 cask "bitwarden"
+cask "claude"
 cask "codex"
 cask "contexts"
 cask "disk-inventory-x"
