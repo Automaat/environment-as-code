@@ -60,7 +60,7 @@ agents:
     - issue-authoring@ksai                                        # follows its marketplace: Claude Code only
 ```
 
-A plugin targets its marketplace's providers unless it lists its own, which must be a subset. Skills with side effects (deleting branches, pushing commits) skip opencode, which can't keep a skill from running on its own. A marketplace source is a GitHub `owner/repo`, a git URL or a local path; its name must match the `name` in its manifest.
+A plugin targets its marketplace's providers unless it lists its own, which must be a subset. Skills that must run only on request (`disable-model-invocation`, usually for side effects like pushing commits or writing notes) skip opencode, which can't keep a skill from running on its own. A marketplace source is a GitHub `owner/repo`, a git URL or a local path; its name must match the `name` in its manifest.
 
 `plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo itself is the `environment-as-code` marketplace (`.claude-plugin/marketplace.json` for Claude Code, `.agents/plugins/marketplace.json` for Codex), declared in `zakwas.yaml` as a local path.
 
