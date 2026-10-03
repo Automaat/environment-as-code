@@ -96,7 +96,7 @@ For each unresolved comment:
 
 ## Phase 2: Apply Fixes
 
-Before the first edit, record the files that already have staged changes: `git diff --cached --name-only`. Do not edit those files; skip such a fix as questionable ("file has staged changes not from this run").
+Before the first edit, record the files that already have local changes, staged or not: `git status --porcelain`. Do not edit those files; skip such a fix as questionable ("file has local changes not from this run") so the user's work never lands in the fix commit.
 
 ### Process Order
 1. Critical (bugs, security, correctness)
@@ -141,11 +141,13 @@ Keep apostrophes, backticks, `$` and `!` out of the title (write "do not", not "
 
 `git add -- <paths> && git commit -s -S -m '<title>' -- <paths>`
 
+Files you removed with `git rm` are already staged: keep them in the trailing `-- <paths>` of `git commit` but leave them out of `git add`.
+
 ### Commit failure
 
 Check the exit code. If the commit fails for any reason (hook rejection, signing error, shell error), read the error and fix the cause: adjust the message, or fix the flagged content, then retry. Change only lines you edited in Phase 2; if a hook flags other code, do not touch it and count the attempt as failed. Never use `--no-verify`, never disable hooks, never drop `-s -S`.
 
-After three failed attempts, stop committing and do not push. Leave the fixes uncommitted, still reply to every thread in Phase 4 (applied fixes use the **Fixed, not pushed** template), and report the uncommitted fixes plus the last error in the Phase 5 summary.
+After three failed attempts, stop committing and do not push. Unstage with `git reset -q -- <paths>` and leave the fixes in the working tree for the user to commit, still reply to every thread in Phase 4 (applied fixes use the **Fixed, not pushed** template), and report the uncommitted fixes plus the last error in the Phase 5 summary.
 
 ### Push
 
@@ -170,7 +172,7 @@ For **every** thread processed in Phase 1 — applied, questionable, or invalid 
 Only when Phase 3 could not commit or push:
 
 ```
-**Fixed, not pushed** — <one-line description of the change>. <Why it is not on the PR yet, e.g. the hook error>. Will follow up.
+**Fixed, not pushed** — <one-line description of the change>. <Why it is not on the PR yet, e.g. the hook error>. The change is ready locally and needs a manual commit or push.
 ```
 
 ```
@@ -217,6 +219,9 @@ Summary: Fixed N/M unresolved review comments
 Applied (replied + pushed in <sha>):
 ✓ <thread1>: <one-liner>
 ✓ ...
+
+Fixed, not pushed (only when Phase 3 failed; <last commit or push error>):
+! <thread4>: <one-liner> — in working tree / local commit <sha>
 
 Skipped (replied with reasoning):
 ? <thread2>: <one-liner> — questionable, awaiting reviewer
