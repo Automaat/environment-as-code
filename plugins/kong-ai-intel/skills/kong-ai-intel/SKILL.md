@@ -16,7 +16,7 @@ Read them from the user's request: `--since YYYY-MM-DD` and `--dry-run`, both op
 
 Path: `${XDG_STATE_HOME:-$HOME/.local/state}/kong-ai-intel/last_run.txt`. Resolve it with Bash. It holds one line: the last run date, `YYYY-MM-DD`, UTC. It lives outside the skill directory, which may be a read-only plugin cache or a symlink into a git repo.
 
-- No file yet → if `~/.claude/skills.pre-zakwas.bak/kong-ai-intel/last_run.txt` exists (the state of the old unmanaged copy), use its date; otherwise use 2 days back as the start date.
+- No file yet → use the date from the old unmanaged copy's state, the first that exists of `~/.claude/skills/kong-ai-intel/last_run.txt` and `~/.claude/skills.pre-zakwas.bak/kong-ai-intel/last_run.txt`; otherwise use 2 days back as the start date.
 - `--since <date>` → use that date as the start, for this run only.
 - On a normal (non-`--dry-run`) run that completes, overwrite the file with today's date.
 
