@@ -131,21 +131,23 @@ Format: `<type>(<scope>): <description>`, title ≤50 characters, no PR refs, no
   git diff --cached --name-only
   ```
 
-  Prefer the scope of recent commits that touched the same files (`git log -n 20 --format=%s -- <path>`). If no recent scope fits, use the narrowest directory name that contains every staged file (e.g. `auth` for `internal/auth/*`). Lowercase, no spaces.
+  Prefer the scope of recent commits that touched the same files (`git log -n 20 --format=%s -- <path>`). If no recent scope fits, use the narrowest directory name that contains every staged file (e.g. `auth` for `internal/auth/*`). If that directory is the repo root, use the top-level directory of the most significant fix, or the repo name for root-only files. Never leave the scope empty. Lowercase, no spaces.
 - **description**: imperative, lowercase, no trailing period; name what the fixes changed (e.g. `fix(auth): handle nil token in refresh`), not that review comments were addressed. For several unrelated fixes, name the most significant one or the common theme.
 - Count the full title; if it exceeds 50 characters, shorten the description, not the scope.
 
-Commit signed, with the title as the message: `git commit -s -S -m "<title>"`.
+Commit signed, with the title as the message: `git commit -s -S -m '<title>'` (single quotes, so backticks and `$` stay literal).
 
 ### Hook rejection
 
-If a commit hook rejects the commit, read its error, adjust the message (or fix the flagged content) to satisfy it, and retry. Never use `--no-verify`, never disable hooks, never drop `-s -S`. Stop and report the hook output after three failed attempts.
+If a hook rejects the commit, read its error, adjust the message (or fix the flagged content and re-stage those files with `git add`) to satisfy it, and retry. Never use `--no-verify`, never disable hooks, never drop `-s -S`. After three failed attempts, stop committing: leave the fixes uncommitted, still post the Phase 4 replies for questionable and invalid threads, post no **Applied** replies (there is no SHA), and report the uncommitted fixes plus the hook output in the Phase 5 summary.
 
 ### Push
 
 ```bash
 git push
 ```
+
+Never use `git push --no-verify`. If a pre-push hook rejects the push, fix what it flags, commit with the rules above, and retry, at most three times. If the push still fails, handle the replies the same way as a failed commit and report the unpushed commit.
 
 Push is required before replying so reviewers see the new SHA alongside the replies.
 
@@ -227,6 +229,6 @@ Threads replied: N+X+Y / total processed
 - Ask for user input
 - Apply questionable fixes
 - Use linter skip/disable directives
-- Bypass commit hooks or commit when no fix was applied
+- Bypass git hooks (commit or push), or commit when no fix was applied
 - Mark review threads as resolved
 - Silently drop a comment — if you read it, you reply to it
