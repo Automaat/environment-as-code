@@ -33,6 +33,8 @@ Run these queries in parallel against `slack_search_public_and_private`. Each qu
 
 Use `response_format: detailed`, not `concise` — only `detailed` returns the `Permalink` field, which Step 4 needs.
 
+A page holds at most 20 results. While a query's page is full and returns a next cursor, call it again with that `cursor` until a page comes back short or without a cursor, so the whole interval is read. Track whether every query finished this way; Step 5 depends on it.
+
 - `"Claude Code"`
 - `agentic`
 - `"AI agent"`
@@ -70,6 +72,8 @@ If nothing new turned up, say that in one line. Do not pad the report with old o
 ## Step 5 — Update state
 
 Unless `--dry-run` was passed, write today's date (from Step 1) to the state file, creating its directory first: `mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/kong-ai-intel"`.
+
+Write it only when every query in Step 2 succeeded and was read to its last page. If any query failed, or its results could not all be read, keep the old state file and say in the report that the run was incomplete and which queries were affected, so the next run covers the same interval again.
 
 ## Notes
 
