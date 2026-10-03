@@ -1,0 +1,36 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "kong-ai-intel",
+  "version": "1.0.0",
+  "description": "Digest new Kong Slack messages about agentic AI, Claude Code and AI agents since the last run, filtered for kreview/ksai, internal AI adoption and agentic tooling.",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/kong-ai-intel",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "slack",
+    "digest",
+    "ai",
+    "kong"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Kong AI Intel",
+        "shortDescription": "Digest Kong Slack AI and agent news",
+        "longDescription": "Digest new Kong Slack messages about agentic AI, Claude Code and AI agents since the last run, filtered for kreview/ksai, internal AI adoption and agentic tooling.",
+        "developerName": "Marcin Skalski",
+        "category": "Productivity",
+        "capabilities": [
+          "Interactive",
+          "Write"
+        ],
+        "websiteURL": "https://github.com/Automaat/environment-as-code/tree/main/plugins/kong-ai-intel",
+        "defaultPrompt": [
+          "Use $kong-ai-intel to check Slack for AI intel since the last run."
+        ]
+      }
+    }
+  }
+}

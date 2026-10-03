@@ -1,0 +1,36 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "fix-review",
+  "version": "1.0.0",
+  "description": "Fix unresolved GitHub PR review comments non-interactively: apply valid fixes, push, and reply to every thread. Runs only when invoked explicitly.",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/fix-review",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "github",
+    "pull-request",
+    "code-review",
+    "automation"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Fix PR Review",
+        "shortDescription": "Apply valid PR review fixes and reply to threads",
+        "longDescription": "Fix unresolved GitHub PR review comments non-interactively: apply valid fixes, push, and reply to every thread. Runs only when invoked explicitly.",
+        "developerName": "Marcin Skalski",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Interactive",
+          "Write"
+        ],
+        "websiteURL": "https://github.com/Automaat/environment-as-code/tree/main/plugins/fix-review",
+        "defaultPrompt": [
+          "Use $fix-review on https://github.com/OWNER/REPO/pull/123."
+        ]
+      }
+    }
+  }
+}

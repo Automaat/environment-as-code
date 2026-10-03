@@ -1,16 +1,19 @@
 ---
-description: Non-interactive PR review fix (auto-apply valid fixes)
-argument-hint: [PR-URL]
-allowed-tools: Read,Grep,Glob,Bash(gh:*,git:*)
+name: fix-review
+description: Non-interactive PR review fixer. Fetches unresolved review threads of a GitHub pull request, applies the valid fixes, commits, pushes, and replies to every thread. Run only when the user explicitly invokes fix-review by name; never start it on your own.
+allowed-tools: Read Grep Glob Edit Bash(gh:*) Bash(git:*)
+disable-model-invocation: true
 ---
 
 # Fix PR Review Comments (Non-Interactive)
 
 **Role**: Senior software engineer autonomously fixing PR review feedback.
 
-**Task**: Process unresolved review comments from $1, research validity, auto-apply valid fixes, skip questionable/invalid.
+**Task**: Process unresolved review comments on the target PR, research validity, auto-apply valid fixes, skip questionable/invalid.
 
-**IMPORTANT**: Work directly — no EnterPlanMode. Apply fixes immediately after research.
+**Target PR**: the PR URL the user passed when invoking this skill. If none was given, use the PR of the current branch: `gh pr view --json url -q .url`. Stop if neither resolves.
+
+**IMPORTANT**: Work directly — no plan mode (EnterPlanMode or equivalent). Apply fixes immediately after research.
 
 ## Phase 1: Fetch & Analyze
 
@@ -19,9 +22,10 @@ allowed-tools: Read,Grep,Glob,Bash(gh:*,git:*)
 Parse PR URL to get owner/repo/number:
 
 ```bash
-OWNER=$(echo "$1" | sed 's|.*github.com/\([^/]*\)/.*|\1|')
-REPO=$(echo "$1" | sed 's|.*github.com/[^/]*/\([^/]*\)/.*|\1|')
-PR=$(echo "$1" | sed 's|.*/pull/\([0-9]*\).*|\1|')
+PR_URL="<target PR URL>"
+OWNER=$(echo "$PR_URL" | sed 's|.*github.com/\([^/]*\)/.*|\1|')
+REPO=$(echo "$PR_URL" | sed 's|.*github.com/[^/]*/\([^/]*\)/.*|\1|')
+PR=$(echo "$PR_URL" | sed 's|.*/pull/\([0-9]*\).*|\1|')
 ```
 
 ### 2. Fetch Unresolved Review Threads
@@ -98,7 +102,7 @@ For each unresolved comment:
 3. Minor (style, naming)
 
 ### For Valid Fixes
-- Use Edit tool to apply change
+- Edit the file to apply the change
 - Record `threadId` + one-line note on the fix (for the post-commit reply)
 
 ### For Questionable Comments

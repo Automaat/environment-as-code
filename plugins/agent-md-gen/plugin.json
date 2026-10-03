@@ -1,0 +1,36 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agent-md-gen",
+  "version": "1.0.0",
+  "description": "Generate a project-specific CLAUDE.md with domain instructions, workflows and templates from codebase analysis and a few clarifying questions. Ships the claude-md-gen skill.",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/agent-md-gen",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "claude-md",
+    "agents-md",
+    "instructions",
+    "scaffold"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "CLAUDE.md Generator",
+        "shortDescription": "Generate a tailored CLAUDE.md for a project",
+        "longDescription": "Generate a project-specific CLAUDE.md with domain instructions, workflows and templates from codebase analysis and a few clarifying questions. Ships the claude-md-gen skill.",
+        "developerName": "Marcin Skalski",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Interactive",
+          "Write"
+        ],
+        "websiteURL": "https://github.com/Automaat/environment-as-code/tree/main/plugins/agent-md-gen",
+        "defaultPrompt": [
+          "Use $claude-md-gen to write a CLAUDE.md for this repo."
+        ]
+      }
+    }
+  }
+}
