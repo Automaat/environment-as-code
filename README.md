@@ -54,16 +54,16 @@ agents:
   marketplaces:
     sai: smykla-skalski/sai                                       # all providers
     environment-as-code: ./                                       # this repo
-    ksai: {source: Kong/ksai, providers: [claude]}                # Claude Code only
+    claude-plugins-official: {source: anthropics/claude-plugins-official, providers: [claude]}
   plugins:
     - humanize@sai                                                # Claude Code, Codex and opencode
-    - {id: fix-review@environment-as-code, providers: [claude, codex]}
-    - issue-authoring@ksai                                        # follows its marketplace: Claude Code only
+    - {id: fix-review@environment-as-code, providers: [claude]}   # narrow one plugin
+    - gopls-lsp@claude-plugins-official                           # follows its marketplace: Claude Code only
 ```
 
 `plan` and `apply` read the local copy of each marketplace and never fetch it, so a plugin added to its marketplace after that copy fails the plan with "not in marketplace". `zakwas upgrade` refreshes the marketplaces first, then applies.
 
-A plugin targets its marketplace's providers unless it lists its own, which must be a subset. Skills that must run only on request (`disable-model-invocation`, or Codex `allow_implicit_invocation: false`; usually for side effects like pushing commits or writing notes) skip opencode, which can't keep a skill from running on its own. A marketplace source is a GitHub `owner/repo`, a git URL or a local path; its name must match the `name` in its manifest.
+A plugin targets its marketplace's providers unless it lists its own, which must be a subset. Every skill here installs for all three agents. opencode can't keep an on-request skill (`disable-model-invocation`, or Codex `allow_implicit_invocation: false`) from running on its own, so those skills rely on their own wording there. A marketplace source is a GitHub `owner/repo`, a git URL or a local path; its name must match the `name` in its manifest.
 
 `plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo itself is the `environment-as-code` marketplace (`.claude-plugin/marketplace.json` for Claude Code, `.agents/plugins/marketplace.json` for Codex), declared in `zakwas.yaml` as a local path.
 
