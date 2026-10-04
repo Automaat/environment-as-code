@@ -63,6 +63,8 @@ mise:
 agents:
   providers: [claude, codex, opencode]
   instructions: dotfiles/agents/AGENTS.md
+  hooks:
+    klaudiush: true
   upgrade: true
   prune: true
   marketplaces:

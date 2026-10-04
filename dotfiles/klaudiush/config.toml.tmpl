@@ -139,8 +139,7 @@ hooks_config_path = "{{.Home}}/Library/Application Support/orca/codex-runtime-ho
 enabled = false
 
 # opencode has no declarative hook config; klaudiush generates a bridge plugin
-# at plugin_path instead. Regenerate after a klaudiush upgrade with
-# `klaudiush doctor --fix`.
+# at plugin_path. Zakwas refreshes it after a klaudiush upgrade.
 [providers.opencode]
 enabled = true
 plugin_path = "{{.Home}}/.config/opencode/plugin/klaudiush.ts"
