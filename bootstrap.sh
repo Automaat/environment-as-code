@@ -61,10 +61,7 @@ main() {
     zakwas apply --only system,files,links,templates,brew,mise,defaults
     export PATH="$HOME/.local/share/mise/shims:/opt/homebrew/bin:$PATH"
 
-    info "Linking agent configs"
-    ./dotfiles/claude/link.sh
-
-    info "Installing agent plugins"
+    info "Installing agent plugins and instructions"
     zakwas apply
 
     info "Done. Open a new terminal."

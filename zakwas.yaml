@@ -33,6 +33,10 @@ files:
 # ~15 minutes, which would undo the files protection.
 links:
   - {src: dotfiles/ssh/config, dst: ~/.ssh/config}
+  - {src: dotfiles/claude/statusline-command.sh, dst: ~/.claude/statusline-command.sh}
+  # Global agent instructions for the tools agents.instructions doesn't cover.
+  - {src: dotfiles/agents/AGENTS.md, dst: ~/.copilot/instructions/global.instructions.md}
+  - {src: dotfiles/agents/AGENTS.md, dst: ~/AGENTS.md}
 
 templates:
   files:
@@ -54,8 +58,10 @@ mise:
 # them strictly instead of skipping them. opencode can't keep a skill from
 # running on its own, so skills that run only on request skip it
 # (disable-model-invocation, or Codex allow_implicit_invocation: false).
+# instructions is linked as each provider's global CLAUDE.md / AGENTS.md.
 agents:
   providers: [claude, codex, opencode]
+  instructions: dotfiles/agents/AGENTS.md
   upgrade: true
   prune: true
   marketplaces:
@@ -130,6 +136,12 @@ commands:
     run: >-
       for l in .claude/skills/technical-debt-manager .claude/skills/youtube-summary .codex/skills/technical-debt-manager;
       do case "$(readlink "$HOME/$l")" in */research-machine/*) rm -f "$HOME/$l" ;; esac; done
+  # The old link script linked the instruction rules dir here; its source is
+  # gone now that the rules live in dotfiles/agents/AGENTS.md.
+  - name: old claude rules link removed
+    check: >-
+      case "$(readlink "$HOME/.claude/rules")" in */environment-as-code/dotfiles/claude/rules) exit 1 ;; esac
+    run: rm -f "$HOME/.claude/rules"
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported

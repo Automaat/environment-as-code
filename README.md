@@ -17,7 +17,7 @@ What it manages:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Automaat/environment-as-code/main/bootstrap.sh)"
 ```
 
-Runs the zakwas installer (Xcode CLI tools, pinned zakwas release to `~/.local/bin`), clones the repo to `~/sideprojects/environment-as-code`, creates an SSH key and waits until it's added to GitHub, then runs `zakwas apply` (which installs Homebrew and mise itself), links the agent configs and runs `zakwas apply` again for the agent plugins, whose plan needs the CLIs the first one installed. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
+Runs the zakwas installer (Xcode CLI tools, pinned zakwas release to `~/.local/bin`), clones the repo to `~/sideprojects/environment-as-code`, creates an SSH key and waits until it's added to GitHub, then runs `zakwas apply` (which installs Homebrew and mise itself) and runs it again for the agent plugins and instructions, whose plan needs the CLIs the first one installed. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
 
 Git signs every commit with the GPG key in `dotfiles/git/config`, which bootstrap can't create. Until it's imported, `zakwas apply` fails on the `git signing key imported` command with the steps:
 
@@ -67,11 +67,7 @@ A plugin targets its marketplace's providers unless it lists its own, which must
 
 `plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo itself is the `environment-as-code` marketplace (`.claude-plugin/marketplace.json` for Claude Code, `.agents/plugins/marketplace.json` for Codex), declared in `zakwas.yaml` as a local path.
 
-`dotfiles/claude/link.sh` links only the instruction files (`CLAUDE.md`, the rules, the status line, `AGENTS.md`); it removes links it used to make for skills and commands. On a Mac set up before plugins, run it once after the first `zakwas upgrade` so those old links don't load next to the plugin copies:
-
-```bash
-./dotfiles/claude/link.sh
-```
+The global instructions live in one hand-edited file, `dotfiles/agents/AGENTS.md`. `agents.instructions` links it as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` and `~/.config/opencode/AGENTS.md`; plain `links` entries give it to Copilot CLI (`~/.copilot/instructions/global.instructions.md`) and `~/AGENTS.md`, and link the Claude Code status line script.
 
 ## Development
 
