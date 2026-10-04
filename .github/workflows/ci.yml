@@ -27,41 +27,51 @@ jobs:
           version: 2026.10.1
 
       - name: shellcheck
-        run: shellcheck bootstrap.sh dotfiles/claude/*.sh dotfiles/bin/*
+        run: shellcheck bootstrap.sh dotfiles/claude/statusline-command.sh dotfiles/bin/*
 
       - name: actionlint
         run: actionlint
 
-      # link.sh also regenerates AGENTS.md, so a stale committed copy shows
-      # up as a diff.
-      - name: link.sh links agent configs
+      # Machines set up before zakwas linked the instructions have links into
+      # the old dotfiles/claude sources; the links module must move the
+      # Copilot CLI and ~/AGENTS.md ones to AGENTS.md.
+      - name: links converge from the old link.sh layout
         env:
           HOME: ${{ runner.temp }}/h
         run: |
-          # Skills and commands come from plugins now: link.sh must remove the
-          # links it used to make there, live or dangling.
-          mkdir -p "$HOME/.claude/skills" "$HOME/.claude/commands" "$HOME/.config/opencode/commands"
-          ln -s "$PWD/plugins/kong-ai-intel/skills/kong-ai-intel" "$HOME/.claude/skills/kong-ai-intel"
-          ln -s "$PWD/plugins/removed/skills/removed" "$HOME/.claude/skills/removed"
-          ln -s "$PWD/dotfiles/claude/commands/removed.md" "$HOME/.claude/commands/removed.md"
-          ln -s "$PWD/dotfiles/claude/commands/removed.md" "$HOME/.config/opencode/commands/removed.md"
-          # Links owned by plugins or other repos must survive, even dangling,
-          # and so must real skill dirs.
-          ln -s /nonexistent/foreign.md "$HOME/.claude/commands/foreign.md"
-          ln -s /nonexistent/foreign "$HOME/.claude/skills/foreign"
-          mkdir -p "$HOME/.claude/skills/mine"
-          ./dotfiles/claude/link.sh
-          for p in .claude/commands/foreign.md .claude/skills/foreign; do
-            if [ ! -L "$HOME/$p" ]; then echo "foreign link $HOME/$p pruned"; exit 1; fi
+          old="$PWD/dotfiles/claude"
+          mkdir -p "$HOME/.claude" "$HOME/.copilot/instructions"
+          ln -s "$old/AGENTS.md" "$HOME/.copilot/instructions/global.instructions.md"
+          ln -s "$old/AGENTS.md" "$HOME/AGENTS.md"
+          ln -s /nonexistent/statusline-command.sh "$HOME/.claude/statusline-command.sh"
+          zakwas apply -y --only links
+          for p in .copilot/instructions/global.instructions.md AGENTS.md; do
+            if [ "$(readlink "$HOME/$p")" != "$PWD/dotfiles/agents/AGENTS.md" ]; then echo "$HOME/$p not linked to AGENTS.md"; exit 1; fi
           done
-          test -d "$HOME/.claude/skills/mine"
-          for p in .claude/skills/kong-ai-intel .claude/skills/removed .claude/commands/removed.md .config/opencode/commands/removed.md; do
-            if [ -L "$HOME/$p" ]; then echo "old link $HOME/$p not pruned"; exit 1; fi
+          if [ "$(readlink "$HOME/.claude/statusline-command.sh")" != "$old/statusline-command.sh" ]; then echo "status line not linked"; exit 1; fi
+          zakwas check --only links
+
+      # The full agents module installs plugins and needs the agent CLIs, so
+      # this applies only agents.instructions, with the real providers and
+      # path, from a minimal config.
+      - name: agent instructions converge from the old link.sh layout
+        env:
+          HOME: ${{ runner.temp }}/i
+        run: |
+          providers=$(sed -n '/^agents:/,/^[a-z]/s/^  providers: //p' zakwas.yaml)
+          instructions=$(sed -n '/^agents:/,/^[a-z]/s/^  instructions: //p' zakwas.yaml)
+          cfg="$RUNNER_TEMP/instructions.yaml"
+          printf 'agents:\n  providers: %s\n  instructions: %s\n' "$providers" "$PWD/$instructions" > "$cfg"
+          old="$PWD/dotfiles/claude"
+          mkdir -p "$HOME/.claude" "$HOME/.codex" "$HOME/.config/opencode"
+          ln -s "$old/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+          ln -s "$old/AGENTS.md" "$HOME/.codex/AGENTS.md"
+          ln -s "$old/AGENTS.md" "$HOME/.config/opencode/AGENTS.md"
+          zakwas apply -y -c "$cfg" --only agents
+          for p in .claude/CLAUDE.md .codex/AGENTS.md .config/opencode/AGENTS.md; do
+            if [ "$(readlink "$HOME/$p")" != "$PWD/dotfiles/agents/AGENTS.md" ]; then echo "$HOME/$p not linked to AGENTS.md"; exit 1; fi
           done
-          for p in .claude/CLAUDE.md .claude/rules .claude/statusline-command.sh .codex/AGENTS.md .copilot/instructions/global.instructions.md AGENTS.md .config/opencode/AGENTS.md; do
-            if [ ! -L "$HOME/$p" ] || [ ! -e "$HOME/$p" ]; then echo "missing link $HOME/$p"; exit 1; fi
-          done
-          git diff --exit-code -- dotfiles/claude/AGENTS.md
+          zakwas check -c "$cfg" --only agents
 
       - name: config resolves on a real Mac
         run: zakwas plan --only system,files,links,templates,commands,defaults
