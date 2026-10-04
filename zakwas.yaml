@@ -141,6 +141,34 @@ commands:
     check: >-
       case "$(readlink "$HOME/.claude/rules")" in */environment-as-code/dotfiles/claude/rules) exit 1 ;; esac
     run: rm -f "$HOME/.claude/rules"
+  # General skills that live outside any marketplace. openscad is a third-party
+  # repo; it is linked into ~/.agents/skills (Codex, opencode) and
+  # ~/.claude/skills (Claude) so updates via git pull reach every agent.
+  - name: openscad skill shared with all agents
+    check: >-
+      d="$HOME/Development/Claude/openscad_claude_skill";
+      test -f "$d/SKILL.md" &&
+      test "$(readlink "$HOME/.agents/skills/openscad")" = "$d" &&
+      test "$(readlink "$HOME/.claude/skills/openscad")" = "$d"
+    run: >-
+      d="$HOME/Development/Claude/openscad_claude_skill";
+      { test -d "$d" || git clone https://github.com/andreahaku/openscad_claude_skill.git "$d"; } &&
+      mkdir -p "$HOME/.agents/skills" "$HOME/.claude/skills" &&
+      ln -sfn "$d" "$HOME/.agents/skills/openscad" &&
+      ln -sfn "$d" "$HOME/.claude/skills/openscad"
+  # Orca and the skills CLI install general skills into ~/.agents/skills, which
+  # Codex and opencode read but Claude doesn't. Link each into ~/.claude/skills
+  # so Claude gets them too; the owners keep updating them in place.
+  - name: shared agent skills linked for claude
+    check: >-
+      for s in computer-use find-skills orca-cli orchestration;
+      do test -f "$HOME/.agents/skills/$s/SKILL.md" || continue;
+      test "$(readlink "$HOME/.claude/skills/$s")" = "$HOME/.agents/skills/$s" || exit 1; done
+    run: >-
+      mkdir -p "$HOME/.claude/skills" &&
+      for s in computer-use find-skills orca-cli orchestration;
+      do test -f "$HOME/.agents/skills/$s/SKILL.md" || continue;
+      ln -sfn "$HOME/.agents/skills/$s" "$HOME/.claude/skills/$s"; done
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
