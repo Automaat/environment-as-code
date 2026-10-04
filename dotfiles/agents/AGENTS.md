@@ -94,52 +94,52 @@ Projects live in two roots. Don't search the filesystem — look here first. Own
 
 | Repo | Owner | Stack | What |
 |------|-------|-------|------|
-| afi | Kong | Rust | Small coding agent for self-hosted/remote models |
-| agent-auth-cli | Kong | Go | Credential helper: Kong AI Gateway sign-in for coding agents |
+| afi | Kong | Rust | Internal (private) |
+| agent-auth-cli | Kong | Go | Internal CLI (private) |
 | creative_tax | — | scripts | creative_tax (PR listing script; no git) |
 | developer.konghq.com | Automaat | Ruby | Fork of Kong developer portal |
-| draft-rfc-ai-cost | Kong | docs | Draft RFC: AI gateway/harness budget + cost exposure |
-| engineering-ai-gw | Kong | config | GitOps (kongctl) for the engineering Konnect AI Gateway |
+| draft-rfc-ai-cost | Kong | docs | Internal RFC draft (private) |
+| engineering-ai-gw | Kong | config | Internal config (private) |
 | envoy | envoyproxy | C++ | Envoy proxy |
 | envoy-builds | kumahq | Shell | Envoy builds for Kuma |
-| k8s-argo-apps | kong-konnect | Python/YAML | Konnect ArgoCD apps |
-| k8s-cloud-aws | kong-konnect | YAML | Konnect k8s infra resources (AWS) |
+| k8s-argo-apps | kong-konnect | YAML | Internal infra (private) |
+| k8s-cloud-aws | kong-konnect | YAML | Internal infra (private) |
 | kong | Kong | Lua | Kong Gateway (API + AI gateway) |
 | kong-ee | Kong | Lua | Kong Gateway Enterprise |
 | kong-mesh | Kong | Go | Kong Mesh |
 | kong-mesh-ecs | Kong | IaC | Kong Mesh on ECS + Fargate |
 | kong-mesh-smoke | Kong | Go | Kong Mesh smoke tests |
-| kong-mesh-v3-ai-driven-verification | Kong | Shell | Agent-driven Kong Mesh v3 upgrade verification |
-| konnect-ui-apps | kong-konnect | TypeScript | Konnect UI micro frontends |
-| konnect-velocity | — | Go | CLI: kong-konnect org PR efficiency (no per-person metrics) |
-| ksai | Kong | Svelte | Kong Skills for Agentic Intelligence: AI review/testing + Claude plugin marketplace |
-| ksai-bench | Kong | Python | Benchmark for AI code reviewer findings |
-| ksai-cairn | Kong | TypeScript | Pull-through artifact cache + policy gate |
-| ksai-cp | kong-konnect | Go | KSAI control plane: GitHub App deliveries → Actions runs |
-| ksai-internal | Kong | JavaScript | KSAI internal |
-| ksai-swe-bench | Kong | HTML | SWE-bench tasks/evals for the ksai agent stack |
+| kong-mesh-v3-ai-driven-verification | Kong | Shell | Kong Mesh v3 upgrade verification (private) |
+| konnect-ui-apps | kong-konnect | TypeScript | Konnect UI (private) |
+| konnect-velocity | — | Go | Internal metrics CLI |
+| ksai | Kong | Svelte | KSAI internal AI tooling (private) |
+| ksai-bench | Kong | Python | KSAI component (private) |
+| ksai-cairn | Kong | TypeScript | KSAI component (private) |
+| ksai-cp | kong-konnect | Go | KSAI component (private) |
+| ksai-internal | Kong | JavaScript | KSAI component (private) |
+| ksai-swe-bench | Kong | HTML | KSAI component (private) |
 | kubernetes-ingress-controller | Kong | Go | Kong Ingress Controller |
 | kuma | kumahq | Go | Kuma service mesh |
 | kuma-counter-demo | kumahq | Go | Kuma demo app |
 | kuma-website | kumahq | Ruby | Kuma website |
 | mink-charts | Kong | Go | MinK (Mesh in Konnect) Helm charts |
-| mink-charts-v3 | kong-konnect | Go | MinK Helm charts for Kong Mesh v3 |
+| mink-charts-v3 | kong-konnect | Go | MinK Helm charts, v3 (private) |
 | mink-vcp-manager | Kong | Go | Mesh in Konnect VCP manager |
-| opencode-plugin-kong-ai-gateway | Kong | TypeScript | opencode provider for Kong AI Gateway (OIDC) |
+| opencode-plugin-kong-ai-gateway | Kong | TypeScript | Internal opencode plugin (private) |
 | oss-cc-scratch | — | scratch | Empty scratch dir |
-| oss-cc-test | — | Python | OSS-model Claude Code experiments (glm, gpt-oss; no git) |
-| perf-review | — | docs | Perf review notes (no git) |
-| platform-api | Kong | OpenAPI | Konnect Platform OpenAPI specs |
+| oss-cc-test | — | Python | Local experiments (no git) |
+| perf-review | — | docs | Personal notes (no git) |
+| platform-api | Kong | OpenAPI | Konnect API specs (private) |
 | shared-go | Kong | Go | Internal Go modules monorepo (Konnect) |
-| shared-ui-components | kong-konnect | TypeScript | Konnect shared UI components |
-| sidecarless-gateway-poc | — | Go/K8s | POC: Kong Gateway in mesh without sidecar (SPIRE mTLS; no git) |
+| shared-ui-components | kong-konnect | TypeScript | Konnect UI components (private) |
+| sidecarless-gateway-poc | — | Go/K8s | Mesh gateway POC (no git) |
 | team-mesh | Kong | Go | Mesh team repo: `team-mesh-tools` CLI, docs, automation |
-| team-mesh-oncall | Kong | Shell | Agentic oncall runbooks for Kong Mesh / MinK / MoNK |
+| team-mesh-oncall | Kong | Shell | Mesh team oncall docs (private) |
 | tf-kmesh | kong-konnect | Terraform | Konnect mesh policies via TF/Atlantis |
-| tf-kong-cloud-02-aws | kong-konnect | Terraform | kong-cloud-02 AWS infra |
-| tf-kong-datadog | kong-konnect | Terraform | Datadog monitors/synthetics |
-| tf-konnect-gh-runners | kong-konnect | Terraform | Konnect GitHub runners (Atlantis) |
-| tf-resources-konnect | kong-konnect | Terraform | TF resources deployed to Konnect |
+| tf-kong-cloud-02-aws | kong-konnect | Terraform | Internal infra (private) |
+| tf-kong-datadog | kong-konnect | Terraform | Internal monitoring (private) |
+| tf-konnect-gh-runners | kong-konnect | Terraform | Internal CI runners (private) |
+| tf-resources-konnect | kong-konnect | Terraform | Internal infra (private) |
 | v3-readiness | Kong | Go | Clone of `Kong/kong-mesh-v3-readiness`: Kuma 3.0 upgrade preflight CLI |
 
 ---
