@@ -46,6 +46,8 @@ A launchd agent runs `zakwas check` every day at 10:00 and shows a notification 
 
 The `agents` section of `zakwas.yaml` declares the plugins of Claude Code, Codex and opencode and the marketplaces they come from. `zakwas apply` installs what's missing, updates plugins to their marketplace versions and, with `prune: true`, removes user-scope plugins and marketplaces that aren't declared. Plugins installed for a single project are left alone. opencode has no plugin system, so zakwas links each declared plugin's skills into `~/.config/opencode/skills`.
 
+Klaudiush hook registrations for enabled providers are managed by `agents.hooks.klaudiush`. The provider settings live in `dotfiles/klaudiush/config.toml.tmpl`; `zakwas apply` refreshes registrations after Klaudiush or its config changes.
+
 To add a plugin, list it under `agents.plugins` as `name@marketplace` (the marketplace must be declared under `agents.marketplaces`), then `zakwas apply`:
 
 ```yaml
