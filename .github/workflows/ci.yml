@@ -33,7 +33,9 @@ jobs:
         run: actionlint
 
       # Machines set up before zakwas linked the instructions have links into
-      # the old dotfiles/claude sources; apply must move them to AGENTS.md.
+      # the old dotfiles/claude sources; the links module must move the
+      # Copilot CLI and ~/AGENTS.md ones to AGENTS.md. The agents module
+      # (agents.instructions) needs the agent CLIs, so it isn't run here.
       - name: links converge from the old link.sh layout
         env:
           HOME: ${{ runner.temp }}/h
@@ -42,12 +44,12 @@ jobs:
           mkdir -p "$HOME/.claude" "$HOME/.copilot/instructions"
           ln -s "$old/AGENTS.md" "$HOME/.copilot/instructions/global.instructions.md"
           ln -s "$old/AGENTS.md" "$HOME/AGENTS.md"
-          ln -s "$old/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+          ln -s /nonexistent/statusline-command.sh "$HOME/.claude/statusline-command.sh"
           zakwas apply -y --only links
           for p in .copilot/instructions/global.instructions.md AGENTS.md; do
             if [ "$(readlink "$HOME/$p")" != "$PWD/dotfiles/agents/AGENTS.md" ]; then echo "$HOME/$p not linked to AGENTS.md"; exit 1; fi
           done
-          test -x "$HOME/.claude/statusline-command.sh"
+          if [ "$(readlink "$HOME/.claude/statusline-command.sh")" != "$old/statusline-command.sh" ]; then echo "status line not linked"; exit 1; fi
           zakwas check --only links
 
       - name: config resolves on a real Mac
