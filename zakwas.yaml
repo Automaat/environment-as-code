@@ -55,9 +55,10 @@ mise:
 
 # Agent plugins for Claude Code, Codex and opencode. Entries without their own
 # providers target all three. Codex and opencode are named so zakwas manages
-# them strictly instead of skipping them. opencode can't keep a skill from
-# running on its own, so skills that run only on request skip it
-# (disable-model-invocation, or Codex allow_implicit_invocation: false).
+# them strictly instead of skipping them. Every skill installs for all three;
+# only marketplaces whose plugins aren't skills (LSP, MCP) are narrowed.
+# opencode can't keep an on-request skill from running on its own, so there
+# those skills rely on their own wording.
 # instructions is linked as each provider's global CLAUDE.md / AGENTS.md.
 agents:
   providers: [claude, codex, opencode]
@@ -68,29 +69,27 @@ agents:
     sai: smykla-skalski/sai
     environment-as-code: ./
     claude-plugins-official: {source: anthropics/claude-plugins-official, providers: [claude]}
-    ksai: {source: Kong/ksai, providers: [claude]}
-    slack: {source: slackapi/slack-skills-plugin, providers: [codex]}
+    ksai: Kong/ksai
+    slack: {source: slackapi/slack-skills-plugin, providers: [codex, opencode]}
   plugins:
     - adversarial-review@sai
     - adversarial-test@sai
-    - {id: ai-daily-digest@sai, providers: [claude, codex]}
+    - ai-daily-digest@sai
     - humanize@sai
-    - {id: kubecon-cfp@sai, providers: [claude, codex]}
+    - kubecon-cfp@sai
     - plan-critic@sai
     - promptgen@sai
     - refactor-council@sai
     - review-claude-md@sai
-    - {id: ship-issue@sai, providers: [claude, codex]}
+    - ship-it@sai
     - staff-resume@sai
     - technical-debt-manager@sai
     - test-writer@sai
     - youtube-summary@sai
-    - {id: council@sai, providers: [codex]}
-    - {id: staff-code-review@sai, providers: [codex]}
     - agent-md-gen@environment-as-code
     - go-code-review@environment-as-code
     - kong-ai-intel@environment-as-code
-    - {id: fix-review@environment-as-code, providers: [claude, codex]}
+    - fix-review@environment-as-code
     - gopls-lsp@claude-plugins-official
     - slack@claude-plugins-official
     - issue-authoring@ksai
