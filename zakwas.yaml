@@ -55,9 +55,10 @@ mise:
 
 # Agent plugins for Claude Code, Codex and opencode. Entries without their own
 # providers target all three. Codex and opencode are named so zakwas manages
-# them strictly instead of skipping them. opencode can't keep a skill from
-# running on its own, so skills that run only on request skip it
-# (disable-model-invocation, or Codex allow_implicit_invocation: false).
+# them strictly instead of skipping them. Every skill installs for all three;
+# only marketplaces whose plugins aren't skills (LSP, MCP) are narrowed.
+# opencode can't keep an on-request skill from running on its own, so there
+# those skills rely on their own wording.
 # instructions is linked as each provider's global CLAUDE.md / AGENTS.md.
 agents:
   providers: [claude, codex, opencode]
