@@ -80,7 +80,7 @@ agents:
     - promptgen@sai
     - refactor-council@sai
     - review-claude-md@sai
-    - {id: ship-issue@sai, providers: [claude, codex]}
+    - {id: ship-it@sai, providers: [claude, codex]}
     - staff-resume@sai
     - technical-debt-manager@sai
     - test-writer@sai
