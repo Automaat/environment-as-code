@@ -1,0 +1,55 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "enabled_providers": [
+    "kong-ai-gateway"
+  ],
+  "mcp": {
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "enabled": true
+    },
+    "datadog-mcp": {
+      "type": "remote",
+      "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp",
+      "enabled": true
+    }
+  },
+  "model": "kong-ai-gateway/zai-org/GLM-5.3-Flash",
+  "plugin": [
+    [
+      "file://{{.Home}}/kong/opencode-plugin-kong-ai-gateway/src/index.ts",
+      {
+        "gateway": "https://us.ai-gw.konghq.tech",
+        "issuer": "https://konghq.okta.com/oauth2/default",
+        "clientID": "0oa1zlwt4wuQdH7xt358",
+        "audience": "api://default",
+        "redirectURI": "http://localhost:9876/callback"
+      }
+    ],
+    [
+      "opencode-plugin-comment-judge@0.3.0",
+      {
+        "log": "{{.Home}}/.local/share/opencode/comment-judge.jsonl"
+      }
+    ]
+  ],
+  "small_model": "kong-ai-gateway/zai-org/GLM-5.3-Flash",
+  "plugins": [
+    {
+      "package": "{{.Home}}/.config/opencode/kong-ai-gateway-v2",
+      "options": {
+        "gateway": "https://us.ai-gw.konghq.tech",
+        "issuer": "https://konghq.okta.com/oauth2/default",
+        "clientID": "0oa1zlwt4wuQdH7xt358",
+        "audience": "api://default",
+        "redirectURI": "http://localhost:9876/callback"
+      }
+    },
+    "{{.Home}}/sideprojects/opencode-plugin-plan-review"
+  ]
+}
