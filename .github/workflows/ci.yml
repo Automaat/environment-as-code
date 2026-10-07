@@ -24,7 +24,7 @@ jobs:
       - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
         with:
           # renovate: datasource=github-releases depName=jdx/mise
-          version: 2026.10.3
+          version: 2026.10.4
 
       - name: shellcheck
         run: shellcheck bootstrap.sh dotfiles/claude/statusline-command.sh dotfiles/bin/*
@@ -114,7 +114,7 @@ jobs:
       - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
         with:
           # renovate: datasource=github-releases depName=jdx/mise
-          version: 2026.10.3
+          version: 2026.10.4
 
       # Restore and save are split so tools downloaded by a run that later
       # fails are still kept; the combined action only saves on success.
