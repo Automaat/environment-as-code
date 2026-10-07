@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agent-workflow",
+  "version": "1.0.0",
+  "description": "Load Marcin's binding repository map and development workflow rules only when a task needs them.",
+  "author": { "name": "Marcin Skalski" },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/agent-workflow",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": ["agents", "workflow", "repositories", "github"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Agent Workflow",
+        "shortDescription": "Load personal workflow rules on demand",
+        "longDescription": "Load Marcin's binding repository map and development workflow rules only when a task needs them.",
+        "developerName": "Marcin Skalski",
+        "category": "Developer Tools",
+        "capabilities": ["Interactive"],
+        "websiteURL": "https://github.com/Automaat/environment-as-code/tree/main/plugins/agent-workflow",
+        "defaultPrompt": ["Use $agent-workflow to load the rules needed for this development task."]
+      }
+    }
+  }
+}

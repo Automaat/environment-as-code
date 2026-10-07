@@ -93,6 +93,7 @@ agents:
     - technical-debt-manager@sai
     - test-writer@sai
     - youtube-summary@sai
+    - agent-workflow@environment-as-code
     - agent-md-gen@environment-as-code
     - go-code-review@environment-as-code
     - kong-ai-intel@environment-as-code

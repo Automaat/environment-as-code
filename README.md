@@ -67,9 +67,11 @@ agents:
 
 A plugin targets its marketplace's providers unless it lists its own, which must be a subset. Every skill here installs for all three agents. opencode can't keep an on-request skill (`disable-model-invocation`, or Codex `allow_implicit_invocation: false`) from running on its own, so those skills rely on their own wording there. A marketplace source is a GitHub `owner/repo`, a git URL or a local path; its name must match the `name` in its manifest.
 
-`plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo itself is the `environment-as-code` marketplace (`.claude-plugin/marketplace.json` for Claude Code, `.agents/plugins/marketplace.json` for Codex), declared in `zakwas.yaml` as a local path.
+`plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `agent-workflow`, `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo itself is the `environment-as-code` marketplace (`.claude-plugin/marketplace.json` for Claude Code, `.agents/plugins/marketplace.json` for Codex), declared in `zakwas.yaml` as a local path.
 
-The global instructions live in one hand-edited file, `dotfiles/agents/AGENTS.md`. `agents.instructions` links it as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` and `~/.config/opencode/AGENTS.md`; plain `links` entries give it to Copilot CLI (`~/.copilot/instructions/global.instructions.md`) and `~/AGENTS.md`, and link the Claude Code status line script.
+The small, provider-neutral instruction core lives in `dotfiles/agents/AGENTS.md`. `agents.instructions` links it as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` and `~/.config/opencode/AGENTS.md`; plain `links` entries give it to Copilot CLI (`~/.copilot/instructions/global.instructions.md`) and `~/AGENTS.md`. Detailed repository and workflow rules load on demand from the shared `agent-workflow` skill.
+
+See [the agent context budget](docs/agent-context-budget.md) for representative payload measurements.
 
 OpenCode's declarative configuration lives in `dotfiles/opencode/`. `zakwas apply` protects `opencode.json`, `cli.json` and the Kong themes; the config enables only Kong AI Gateway models. It deliberately excludes generated plugins and skills, local package state, auth caches and `service.json` because they are machine state or secrets.
 
