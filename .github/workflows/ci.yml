@@ -171,7 +171,10 @@ jobs:
               echo "Claude unexpectedly authenticated in the isolated profile test"
               exit 1
             fi
-            grep -q 'Not logged in' "$RUNNER_TEMP/claude-$profile.out"
+            if ! grep -q 'Not logged in' "$RUNNER_TEMP/claude-$profile.out"; then
+              cat "$RUNNER_TEMP/claude-$profile.out"
+              exit 1
+            fi
           done
           for profile in explore review build release; do
             home="$RUNNER_TEMP/codex-$profile"
@@ -183,8 +186,11 @@ jobs:
               echo "Codex unexpectedly ran with a missing model provider"
               exit 1
             fi
-            grep -q "Model provider.*missing-for-config-validation.*not found" \
-              "$RUNNER_TEMP/codex-$profile.out"
+            if ! grep -q "Model provider.*missing-for-config-validation.*not found" \
+              "$RUNNER_TEMP/codex-$profile.out"; then
+              cat "$RUNNER_TEMP/codex-$profile.out"
+              exit 1
+            fi
           done
           jq '{"$schema": "https://opencode.ai/config.json", permission, agent}' \
             dotfiles/opencode/opencode.json.tmpl > "$RUNNER_TEMP/opencode-agent-profiles.json"
