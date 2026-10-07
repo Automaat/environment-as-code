@@ -1,6 +1,6 @@
 # Global Instructions
 
-Be extremely concise; sacrifice grammar for concision. Bullets over paragraphs. No hedging ("might", "could potentially") or social validation ("great question!"). Explain only when asked.
+Use standard technical English. Bullets over paragraphs. No hedging ("might", "could potentially") or social validation ("great question!"). Explain only when asked.
 
 ## Workflow
 
