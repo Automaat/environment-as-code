@@ -1,12 +1,12 @@
 # Global Instructions
 
-Be extremely concise; sacrifice grammar for concision. Bullets over paragraphs. No hedging ("might", "could potentially") or social validation ("great question!"). Explain only when asked.
+Use standard technical English. Bullets over paragraphs. No hedging ("might", "could potentially") or social validation ("great question!"). Explain only when asked.
 
 ## Workflow
 
-- Explore → Plan → Code → Commit. Understand the codebase and alternatives before editing.
 - Complex tasks: use deep, multi-dimensional analysis; ask material clarifying questions upfront.
 - Clear context between unrelated tasks. End plans with terse unresolved questions.
+- After planning a change, prioritize `$ship-it` for implementation and delivery.
 - Use the `agent-workflow` skill before locating a repository, working outside the current repository, changing code or configuration, running quality gates, using Git/GitHub, or writing notes. Read only the references it routes for the task; their rules are binding. If the provider lacks skills, read its `SKILL.md` from `~/sideprojects/environment-as-code/plugins/agent-workflow/skills/agent-workflow/`.
 
 ## Non-negotiable safety
