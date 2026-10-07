@@ -45,10 +45,10 @@
       "addLabels": ["major"]
     },
     {
-      "description": "Stay on Python 3.13.",
+      "description": "Stay on Python 3.14.",
       "matchManagers": ["mise"],
       "matchDepNames": ["python"],
-      "allowedVersions": "<3.14"
+      "allowedVersions": "<3.15"
     },
     {
       "description": "zakwas is pinned in both mise configs; bump them in one PR so CI and the machine run the same release.",
