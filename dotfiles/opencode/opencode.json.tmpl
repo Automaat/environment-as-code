@@ -3,6 +3,85 @@
   "enabled_providers": [
     "kong-ai-gateway"
   ],
+  "permission": {
+    "*": "ask",
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "lsp": "allow",
+    "edit": "ask",
+    "bash": {
+      "*": "ask",
+      "pwd": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "git branch --show-current*": "allow"
+    },
+    "external_directory": "ask",
+    "webfetch": "ask",
+    "websearch": "ask",
+    "chrome-devtools_*": "deny",
+    "datadog-mcp_*": "deny"
+  },
+  "agent": {
+    "explore": {
+      "description": "Read-only repository exploration with no external services",
+      "mode": "subagent",
+      "permission": {
+        "edit": "deny",
+        "chrome-devtools_*": "deny",
+        "datadog-mcp_*": "deny"
+      }
+    },
+    "review": {
+      "description": "Read-only review with opt-in Datadog evidence",
+      "mode": "subagent",
+      "permission": {
+        "edit": "deny",
+        "chrome-devtools_*": "deny",
+        "datadog-mcp_*": "ask"
+      }
+    },
+    "build": {
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "ask",
+          "pwd": "allow",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "git branch --show-current*": "allow",
+          "mise run lint*": "allow",
+          "mise run test*": "allow",
+          "npm test*": "allow",
+          "npm run check*": "allow",
+          "go test *": "allow",
+          "cargo test *": "allow"
+        },
+        "chrome-devtools_*": "ask",
+        "datadog-mcp_*": "deny"
+      }
+    },
+    "release": {
+      "description": "Last-mile delivery with explicit remote-action approval",
+      "mode": "primary",
+      "permission": {
+        "edit": "allow",
+        "chrome-devtools_*": "deny",
+        "datadog-mcp_*": "deny"
+      }
+    }
+  },
   "mcp": {
     "chrome-devtools": {
       "type": "local",

@@ -75,6 +75,16 @@ See [the agent context budget](docs/agent-context-budget.md) for representative 
 
 OpenCode's declarative configuration lives in `dotfiles/opencode/`. `zakwas apply` protects `opencode.json`, `cli.json` and the Kong themes; the config enables only Kong AI Gateway models. It deliberately excludes generated plugins and skills, local package state, auth caches and `service.json` because they are machine state or secrets.
 
+## Agent permission profiles
+
+`dotfiles/agents/permission-profiles.json` is the provider-neutral policy. Every rule carries the policy revision and a reason so adapters and task telemetry can explain automated decisions. Explore and review are read-only; build can edit the workspace and run recognized local checks; release keeps remote delivery interactive. Unknown, destructive, secret-bearing, network, deployment and out-of-workspace actions are never silently approved.
+
+Claude Code loads the matching protected user agent with `claude --agent explore`, `review`, `build` or `release`. Read-only profiles omit mutation tools, build accepts workspace edits, and release keeps approvals manual. These agents expose no MCP servers.
+
+Codex loads the matching protected profile with `codex --profile explore`, `review`, `build` or `release`. Explore uses automatic review to reject requests outside its read-only boundary. Build, review and release route approvals to the user, while ordinary workspace reads, edits and local checks stay inside their sandbox. Review exposes Datadog and build exposes Chrome DevTools, with every MCP tool call requiring approval; the other servers stay disabled.
+
+OpenCode exposes the same names as agents. Its global policy asks for unknown commands and network access, blocks direct secret reads, and only enables Datadog tools for review or Chrome DevTools for build after approval. Select a profile with the agent picker or `opencode --agent <name>`.
+
 ## Development
 
 ```bash
