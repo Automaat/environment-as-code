@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Automaat/environment-as-code/evals/agent-workflows/schema.json",
+  "title": "Agent workflow failure corpus",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "cases"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "cases": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/case" } }
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "failure_mode", "harnesses", "workflow", "privacy", "task_input", "initial_state", "expected_behavior", "forbidden_behavior", "grading"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "title": { "type": "string", "minLength": 1 },
+        "failure_mode": { "enum": ["duplicate-work", "permission-loop", "stale-validation", "compaction-loss", "tool-failure", "incomplete-delivery"] },
+        "harnesses": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["claude-code", "codex", "opencode", "copilot-cli", "sail", "multi-agent"] } },
+        "workflow": { "enum": ["single-agent", "multi-agent"] },
+        "privacy": { "$ref": "#/$defs/privacy" },
+        "task_input": { "type": "string", "minLength": 1 },
+        "initial_state": { "$ref": "#/$defs/statements" },
+        "expected_behavior": { "$ref": "#/$defs/statements" },
+        "forbidden_behavior": { "$ref": "#/$defs/statements" },
+        "grading": { "$ref": "#/$defs/grading" }
+      }
+    },
+    "statements": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "provenance", "reviewed", "contains_source_content"],
+      "properties": {
+        "classification": { "const": "public" },
+        "provenance": { "const": "synthetic-redaction" },
+        "reviewed": { "const": true },
+        "contains_source_content": { "const": false }
+      }
+    },
+    "grading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_observations", "failure_observations"],
+      "properties": {
+        "required_observations": { "$ref": "#/$defs/statements" },
+        "failure_observations": { "$ref": "#/$defs/statements" }
+      }
+    }
+  }
+}
