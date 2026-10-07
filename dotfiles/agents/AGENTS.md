@@ -13,6 +13,7 @@ Use standard technical English. Bullets over paragraphs. No hedging ("might", "c
 
 - Work outside the session repository only in a fresh worktree created from the fetched default branch. Never edit another repository's main checkout.
 - Never bypass hooks, signatures, reviews, permissions, linters, or failing checks. Fix the root cause.
+- If a klaudiush hook fails and the failure looks like a hook bug (wrong rule, false positive, crash), stop and report it to me with the command, hook output, and why it looks wrong. Do not work around it.
 - Never add linter-disable directives to hide an error.
 - Never use destructive Git commands unless explicitly requested.
 - Restrict cluster testing to local clusters unless explicitly authorized to use remote infrastructure.
