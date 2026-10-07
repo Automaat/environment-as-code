@@ -16,6 +16,12 @@ files:
   - {src: dotfiles/opencode/cli.json, dst: ~/.config/opencode/cli.json}
   - {src: dotfiles/opencode/themes/kong-dark.json, dst: ~/.config/opencode/themes/kong-dark.json}
   - {src: dotfiles/opencode/themes/kong-light.json, dst: ~/.config/opencode/themes/kong-light.json}
+  - {src: dotfiles/agents/permission-profiles.json, dst: ~/.config/agents/permission-profiles.json}
+  - {src: dotfiles/claude/agents, dst: ~/.claude/agents/permission-profiles}
+  - {src: dotfiles/codex/explore.config.toml, dst: ~/.codex/explore.config.toml}
+  - {src: dotfiles/codex/review.config.toml, dst: ~/.codex/review.config.toml}
+  - {src: dotfiles/codex/build.config.toml, dst: ~/.codex/build.config.toml}
+  - {src: dotfiles/codex/release.config.toml, dst: ~/.codex/release.config.toml}
   - {src: dotfiles/starship/starship.toml, dst: ~/.config/starship.toml}
   - {src: dotfiles/ghostty/config, dst: ~/.config/ghostty/config}
   - {src: dotfiles/ghostty/themes, dst: ~/.config/ghostty/themes}

@@ -1,0 +1,16 @@
+approval_policy = "on-request"
+approvals_reviewer = "user"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = false
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["chrome-devtools-mcp@latest"]
+enabled = true
+default_tools_approval_mode = "prompt"
+
+[mcp_servers.datadog]
+url = "https://mcp.datadoghq.com/v1/mcp"
+enabled = false
