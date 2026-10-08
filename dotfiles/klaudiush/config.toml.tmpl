@@ -56,6 +56,12 @@ enabled = false
 [validators.github.issue]
 enabled = false
 
+# Shell nesting (SHELL002) blocks any command it cannot fully parse, including
+# ordinary tools behind shell-function wrappers such as mise's npm reshim.
+[overrides.entries.SHELL002]
+disabled = true
+reason = "Blocks unrelated commands it cannot parse; git validators stay on"
+
 # Rules Engine - custom command-level policies
 [rules]
 enabled = true
@@ -97,7 +103,7 @@ mode = "strict"
 [validators.file.markdown]
 enabled = false
 
-[validators.file.shell_script]
+[validators.file.shellscript]
 enabled = false
 
 [validators.file.terraform]
