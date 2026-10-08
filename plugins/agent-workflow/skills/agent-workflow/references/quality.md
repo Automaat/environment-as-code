@@ -24,6 +24,15 @@
 - Verify cluster checks against real local clusters, not stubbed `kubectl`, before claiming they work.
 - Do not use remote GKE or EKS clusters unless explicitly authorized.
 
+## Scratch and build output
+
+- Create one scratch root per task with `mktemp -d "${TMPDIR:-/tmp}/<repo>-<task>.XXXXXX"` and record the path. Point every cache and temp location at it (`CARGO_TARGET_DIR`, `GOCACHE`, `GOTMPDIR`, `npm_config_cache`, `UV_CACHE_DIR`) so one `rm -rf` of that exact path removes everything.
+- Remove the root when the task ends, whether it merged, failed or was cancelled. Do it in the final workflow step and in every stop or blocked path. Only the agent that created the root removes it; subagents never do.
+- Remove only directories you created in this task. Never delete other sessions' or agents' directories (`sail*`, other worktrees' targets) or anything outside your scratch root.
+- Reuse one target directory per worktree (`<root>/target-<worktree>`) for repeated gates of the same revision. Pass the scratch root to review and test subagents so they reuse it instead of creating their own.
+- Before a build-heavy task, run `df -h "${TMPDIR:-/tmp}"`. Under 20 GB available: say so before continuing and clean your own leftovers first. If still low, stop and ask.
+- This is not a cleanup tool. Sweeping of stale directories is handled by `smykla-skalski/sail#339`.
+
 ## Orchestrator
 
 - When running the orchestrator monitor, do not register or schedule a cron. The Go backend owns the loop. Scan the board and triage.
