@@ -77,7 +77,7 @@ OpenCode's declarative configuration lives in `dotfiles/opencode/`. `zakwas appl
 
 ## Agent permission profiles
 
-`dotfiles/agents/permission-profiles.json` is the provider-neutral policy. Every rule carries the policy revision and a reason so adapters and task telemetry can explain automated decisions. Explore and review are read-only; build can edit the workspace and run recognized local checks; release keeps remote delivery interactive. Unknown, destructive, secret-bearing, network, deployment and out-of-workspace actions are never silently approved.
+`dotfiles/agents/permission-profiles.json` is the provider-neutral policy. Every rule carries the policy revision and a reason so adapters and task telemetry can explain automated decisions. Explore and review are read-only; build can edit the workspace and run recognized local checks; release keeps remote delivery interactive. Unknown, destructive, secret-bearing, network, deployment and out-of-workspace actions are never silently approved (OpenCode is the exception, see below).
 
 Claude Code loads the matching protected user agent with `claude --agent explore`, `review`, `build` or `release`. Read-only profiles omit mutation tools, build accepts workspace edits, and release keeps approvals manual. These agents expose no MCP servers.
 
