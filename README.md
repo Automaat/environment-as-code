@@ -83,7 +83,7 @@ Claude Code loads the matching protected user agent with `claude --agent explore
 
 Codex loads the matching protected profile with `codex --profile explore`, `review`, `build` or `release`. Explore uses automatic review to reject requests outside its read-only boundary. Build, review and release route approvals to the user, while ordinary workspace reads, edits and local checks stay inside their sandbox. Review exposes Datadog and build exposes Chrome DevTools, with every MCP tool call requiring approval; the other servers stay disabled.
 
-OpenCode exposes the same names as agents but runs without prompts: every tool is allowed, direct secret reads are blocked, and `explore` and `review` cannot edit. Datadog tools stay off outside review and Chrome DevTools outside build. Select a profile with the agent picker or `opencode --agent <name>`.
+OpenCode exposes the same names as agents but deliberately runs in full auto mode, unlike the Claude Code and Codex profiles above: no tool prompts, including `bash`, pushes, merges, deletes and network access. It still denies direct `.env` reads and the edit tool for `explore` and `review`, but `bash` is unrestricted for every agent, so those two are not a read-only boundary. Datadog tools stay off outside review and Chrome DevTools outside build. Select a profile with the agent picker or `opencode --agent <name>`.
 
 ## Development
 

@@ -33,7 +33,7 @@
   },
   "agent": {
     "explore": {
-      "description": "Read-only repository exploration with no external services",
+      "description": "Repository exploration with no edit tool and no external services",
       "mode": "subagent",
       "permission": {
         "edit": "deny",
@@ -42,7 +42,7 @@
       }
     },
     "review": {
-      "description": "Read-only review with opt-in Datadog evidence",
+      "description": "Review with no edit tool and opt-in Datadog evidence",
       "mode": "subagent",
       "permission": {
         "edit": "deny",
@@ -73,7 +73,7 @@
       }
     },
     "release": {
-      "description": "Last-mile delivery with explicit remote-action approval",
+      "description": "Last-mile delivery without prompts",
       "mode": "primary",
       "permission": {
         "edit": "allow",
