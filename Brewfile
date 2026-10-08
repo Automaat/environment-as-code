@@ -27,10 +27,10 @@ brew "rustup"
 brew "tmux"
 brew "tree"
 
-brew "automaat/tap/cache-buster"
 brew "automaat/tap/zsh-clean-history"
 brew "kong/agent-auth-cli/agent-auth-cli"
 brew "rtk"
+brew "smykla-skalski/tap/bilgie"
 brew "smykla-skalski/tap/klaudiush"
 
 cask "1password"
