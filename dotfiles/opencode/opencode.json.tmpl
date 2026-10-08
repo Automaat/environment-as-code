@@ -4,7 +4,7 @@
     "kong-ai-gateway"
   ],
   "permission": {
-    "*": "ask",
+    "*": "allow",
     "read": {
       "*": "allow",
       "*.env": "deny",
@@ -15,9 +15,9 @@
     "grep": "allow",
     "list": "allow",
     "lsp": "allow",
-    "edit": "ask",
+    "edit": "allow",
     "bash": {
-      "*": "ask",
+      "*": "allow",
       "pwd": "allow",
       "git status*": "allow",
       "git diff*": "allow",
@@ -25,9 +25,9 @@
       "git show*": "allow",
       "git branch --show-current*": "allow"
     },
-    "external_directory": "ask",
-    "webfetch": "ask",
-    "websearch": "ask",
+    "external_directory": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
     "chrome-devtools_*": "deny",
     "datadog-mcp_*": "deny"
   },
@@ -47,14 +47,14 @@
       "permission": {
         "edit": "deny",
         "chrome-devtools_*": "deny",
-        "datadog-mcp_*": "ask"
+        "datadog-mcp_*": "allow"
       }
     },
     "build": {
       "permission": {
         "edit": "allow",
         "bash": {
-          "*": "ask",
+          "*": "allow",
           "pwd": "allow",
           "git status*": "allow",
           "git diff*": "allow",
@@ -68,7 +68,7 @@
           "go test *": "allow",
           "cargo test *": "allow"
         },
-        "chrome-devtools_*": "ask",
+        "chrome-devtools_*": "allow",
         "datadog-mcp_*": "deny"
       }
     },
