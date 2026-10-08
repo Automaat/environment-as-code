@@ -35,7 +35,7 @@ jobs:
       - name: agent permission profiles are valid
         run: |
           jq -e '.policy_revision and (.profiles | keys == ["build", "explore", "release", "review"]) and all(.rules[]; .id and .decision and .reason)' dotfiles/agents/permission-profiles.json
-          jq -e '.permission["*"] == "ask" and .agent.explore.permission.edit == "deny" and .agent.review.permission["datadog-mcp_*"] == "ask" and .agent.build.permission["chrome-devtools_*"] == "ask"' dotfiles/opencode/opencode.json.tmpl
+          jq -e '.permission["*"] == "allow" and .agent.explore.permission.edit == "deny" and .agent.review.permission.edit == "deny" and .permission.read["*.env"] == "deny" and .agent.review.permission["datadog-mcp_*"] == "allow" and .agent.build.permission["chrome-devtools_*"] == "allow"' dotfiles/opencode/opencode.json.tmpl
           for profile in explore review build release; do
             grep -q "^name: $profile$" "dotfiles/claude/agents/$profile.md"
             grep -q '^permissionMode:' "dotfiles/claude/agents/$profile.md"

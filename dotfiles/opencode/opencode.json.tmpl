@@ -4,7 +4,7 @@
     "kong-ai-gateway"
   ],
   "permission": {
-    "*": "ask",
+    "*": "allow",
     "read": {
       "*": "allow",
       "*.env": "deny",
@@ -15,9 +15,9 @@
     "grep": "allow",
     "list": "allow",
     "lsp": "allow",
-    "edit": "ask",
+    "edit": "allow",
     "bash": {
-      "*": "ask",
+      "*": "allow",
       "pwd": "allow",
       "git status*": "allow",
       "git diff*": "allow",
@@ -25,15 +25,15 @@
       "git show*": "allow",
       "git branch --show-current*": "allow"
     },
-    "external_directory": "ask",
-    "webfetch": "ask",
-    "websearch": "ask",
+    "external_directory": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
     "chrome-devtools_*": "deny",
     "datadog-mcp_*": "deny"
   },
   "agent": {
     "explore": {
-      "description": "Read-only repository exploration with no external services",
+      "description": "Repository exploration with no edit tool and no external services",
       "mode": "subagent",
       "permission": {
         "edit": "deny",
@@ -42,19 +42,19 @@
       }
     },
     "review": {
-      "description": "Read-only review with opt-in Datadog evidence",
+      "description": "Review with no edit tool and opt-in Datadog evidence",
       "mode": "subagent",
       "permission": {
         "edit": "deny",
         "chrome-devtools_*": "deny",
-        "datadog-mcp_*": "ask"
+        "datadog-mcp_*": "allow"
       }
     },
     "build": {
       "permission": {
         "edit": "allow",
         "bash": {
-          "*": "ask",
+          "*": "allow",
           "pwd": "allow",
           "git status*": "allow",
           "git diff*": "allow",
@@ -68,12 +68,12 @@
           "go test *": "allow",
           "cargo test *": "allow"
         },
-        "chrome-devtools_*": "ask",
+        "chrome-devtools_*": "allow",
         "datadog-mcp_*": "deny"
       }
     },
     "release": {
-      "description": "Last-mile delivery with explicit remote-action approval",
+      "description": "Last-mile delivery without prompts",
       "mode": "primary",
       "permission": {
         "edit": "allow",
