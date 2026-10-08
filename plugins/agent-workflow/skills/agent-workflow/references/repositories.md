@@ -21,7 +21,7 @@ Projects live in two roots. Don't search the filesystem — look here first. Own
 | auto-claude | smykla-skalski | Go | PR automation daemon driving Claude Code CLI |
 | baratie | Automaat | Go/SvelteKit | 🍳 Self-hosted kitchen companion: recipes, pantry, meal plans |
 | benchee | smykla-skalski | Python | Reproducible benchmarks for AI code-review tools |
-| cache-buster | Automaat | Go | macOS dev cache manager with size limits |
+| bilgie | smykla-skalski | Go | Disk-pressure janitor for dev machines running many agents: auto-cleans caches and stale temp dirs (launchd/systemd/Task Scheduler) |
 | creatorops | Automaat | Tauri/React | Photography workflow app for macOS |
 | deepgram-stt | Automaat | Python | Deepgram speech-to-text for Home Assistant |
 | doctorine | Automaat | Go/SvelteKit | Private health status + medical document manager |
