@@ -1,6 +1,6 @@
 [tools]
 "github:Automaat/zakwas" = "0.7.1"
-"npm:@openai/codex" = "0.161.0"
+"npm:@openai/codex" = "0.162.0"
 shellcheck = "0.11.0"
 actionlint = "1.7.12"
 jq = "1.8.2"
