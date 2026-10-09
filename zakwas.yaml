@@ -38,6 +38,8 @@ files:
   - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
   - {src: dotfiles/bin/zakwas-check-notify, dst: ~/.local/bin/zakwas-check-notify}
   - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
+  - {src: dotfiles/bin/reef-agent-hooks, dst: ~/.local/bin/reef-agent-hooks}
+  - {src: dotfiles/opencode/plugins/reef-observe.js, dst: ~/.config/opencode/plugins/reef-observe.js}
 
 # The work Mac's device management forces ~/.ssh/config back to 600 every
 # ~15 minutes, which would undo the files protection.
@@ -155,6 +157,9 @@ commands:
       launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.reef.observe.plist" &&
       mkdir -p "$HOME/.local/state/zakwas" &&
       cp -f "$HOME/Library/LaunchAgents/dev.reef.observe.plist" "$HOME/.local/state/zakwas/dev.reef.observe.loaded.plist"
+  - name: reef agent hooks
+    check: reef-agent-hooks check
+    run: reef-agent-hooks apply
   # Pre-rename agent: removing its plist doesn't unload it.
   - name: old eac drift agent unloaded
     check: '! launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1'
