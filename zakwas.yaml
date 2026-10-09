@@ -125,6 +125,13 @@ system:
     comment: skalskimarcin33@gmail.com
 
 commands:
+  - name: pinned codex chrome devtools server
+    check: >-
+      codex mcp get chrome-devtools 2> /dev/null |
+      grep -Fqx "  command: $HOME/.local/share/mise/shims/chrome-devtools-mcp"
+    run: >-
+      codex mcp remove chrome-devtools &&
+      codex mcp add chrome-devtools -- "$HOME/.local/share/mise/shims/chrome-devtools-mcp"
   - name: gke-gcloud-auth-plugin
     check: test -x /opt/homebrew/share/google-cloud-sdk/bin/gke-gcloud-auth-plugin
     run: gcloud components install gke-gcloud-auth-plugin --quiet
