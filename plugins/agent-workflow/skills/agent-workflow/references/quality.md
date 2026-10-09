@@ -31,6 +31,7 @@
 - Remove only directories you created in this task. Never delete other sessions' or agents' directories (`sail*`, other worktrees' targets) or anything outside your scratch root.
 - Reuse one target directory per worktree (`<root>/target-<worktree>`) for repeated gates of the same revision. Pass the scratch root to review and test subagents so they reuse it instead of creating their own.
 - Before a build-heavy task, run `df -h "${TMPDIR:-/tmp}"`. Under 20 GB available: say so before continuing and clean your own leftovers first. If still low, stop and ask.
+- Run heavy builds and e2e/browser suites as `build-slot <command>` (`~/.local/bin/build-slot`): it queues until one of 3 machine-wide slots is free, so parallel agents do not push the Mac into swap. Applies to full `cargo build/test`, `go test ./...`, `wdio`/Playwright runs and Docker builds; skip it for quick single-file checks. If `build-slot` is missing, run the command directly.
 - This is not a cleanup tool. Sweeping of stale directories is handled by `smykla-skalski/sail#339`.
 
 ## Orchestrator
