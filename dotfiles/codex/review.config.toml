@@ -3,8 +3,7 @@ approvals_reviewer = "user"
 sandbox_mode = "read-only"
 
 [mcp_servers.chrome-devtools]
-command = "npx"
-args = ["chrome-devtools-mcp@latest"]
+command = "chrome-devtools-mcp"
 enabled = false
 
 [mcp_servers.datadog]

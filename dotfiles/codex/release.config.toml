@@ -6,8 +6,7 @@ sandbox_mode = "workspace-write"
 network_access = false
 
 [mcp_servers.chrome-devtools]
-command = "npx"
-args = ["chrome-devtools-mcp@latest"]
+command = "chrome-devtools-mcp"
 enabled = false
 
 [mcp_servers.datadog]

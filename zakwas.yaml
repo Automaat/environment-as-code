@@ -37,6 +37,7 @@ files:
   - {src: dotfiles/hammerspoon/desk-charger-battery.lua, dst: ~/.hammerspoon/desk-charger-battery.lua}
   - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
   - {src: dotfiles/bin/zakwas-check-notify, dst: ~/.local/bin/zakwas-check-notify}
+  - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
 
 # The work Mac's device management forces ~/.ssh/config back to 600 every
 # ~15 minutes, which would undo the files protection.
