@@ -2,8 +2,12 @@ name: ci
 
 on:
   pull_request:
+    paths-ignore:
+      - dotfiles/**
   push:
     branches: [main]
+    paths-ignore:
+      - dotfiles/**
   workflow_dispatch:
 
 permissions:
