@@ -42,7 +42,7 @@ Installed dotfiles are read-only. Edit them under `dotfiles/` (or add a tool to 
 
 A launchd agent runs `zakwas check` every day at 10:00 and shows a notification when the Mac drifted.
 
-Reef is installed from `smykla-skalski/tap`. A launchd agent runs `reef observe run` at login and restarts it after a crash. It records a baseline without starting the scheduler. Inspect collection with `launchctl print "gui/$(id -u)/dev.reef.observe"`, `reef report`, and `~/Library/Logs/reef-observe.log`. Stop it with `reef observe stop`; restart it with `launchctl kickstart "gui/$(id -u)/dev.reef.observe"`. A stopped recorder resumes at the next login or `zakwas apply`. Reef keeps observations in its private, bounded state directory.
+Reef is installed from `smykla-skalski/tap`. A launchd agent runs `reef observe run` at login and restarts it after a crash. It records a baseline without starting the scheduler, sampling every 60 seconds with a 512 MiB storage cap. The effective history length depends on sample size. Inspect collection with `launchctl print "gui/$(id -u)/dev.reef.observe"`, `reef report`, and `~/Library/Logs/reef-observe.log`. Stop it with `reef observe stop`; restart it with `launchctl kickstart "gui/$(id -u)/dev.reef.observe"`. A stopped recorder resumes at the next login or `zakwas apply`. Reef keeps observations in its private, bounded state directory.
 
 ## Agent plugins
 
