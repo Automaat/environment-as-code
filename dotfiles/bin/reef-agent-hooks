@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root=${REEF_HOOKS_ROOT:-$HOME}
+reef_bin=${REEF_BIN:-}
+if [ -z "$reef_bin" ]; then
+    reef_bin=$(command -v reef || true)
+fi
+if [ -z "$reef_bin" ]; then
+    printf 'Reef is not installed\n' >&2
+    exit 1
+fi
+
+hook_path() {
+    case "$1" in
+        codex) printf '%s/.codex/hooks.json\n' "$root" ;;
+        claude) printf '%s/.claude/settings.json\n' "$root" ;;
+        *) return 2 ;;
+    esac
+}
+
+orca_hook_path() {
+    printf '%s/Library/Application Support/orca/codex-runtime-home/home/hooks.json\n' "$root"
+}
+
+hook_command() {
+    printf '%q agents observe %s\n' "$reef_bin" "$1"
+}
+
+has_hook() {
+    local path=$1 command=$2
+    [ -f "$path" ] && jq -e --arg command "$command" '
+        any(.hooks.SessionStart[]?;
+            (.matcher == null or .matcher == "") and
+            any(.hooks[]?; .type == "command" and .command == $command and .async == true))
+    ' "$path" > /dev/null
+}
+
+install_hook() {
+    local kind=$1 path=$2 command=$3 temporary
+    [ ! -L "$path" ] || {
+        printf 'Refusing symlinked hook config: %s\n' "$path" >&2
+        return 1
+    }
+    mkdir -p "$(dirname "$path")"
+    temporary=$(mktemp "${path}.XXXXXX")
+    if [ -f "$path" ]; then
+        if ! jq --arg command "$command" '
+            .hooks //= {} |
+            .hooks.SessionStart //= [] |
+            if any(.hooks.SessionStart[]?;
+                (.matcher == null or .matcher == "") and
+                any(.hooks[]?; .command == $command)) then
+                (.hooks.SessionStart[]? |
+                    select(.matcher == null or .matcher == "") |
+                    .hooks[]? | select(.command == $command)) |=
+                        (.type = "command" | .async = true)
+            else
+                .hooks.SessionStart += [{"hooks":[{"type":"command","command":$command,"async":true}]}]
+            end
+        ' "$path" > "$temporary"; then
+            rm -f "$temporary"
+            return 1
+        fi
+    else
+        jq -n --arg command "$command" \
+            '{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":$command,"async":true}]}]}}' \
+            > "$temporary"
+    fi
+    chmod 600 "$temporary"
+    mv "$temporary" "$path"
+    printf 'Installed Reef %s session hook\n' "$kind"
+}
+
+check_hooks() {
+    local orca_path
+    "$reef_bin" agents observe --help > /dev/null 2>&1 || return 1
+    has_hook "$(hook_path codex)" "$(hook_command codex)" || return 1
+    has_hook "$(hook_path claude)" "$(hook_command claude)" || return 1
+    orca_path=$(orca_hook_path)
+    [ ! -f "$orca_path" ] || has_hook "$orca_path" "$(hook_command codex)"
+}
+
+case "${1:-}" in
+    check)
+        check_hooks
+        ;;
+    apply)
+        "$reef_bin" agents observe --help > /dev/null
+        for kind in codex claude; do
+            path=$(hook_path "$kind")
+            command=$(hook_command "$kind")
+            if ! has_hook "$path" "$command"; then
+                install_hook "$kind" "$path" "$command"
+            fi
+        done
+        orca_path=$(orca_hook_path)
+        if [ -f "$orca_path" ] && ! has_hook "$orca_path" "$(hook_command codex)"; then
+            install_hook codex "$orca_path" "$(hook_command codex)"
+        fi
+        ;;
+    *)
+        printf 'Usage: reef-agent-hooks check|apply\n' >&2
+        exit 2
+        ;;
+esac
