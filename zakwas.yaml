@@ -191,6 +191,15 @@ commands:
       for s in computer-use find-skills orca-cli orchestration;
       do test -f "$HOME/.agents/skills/$s/SKILL.md" || continue;
       ln -sfn "$HOME/.agents/skills/$s" "$HOME/.claude/skills/$s"; done
+  # claude mcp add writes ~/.claude.json, which zakwas doesn't manage. The
+  # pinned mise binary replaces npx @latest, which left a wrapper per session.
+  - name: claude chrome-devtools mcp pinned
+    check: >-
+      jq -e '.mcpServers["chrome-devtools"].command | endswith("/chrome-devtools-mcp")'
+      "$HOME/.claude.json" > /dev/null 2>&1
+    run: >-
+      claude mcp remove chrome-devtools -s user > /dev/null 2>&1;
+      claude mcp add -s user chrome-devtools -- "$HOME/.local/share/mise/shims/chrome-devtools-mcp"
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
