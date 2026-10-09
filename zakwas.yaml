@@ -53,6 +53,7 @@ templates:
     - {src: dotfiles/k9s/config.yaml.tmpl, dst: ~/.config/k9s/config.yaml}
     - {src: dotfiles/klaudiush/config.toml.tmpl, dst: ~/.config/klaudiush/config.toml}
     - {src: dotfiles/launchd/dev.zakwas.check.plist.tmpl, dst: ~/Library/LaunchAgents/dev.zakwas.check.plist}
+    - {src: dotfiles/launchd/dev.reef.observe.plist.tmpl, dst: ~/Library/LaunchAgents/dev.reef.observe.plist}
     - {src: dotfiles/opencode/opencode.json.tmpl, dst: ~/.config/opencode/opencode.json}
     - {src: dotfiles/opencode/tui.json.tmpl, dst: ~/.config/opencode/tui.json}
 
@@ -144,6 +145,16 @@ commands:
       launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.zakwas.check.plist" &&
       mkdir -p "$HOME/.local/state/zakwas" &&
       cp -f "$HOME/Library/LaunchAgents/dev.zakwas.check.plist" "$HOME/.local/state/zakwas/dev.zakwas.check.loaded.plist"
+  - name: reef baseline recorder
+    check: >-
+      launchctl print "gui/$(id -u)/dev.reef.observe" 2> /dev/null |
+      grep -Fq "state = running" &&
+      cmp -s "$HOME/Library/LaunchAgents/dev.reef.observe.plist" "$HOME/.local/state/zakwas/dev.reef.observe.loaded.plist"
+    run: >-
+      launchctl bootout "gui/$(id -u)/dev.reef.observe" 2> /dev/null;
+      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.reef.observe.plist" &&
+      mkdir -p "$HOME/.local/state/zakwas" &&
+      cp -f "$HOME/Library/LaunchAgents/dev.reef.observe.plist" "$HOME/.local/state/zakwas/dev.reef.observe.loaded.plist"
   # Pre-rename agent: removing its plist doesn't unload it.
   - name: old eac drift agent unloaded
     check: '! launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1'

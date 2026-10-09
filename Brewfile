@@ -32,6 +32,7 @@ brew "kong/agent-auth-cli/agent-auth-cli"
 brew "rtk"
 brew "smykla-skalski/tap/bilgie"
 brew "smykla-skalski/tap/klaudiush"
+brew "smykla-skalski/tap/reef"
 
 cask "1password"
 cask "1password-cli"
