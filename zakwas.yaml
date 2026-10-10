@@ -214,6 +214,29 @@ commands:
     run: >-
       claude mcp remove chrome-devtools -s user > /dev/null 2>&1;
       claude mcp add -s user chrome-devtools -- "$HOME/.local/share/mise/shims/chrome-devtools-mcp"
+  # Install Sail's project memory tools in the global Claude Code and Codex configs.
+  # OpenCode reads the same launcher from its managed template above.
+  - name: Sail shared memory MCP for Claude Code and Codex
+    check: >-
+      if test -x "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail"; then
+        claude mcp get sail-shared-memory > /dev/null 2>&1 &&
+        codex mcp get sail-shared-memory > /dev/null 2>&1;
+      else true; fi
+    run: >-
+      if test -x "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail"; then
+        (claude mcp get sail-shared-memory -s user > /dev/null 2>&1 ||
+          claude mcp add -s user sail-shared-memory
+            -e SAIL_MEMORY_AGENT=claude
+            -e "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
+            -e "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
+            -- "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" --memory-mcp) &&
+        (codex mcp get sail-shared-memory > /dev/null 2>&1 ||
+          codex mcp add
+            --env SAIL_MEMORY_AGENT=codex
+            --env "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
+            --env "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
+            sail-shared-memory -- "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" --memory-mcp);
+      fi
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported

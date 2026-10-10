@@ -83,17 +83,29 @@
     }
   },
   "mcp": {
-    "chrome-devtools": {
-      "type": "local",
-      "command": [
-        "{{.Home}}/.local/share/mise/shims/chrome-devtools-mcp"
-      ],
-      "enabled": true
-    },
-    "datadog-mcp": {
-      "type": "remote",
-      "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp",
-      "enabled": true
+    "servers": {
+      "chrome-devtools": {
+        "type": "local",
+        "command": [
+          "{{.Home}}/.local/share/mise/shims/chrome-devtools-mcp"
+        ]
+      },
+      "datadog-mcp": {
+        "type": "remote",
+        "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp"
+      },
+      "sail-shared-memory": {
+        "type": "local",
+        "command": [
+          "{{.Home}}/sideprojects/sai-harness/src-tauri/target/debug/sail",
+          "--memory-mcp"
+        ],
+        "environment": {
+          "SAIL_MEMORY_AGENT": "opencode",
+          "SAIL_MEMORY_ROOT": "{{.Home}}/Library/Application Support/dev.smykla.sai-harness/memory",
+          "SAIL_SETTINGS_PATH": "{{.Home}}/Library/Application Support/sail/settings.json"
+        }
+      }
     }
   },
   "model": "kong-ai-gateway/zai-org/GLM-5.3-Flash",
