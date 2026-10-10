@@ -1,0 +1,35 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "peekaboo",
+  "version": "1.0.0",
+  "description": "Operate and test native macOS apps with the pinned Peekaboo CLI and MCP server.",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/peekaboo",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "macos",
+    "computer-use",
+    "mcp",
+    "ui-testing"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Peekaboo",
+        "shortDescription": "Operate and test Mac apps",
+        "longDescription": "Operate and test native macOS apps with the pinned Peekaboo CLI and MCP server.",
+        "developerName": "Marcin Skalski",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Interactive"
+        ],
+        "websiteURL": "https://github.com/Automaat/environment-as-code/tree/main/plugins/peekaboo",
+        "defaultPrompt": [
+          "Use $peekaboo to inspect and test the open macOS app."
+        ]
+      }
+    }
+  }
+}

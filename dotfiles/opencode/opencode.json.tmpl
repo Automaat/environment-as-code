@@ -90,6 +90,17 @@
           "{{.Home}}/.local/share/mise/shims/chrome-devtools-mcp"
         ]
       },
+      "peekaboo": {
+        "type": "local",
+        "command": [
+          "/opt/homebrew/bin/mise",
+          "exec",
+          "npm:@steipete/peekaboo@4.9.0",
+          "--",
+          "peekaboo",
+          "mcp"
+        ]
+      },
       "datadog-mcp": {
         "type": "remote",
         "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp"

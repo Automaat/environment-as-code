@@ -1,0 +1,16 @@
+{
+  "name": "peekaboo",
+  "version": "1.0.0",
+  "description": "Operate and test native macOS apps with the pinned Peekaboo CLI and MCP server.",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/peekaboo",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "macos",
+    "computer-use",
+    "mcp",
+    "ui-testing"
+  ]
+}
