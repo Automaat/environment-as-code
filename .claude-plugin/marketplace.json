@@ -81,6 +81,21 @@
         "ai",
         "kong"
       ]
+    },
+    {
+      "name": "peekaboo",
+      "source": "./plugins/peekaboo",
+      "description": "Operate and test native macOS apps with the pinned Peekaboo CLI and MCP server.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "macos",
+        "computer-use",
+        "mcp",
+        "ui-testing"
+      ]
     }
   ]
 }

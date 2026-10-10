@@ -106,6 +106,7 @@ agents:
     - go-code-review@environment-as-code
     - kong-ai-intel@environment-as-code
     - fix-review@environment-as-code
+    - peekaboo@environment-as-code
     - gopls-lsp@claude-plugins-official
     - slack@claude-plugins-official
     - issue-authoring@ksai
@@ -133,6 +134,20 @@ commands:
     run: >-
       codex mcp remove chrome-devtools &&
       codex mcp add chrome-devtools -- "$HOME/.local/share/mise/shims/chrome-devtools-mcp"
+  - name: pinned Peekaboo MCP for Codex and Claude Code
+    check: >-
+      codex mcp get peekaboo 2> /dev/null |
+      grep -Fqx "  command: /opt/homebrew/bin/mise" &&
+      codex mcp get peekaboo 2> /dev/null |
+      grep -Fqx "  args: exec npm:@steipete/peekaboo@4.9.0 -- peekaboo mcp" &&
+      jq -e '.mcpServers.peekaboo.command == "/opt/homebrew/bin/mise" and
+      .mcpServers.peekaboo.args == ["exec", "npm:@steipete/peekaboo@4.9.0", "--", "peekaboo", "mcp"]'
+      "$HOME/.claude.json" > /dev/null 2>&1
+    run: >-
+      if codex mcp get peekaboo > /dev/null 2>&1; then codex mcp remove peekaboo; fi &&
+      codex mcp add peekaboo -- /opt/homebrew/bin/mise exec npm:@steipete/peekaboo@4.9.0 -- peekaboo mcp &&
+      { claude mcp remove peekaboo -s user > /dev/null 2>&1 || true; } &&
+      claude mcp add -s user peekaboo -- /opt/homebrew/bin/mise exec npm:@steipete/peekaboo@4.9.0 -- peekaboo mcp
   - name: gke-gcloud-auth-plugin
     check: test -x /opt/homebrew/share/google-cloud-sdk/bin/gke-gcloud-auth-plugin
     run: gcloud components install gke-gcloud-auth-plugin --quiet
