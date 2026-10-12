@@ -46,6 +46,8 @@ Reef is installed from `smykla-skalski/tap`. A launchd agent runs `reef observe 
 
 `zakwas apply` runs `reef agents setup` after Reef is installed from Homebrew. Reef detects Codex, Claude Code, and OpenCode and owns their observation integrations. Review and trust the Codex hook with `/hooks` after setup. EAC no longer ships a copy of the OpenCode plugin or a separate hook installer.
 
+A separate `dev.reef.serve` launchd agent keeps Reef's scheduler available at login, with one 1-CPU/1024-MiB admission slot and live pressure checks. It does not opt any agent into canary treatment; only a Reef-wrapped agent session uses that scheduler. Inspect it with `launchctl print "gui/$(id -u)/dev.reef.serve"` and `reef queue`. Stop new treatment assignments with `reef agents canary off`; restart the scheduler after a Homebrew upgrade with `launchctl kickstart -k "gui/$(id -u)/dev.reef.serve"`.
+
 ## Agent plugins
 
 The `agents` section of `zakwas.yaml` declares the plugins of Claude Code, Codex and opencode and the marketplaces they come from. `zakwas apply` installs what's missing, updates plugins to their marketplace versions and, with `prune: true`, removes user-scope plugins and marketplaces that aren't declared. Plugins installed for a single project are left alone. opencode has no plugin system, so zakwas links each declared plugin's skills into `~/.config/opencode/skills`.
