@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>dev.reef.serve</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/env</string>
+		<string>reef</string>
+		<string>serve</string>
+		<string>--cpu</string>
+		<string>1</string>
+		<string>--memory-mib</string>
+		<string>1024</string>
+		<string>--max-running</string>
+		<string>1</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>HOME</key>
+		<string>{{.Home}}</string>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<dict>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+	<key>ThrottleInterval</key>
+	<integer>60</integer>
+	<key>StandardOutPath</key>
+	<string>{{.Home}}/Library/Logs/reef-serve.log</string>
+	<key>StandardErrorPath</key>
+	<string>{{.Home}}/Library/Logs/reef-serve.log</string>
+</dict>
+</plist>
