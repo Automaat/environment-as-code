@@ -16,15 +16,7 @@
     "list": "allow",
     "lsp": "allow",
     "edit": "allow",
-    "bash": {
-      "*": "allow",
-      "pwd": "allow",
-      "git status*": "allow",
-      "git diff*": "allow",
-      "git log*": "allow",
-      "git show*": "allow",
-      "git branch --show-current*": "allow"
-    },
+    "bash": {{ agentPermissions "opencode" "allow" }},
     "external_directory": "allow",
     "webfetch": "allow",
     "websearch": "allow",
@@ -53,21 +45,7 @@
     "build": {
       "permission": {
         "edit": "allow",
-        "bash": {
-          "*": "allow",
-          "pwd": "allow",
-          "git status*": "allow",
-          "git diff*": "allow",
-          "git log*": "allow",
-          "git show*": "allow",
-          "git branch --show-current*": "allow",
-          "mise run lint*": "allow",
-          "mise run test*": "allow",
-          "npm test*": "allow",
-          "npm run check*": "allow",
-          "go test *": "allow",
-          "cargo test *": "allow"
-        },
+        "bash": {{ agentPermissions "opencode" "allow" }},
         "chrome-devtools_*": "allow",
         "datadog-mcp_*": "deny"
       }

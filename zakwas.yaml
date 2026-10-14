@@ -82,6 +82,245 @@ agents:
   instructions: dotfiles/agents/AGENTS.md
   hooks:
     klaudiush: true
+  permissions:
+    allow:
+      - git status
+      - git diff
+      - git log
+      - git show
+      - git rev-parse
+      - git merge-base
+      - git ls-files
+      - git ls-tree
+      - git ls-remote
+      - git describe
+      - git cat-file
+      - git rev-list
+      - git name-rev
+      - git show-ref
+      - git for-each-ref
+      - git blame
+      - git grep
+      - git check-ignore
+      - git verify-commit
+      - git verify-tag
+      - git config --get
+      - git fetch
+      - git --no-pager diff
+      - git --no-pager log
+      - git --no-pager show
+      - git switch
+      - git merge
+      - git add
+      - git commit
+      - git push
+      - git stash
+      - git rebase
+      - git cherry-pick
+      - git tag
+      - git restore
+      - git checkout
+      - git branch
+      - git remote
+      - git worktree
+      - git clone
+      - git pull
+      - git apply
+      - git am
+      - git mv
+      - git rm
+      - git reset
+      - git revert
+      - gh pr
+      - gh run
+      - gh issue
+      - gh release
+      - gh repo view
+      - gh repo list
+      - gh repo clone
+      - gh search
+      - gh label list
+      - gh workflow list
+      - gh workflow run
+      - gh variable list
+      - gh auth status
+      - gh api
+      - gh-add-subissue
+      - rg
+      - grep
+      - sed
+      - awk
+      - find
+      - fd
+      - head
+      - tail
+      - cat
+      - ls
+      - tree
+      - wc
+      - du
+      - df
+      - stat
+      - file
+      - readlink
+      - realpath
+      - dirname
+      - basename
+      - cut
+      - sort
+      - uniq
+      - tr
+      - comm
+      - column
+      - nl
+      - od
+      - xxd
+      - diff
+      - cmp
+      - jq
+      - yq
+      - date
+      - pwd
+      - which
+      - type
+      - uname
+      - sw_vers
+      - vm_stat
+      - shasum
+      - md5
+      - base64
+      - plutil -p
+      - python3 -m json.tool
+      - python3 -m py_compile
+      - ps
+      - pgrep
+      - lsof
+      - kill
+      - pkill
+      - sleep
+      - timeout
+      - gtimeout
+      - true
+      - false
+      - test
+      - exit
+      - wait
+      - break
+      - continue
+      - set
+      - unset
+      - mkdir
+      - touch
+      - rm
+      - rmdir
+      - mv
+      - cp
+      - ln
+      - chmod
+      - tar
+      - unzip
+      - zip
+      - curl
+      - wget
+      - open
+      - screencapture
+      - codesign
+      - osascript
+      - peekaboo
+      - orca
+      - limactl
+      - mise
+      - npm
+      - pnpm
+      - yarn
+      - npx
+      - uv
+      - uvx
+      - pytest
+      - node --test
+      - brew info
+      - brew list
+      - brew install
+      - brew upgrade
+      - docker
+      - kubectl get
+      - kubectl describe
+      - kubectl logs
+      - kumactl get
+      - kumactl inspect
+      - go test
+      - go build
+      - go vet
+      - go list
+      - go version
+      - go env
+      - go mod
+      - go run
+      - go install
+      - go generate
+      - gofmt
+      - cargo
+      - ruff
+      - shellcheck
+      - actionlint
+      - golangci-lint
+      - markdownlint
+      - yamllint
+      - hadolint
+      - checkmake
+      - shellspec
+      - claude plugin validate
+      - ./node_modules/.bin/eslint
+      - ./node_modules/.bin/oxlint
+      - ./node_modules/.bin/svelte-check
+      - ./node_modules/.bin/prettier
+      - ./node_modules/.bin/tsc
+      - make
+      - task
+      - npm test
+      - npm run test
+      - npm run lint
+      - npm run check
+      - npm run build
+      - npm run format
+      - pnpm test
+      - mise run lint
+      - mise run test
+      - mise run check
+      - mise run fmt
+      - mise run format
+      - mise exec
+      - cargo test
+      - cargo check
+      - cargo clippy
+      - cargo build
+      - cargo fmt
+      - make lint
+      - make test
+      - make check
+      - make fmt
+      - make format
+      - task lint
+      - task test
+      - task check
+      - task fmt
+      - task format
+      - zakwas
+      - klaudiush
+      - reef
+      - bilgie
+      - build-slot
+      - fc-list
+      - ghostty
+    deny:
+      - git push --force
+      - git push -f
+      - git commit --no-verify
+      - sudo
+      - chflags nouchg
+      - gh auth token
+      - security find-generic-password
+      - security dump-keychain
   upgrade: true
   prune: true
   marketplaces:
