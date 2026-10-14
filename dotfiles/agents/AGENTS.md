@@ -6,6 +6,7 @@ Use standard technical English. Bullets over paragraphs. No hedging ("might", "c
 
 - Complex tasks: use deep, multi-dimensional analysis; ask material clarifying questions upfront.
 - Clear context between unrelated tasks. End plans with terse unresolved questions.
+- Use `$ship-it` only when asked or for complex issues.
 - For Kuma changes, open pull requests from a fork.
 - Use the `agent-workflow` skill before locating a repository, working outside the current repository, changing code or configuration, running quality gates, using Git/GitHub, or writing notes. Read only the references it routes for the task; their rules are binding. If the provider lacks skills, read its `SKILL.md` from `~/sideprojects/environment-as-code/plugins/agent-workflow/skills/agent-workflow/`.
 - For tasks that require controlling or manually testing a visible macOS app, use the `peekaboo` skill. Prefer a programmatic interface when it covers the task.
