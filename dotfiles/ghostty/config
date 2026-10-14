@@ -14,7 +14,7 @@ window-height = 80
 # Large scrollback for long AI responses
 scrollback-limit = 10000000
 
-# Smooth scrolling during code generation
+# Keep the cursor still during streamed output
 cursor-style-blink = false
 
 # ============================================================================
@@ -29,6 +29,8 @@ mouse-scroll-multiplier = 3
 # ============================================================================
 
 keybind = shift+enter=text:\n
+keybind = super+shift+o=write_scrollback_file:open
+keybind = super+shift+r=toggle_readonly
 
 theme = nord-light
 

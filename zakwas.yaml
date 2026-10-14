@@ -17,6 +17,8 @@ files:
   - {src: dotfiles/opencode/themes/kong-dark.json, dst: ~/.config/opencode/themes/kong-dark.json}
   - {src: dotfiles/opencode/themes/kong-light.json, dst: ~/.config/opencode/themes/kong-light.json}
   - {src: dotfiles/agents/permission-profiles.json, dst: ~/.config/agents/permission-profiles.json}
+  - {src: dotfiles/tmux/tmux.conf, dst: ~/.config/tmux/tmux.conf}
+  - {src: dotfiles/launchd/dev.zsh-clean-history.plist, dst: ~/Library/LaunchAgents/dev.zsh-clean-history.plist}
   - {src: dotfiles/claude/agents, dst: ~/.claude/agents/permission-profiles}
   - {src: dotfiles/codex/explore.config.toml, dst: ~/.codex/explore.config.toml}
   - {src: dotfiles/codex/review.config.toml, dst: ~/.codex/review.config.toml}
@@ -38,6 +40,7 @@ files:
   - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
   - {src: dotfiles/bin/zakwas-check-notify, dst: ~/.local/bin/zakwas-check-notify}
   - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
+  - {src: dotfiles/bin/zsh-refresh-completions, dst: ~/.local/bin/zsh-refresh-completions}
 
 # The work Mac's device management forces ~/.ssh/config back to 600 every
 # ~15 minutes, which would undo the files protection.
@@ -152,6 +155,18 @@ commands:
   - name: gke-gcloud-auth-plugin
     check: test -x /opt/homebrew/share/google-cloud-sdk/bin/gke-gcloud-auth-plugin
     run: gcloud components install gke-gcloud-auth-plugin --quiet
+  - name: zsh completions current
+    check: zsh-refresh-completions --check
+    run: zsh-refresh-completions
+  - name: daily zsh history cleanup
+    check: >-
+      launchctl print "gui/$(id -u)/dev.zsh-clean-history" > /dev/null 2>&1 &&
+      cmp -s "$HOME/Library/LaunchAgents/dev.zsh-clean-history.plist" "$HOME/.local/state/zakwas/dev.zsh-clean-history.loaded.plist"
+    run: >-
+      launchctl bootout "gui/$(id -u)/dev.zsh-clean-history" 2> /dev/null;
+      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.zsh-clean-history.plist" &&
+      mkdir -p "$HOME/.local/state/zakwas" &&
+      cp -f "$HOME/Library/LaunchAgents/dev.zsh-clean-history.plist" "$HOME/.local/state/zakwas/dev.zsh-clean-history.loaded.plist"
   - name: daily drift notification
     check: >-
       launchctl print "gui/$(id -u)/dev.zakwas.check" > /dev/null 2>&1 &&

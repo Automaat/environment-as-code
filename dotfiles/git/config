@@ -18,9 +18,20 @@
 [core]
 	autocrlf = input
 	excludesfile = ~/.gitignore_global
+	pager = delta
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	line-numbers = true
 
 [pull]
 	rebase = true
+
+[merge]
+	conflictStyle = zdiff3
 
 [format]
 	signOff = true

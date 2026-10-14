@@ -1,23 +1,49 @@
 typeset -U path fpath
 
 HISTFILE=~/.zsh_history
-HISTSIZE=100000000000000
-SAVEHIST=100000000000000
+HISTSIZE=100000
+SAVEHIST=100000
 setopt HIST_FCNTL_LOCK EXTENDED_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_DUPS
 setopt HIST_IGNORE_SPACE SHARE_HISTORY
 
-ZSH_CLEAN_HISTORY_AUTO_CLEAN=true
+ZSH_CLEAN_HISTORY_AUTO_CLEAN=false
 
 ZSH_AUTOSUGGEST_STRATEGY=(history)
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main)
 
+ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+[[ -d "$ZSH_CACHE_DIR/completions" ]] || command mkdir -p -- "$ZSH_CACHE_DIR/completions"
+fpath=("$ZSH_CACHE_DIR/completions" $fpath)
+autoload -Uz compinit zrecompile
+zmodload zsh/datetime zsh/stat
+zcompdump="$ZSH_CACHE_DIR/zcompdump-$ZSH_VERSION"
+if [[ -s "$zcompdump" ]] && (( EPOCHSECONDS - $(zstat +mtime "$zcompdump") < 86400 )); then
+  compinit -C -d "$zcompdump"
+else
+  compinit -d "$zcompdump"
+  zrecompile -pq "$zcompdump"
+fi
+
+zstyle ':antidote:*' zcompile yes
 source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
-antidote load ~/.config/zsh/zsh_plugins.txt
 
 [[ ! -r ~/.opam/opam-init/init.zsh ]] || source ~/.opam/opam-init/init.zsh > /dev/null 2> /dev/null
 
+alias g=git
+alias ga='git add'
+alias gcb='git checkout -b'
+alias gco='git checkout'
+alias gcmsg='git commit --message'
+alias gd='git diff'
+alias gl='git pull'
+alias gst='git status'
 alias sb="cd $HOME/Documents/secon-brain-sync"
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
+take() {
+  (( $# )) || return 1
+  command mkdir -p -- "$@" && builtin cd -- "${@[-1]}"
+}
 
 if [[ -d "$HOME/kong" ]]; then
   alias sync-kuma="gh repo sync automaat/kuma -b master"
@@ -35,7 +61,13 @@ eval "$(mise activate zsh)"
 
 source <(fzf --zsh)
 [[ ! -r /opt/homebrew/opt/autojump/etc/profile.d/autojump.sh ]] || source /opt/homebrew/opt/autojump/etc/profile.d/autojump.sh
-eval "$(saml2aws --completion-script-zsh)"
+
+_saml2aws() {
+  local matches=($(${words[1]} --completion-bash "${(@)words[2,$CURRENT]}"))
+  compadd -a matches
+  (( compstate[nmatches] )) || [[ $words[$CURRENT] == -* ]] || _files
+}
+compdef _saml2aws saml2aws
 
 npm_token() {
   [[ -n ${NPM_TOKEN:-} ]] && return 0
@@ -57,4 +89,5 @@ npm_token() {
 
 eval "$(starship init zsh)"
 eval "$(direnv hook zsh)"
+antidote load ~/.config/zsh/zsh_plugins.txt
 export GPG_TTY=$TTY
