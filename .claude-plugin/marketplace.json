@@ -85,7 +85,7 @@
     {
       "name": "peekaboo",
       "source": "./plugins/peekaboo",
-      "description": "Operate and test native macOS apps with the pinned Peekaboo CLI and MCP server.",
+      "description": "Operate and test native macOS apps with the pinned Peekaboo CLI.",
       "author": {
         "name": "Marcin Skalski"
       },

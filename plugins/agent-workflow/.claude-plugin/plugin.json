@@ -1,7 +1,7 @@
 {
   "name": "agent-workflow",
   "description": "Load Marcin's binding repository map and development workflow rules only when a task needs them.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": { "name": "Marcin Skalski" },
   "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/agent-workflow",
   "repository": "https://github.com/Automaat/environment-as-code",
