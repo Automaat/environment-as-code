@@ -510,24 +510,14 @@ commands:
       --env "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
       --env "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
       sail-shared-memory -- "$bin" --memory-mcp
-  # Spotlight Privacy list (System Settings > Spotlight > Search Privacy) is the
-  # only path-preserving folder exclusion on macOS 26, and it is UI-only: mds
-  # ignores .metadata_never_index and edits to VolumeConfiguration.plist. Dot dirs
-  # and ~/Library/Caches are never indexed. A failing run stops later commands.
-  - name: Spotlight skips dev trees
+  # Raycast keeps its own app and file index, so Spotlight only adds mds CPU
+  # and I/O while agents churn worktrees and caches. mdutil is Apple's switch
+  # for whole volumes; sudo asks for Touch ID during apply.
+  - name: Spotlight indexing off
     check: >-
-      for d in kong sideprojects sail; do
-      test ! -d "$HOME/$d" ||
-      test "$(timeout 8 mdfind -onlyin "$HOME/$d" -count 'kMDItemDisplayName == *' 2> /dev/null)" = 0 ||
-      exit 1; done
-    run: >-
-      echo "Spotlight indexes these; add them in System Settings > Spotlight > Search Privacy:" >&2;
-      for d in kong sideprojects sail; do
-      test ! -d "$HOME/$d" ||
-      test "$(timeout 8 mdfind -onlyin "$HOME/$d" -count 'kMDItemDisplayName == *' 2> /dev/null)" = 0 ||
-      echo "  $HOME/$d" >&2; done;
-      open "x-apple.systempreferences:com.apple.Spotlight-Settings.extension";
-      exit 1
+      mdutil -s / | grep -q 'Indexing disabled' &&
+      mdutil -s /System/Volumes/Data | grep -q 'Indexing disabled'
+    run: sudo mdutil -a -i off
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
