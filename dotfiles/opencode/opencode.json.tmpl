@@ -88,18 +88,8 @@
         "type": "local",
         "command": [
           "{{.Home}}/.local/share/mise/shims/chrome-devtools-mcp"
-        ]
-      },
-      "peekaboo": {
-        "type": "local",
-        "command": [
-          "/opt/homebrew/bin/mise",
-          "exec",
-          "npm:@steipete/peekaboo@4.9.0",
-          "--",
-          "peekaboo",
-          "mcp"
-        ]
+        ],
+        "enabled": false
       },
       "datadog-mcp": {
         "type": "remote",
@@ -108,7 +98,7 @@
       "sail-shared-memory": {
         "type": "local",
         "command": [
-          "{{.Home}}/sideprojects/sai-harness/src-tauri/target/debug/sail",
+          "{{.Home}}/.local/bin/sail-memory-mcp",
           "--memory-mcp"
         ],
         "environment": {

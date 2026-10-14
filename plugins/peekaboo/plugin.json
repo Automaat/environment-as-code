@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "peekaboo",
-  "version": "1.0.0",
-  "description": "Operate and test native macOS apps with the pinned Peekaboo CLI and MCP server.",
+  "version": "1.1.0",
+  "description": "Operate and test native macOS apps with the pinned Peekaboo CLI.",
   "author": {
     "name": "Marcin Skalski"
   },
@@ -11,7 +11,6 @@
   "keywords": [
     "macos",
     "computer-use",
-    "mcp",
     "ui-testing"
   ],
   "extensions": {
@@ -19,7 +18,7 @@
       "interface": {
         "displayName": "Peekaboo",
         "shortDescription": "Operate and test Mac apps",
-        "longDescription": "Operate and test native macOS apps with the pinned Peekaboo CLI and MCP server.",
+        "longDescription": "Operate and test native macOS apps with the pinned Peekaboo CLI.",
         "developerName": "Marcin Skalski",
         "category": "Developer Tools",
         "capabilities": [

@@ -26,13 +26,14 @@
 
 ## Scratch and build output
 
-- Create one scratch root per task with `mktemp -d "${TMPDIR:-/tmp}/<repo>-<task>.XXXXXX"` and record the path. Point every cache and temp location at it (`CARGO_TARGET_DIR`, `GOCACHE`, `GOTMPDIR`, `npm_config_cache`, `UV_CACHE_DIR`) so one `rm -rf` of that exact path removes everything.
+- Create one scratch root per task with `mktemp -d "${TMPDIR:-/tmp}/<repo>-<task>.XXXXXX"` and record the path. Put build output and temp files there (`CARGO_TARGET_DIR`, `GOTMPDIR`) so one `rm -rf` of that exact path removes everything.
+- Keep the shared download and build caches (`GOCACHE`, `GOMODCACHE`, `npm_config_cache`, `UV_CACHE_DIR`, `~/.cargo/registry`) at their defaults. They are safe across tasks; a per-task copy rebuilds them cold every task and multiplies CPU, I/O and disk use.
 - Remove the root when the task ends, whether it merged, failed or was cancelled. Do it in the final workflow step and in every stop or blocked path. Only the agent that created the root removes it; subagents never do.
 - Remove only directories you created in this task. Never delete other sessions' or agents' directories (`sail*`, other worktrees' targets) or anything outside your scratch root.
 - Reuse one target directory per worktree (`<root>/target-<worktree>`) for repeated gates of the same revision. Pass the scratch root to review and test subagents so they reuse it instead of creating their own.
 - Before a build-heavy task, run `df -h "${TMPDIR:-/tmp}"`. Under 20 GB available: say so before continuing and clean your own leftovers first. If still low, stop and ask.
 - Run heavy builds and e2e/browser suites as `build-slot <command>` (`~/.local/bin/build-slot`): it queues until one of 3 machine-wide slots is free, so parallel agents do not push the Mac into swap. Applies to full `cargo build/test`, `go test ./...`, `wdio`/Playwright runs and Docker builds; skip it for quick single-file checks. If `build-slot` is missing, run the command directly.
-- This is not a cleanup tool. Sweeping of stale directories is handled by `smykla-skalski/sail#339`.
+- Nothing sweeps abandoned scratch roots yet, so removing your own root at the end is the only cleanup.
 
 ## Orchestrator
 

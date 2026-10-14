@@ -131,27 +131,22 @@ system:
     comment: skalskimarcin33@gmail.com
 
 commands:
-  - name: pinned codex chrome devtools server
+  # Each agent session spawns every global MCP server, and long-lived Codex
+  # and opencode servers keep one set per thread, so global servers pile up.
+  # The peekaboo skill drives its CLI; chrome-devtools lives in the Codex and
+  # Claude build profiles, and an opencode project can enable it.
+  - name: no global chrome-devtools or Peekaboo MCP for Codex and Claude Code
     check: >-
-      codex mcp get chrome-devtools 2> /dev/null |
-      grep -Fqx "  command: $HOME/.local/share/mise/shims/chrome-devtools-mcp"
-    run: >-
-      codex mcp remove chrome-devtools &&
-      codex mcp add chrome-devtools -- "$HOME/.local/share/mise/shims/chrome-devtools-mcp"
-  - name: pinned Peekaboo MCP for Codex and Claude Code
-    check: >-
-      codex mcp get peekaboo 2> /dev/null |
-      grep -Fqx "  command: /opt/homebrew/bin/mise" &&
-      codex mcp get peekaboo 2> /dev/null |
-      grep -Fqx "  args: exec npm:@steipete/peekaboo@4.9.0 -- peekaboo mcp" &&
-      jq -e '.mcpServers.peekaboo.command == "/opt/homebrew/bin/mise" and
-      .mcpServers.peekaboo.args == ["exec", "npm:@steipete/peekaboo@4.9.0", "--", "peekaboo", "mcp"]'
+      ! codex mcp get chrome-devtools > /dev/null 2>&1 &&
+      ! codex mcp get peekaboo > /dev/null 2>&1 &&
+      ! jq -e '.mcpServers | has("chrome-devtools") or has("peekaboo")'
       "$HOME/.claude.json" > /dev/null 2>&1
     run: >-
-      if codex mcp get peekaboo > /dev/null 2>&1; then codex mcp remove peekaboo; fi &&
-      codex mcp add peekaboo -- /opt/homebrew/bin/mise exec npm:@steipete/peekaboo@4.9.0 -- peekaboo mcp &&
-      { claude mcp remove peekaboo -s user > /dev/null 2>&1 || true; } &&
-      claude mcp add -s user peekaboo -- /opt/homebrew/bin/mise exec npm:@steipete/peekaboo@4.9.0 -- peekaboo mcp
+      for s in chrome-devtools peekaboo; do
+        if codex mcp get "$s" > /dev/null 2>&1; then codex mcp remove "$s" || exit 1; fi;
+        if jq -e --arg s "$s" '.mcpServers | has($s)' "$HOME/.claude.json" > /dev/null 2>&1; then
+          claude mcp remove "$s" -s user || exit 1; fi;
+      done
   - name: gke-gcloud-auth-plugin
     check: test -x /opt/homebrew/share/google-cloud-sdk/bin/gke-gcloud-auth-plugin
     run: gcloud components install gke-gcloud-auth-plugin --quiet
@@ -246,38 +241,54 @@ commands:
       for s in computer-use find-skills orca-cli orchestration;
       do test -f "$HOME/.agents/skills/$s/SKILL.md" || continue;
       ln -sfn "$HOME/.agents/skills/$s" "$HOME/.claude/skills/$s"; done
-  # claude mcp add writes ~/.claude.json, which zakwas doesn't manage. The
-  # pinned mise binary replaces npx @latest, which left a wrapper per session.
-  - name: claude chrome-devtools mcp pinned
-    check: >-
-      jq -e '.mcpServers["chrome-devtools"].command | endswith("/chrome-devtools-mcp")'
-      "$HOME/.claude.json" > /dev/null 2>&1
-    run: >-
-      claude mcp remove chrome-devtools -s user > /dev/null 2>&1;
-      claude mcp add -s user chrome-devtools -- "$HOME/.local/share/mise/shims/chrome-devtools-mcp"
   # Install Sail's project memory tools in the global Claude Code and Codex configs.
-  # OpenCode reads the same launcher from its managed template above.
+  # OpenCode reads the same launcher from its managed template above. Sail has
+  # no release build yet and cargo relinks the dev binary all day, so the
+  # agents use a copy that only changes when it's deleted and zakwas applies.
   - name: Sail shared memory MCP for Claude Code and Codex
     check: >-
-      if test -x "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail"; then
-        claude mcp get sail-shared-memory > /dev/null 2>&1 &&
-        codex mcp get sail-shared-memory > /dev/null 2>&1;
+      bin="$HOME/.local/bin/sail-memory-mcp";
+      if test -x "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" || test -x "$bin"; then
+      test -x "$bin" &&
+      jq -e --arg bin "$bin" '.mcpServers["sail-shared-memory"].command == $bin'
+      "$HOME/.claude.json" > /dev/null 2>&1 &&
+      codex mcp get sail-shared-memory 2> /dev/null | grep -Fqx "  command: $bin";
       else true; fi
     run: >-
-      if test -x "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail"; then
-        (claude mcp get sail-shared-memory -s user > /dev/null 2>&1 ||
-          claude mcp add -s user sail-shared-memory
-            -e SAIL_MEMORY_AGENT=claude
-            -e "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
-            -e "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
-            -- "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" --memory-mcp) &&
-        (codex mcp get sail-shared-memory > /dev/null 2>&1 ||
-          codex mcp add
-            --env SAIL_MEMORY_AGENT=codex
-            --env "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
-            --env "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
-            sail-shared-memory -- "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" --memory-mcp);
-      fi
+      bin="$HOME/.local/bin/sail-memory-mcp";
+      { test -x "$bin" ||
+      install -m 0755 "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" "$bin"; } &&
+      { claude mcp remove sail-shared-memory -s user > /dev/null 2>&1 || true; } &&
+      claude mcp add -s user sail-shared-memory
+      -e SAIL_MEMORY_AGENT=claude
+      -e "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
+      -e "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
+      -- "$bin" --memory-mcp &&
+      { ! codex mcp get sail-shared-memory > /dev/null 2>&1 ||
+      codex mcp remove sail-shared-memory; } &&
+      codex mcp add
+      --env SAIL_MEMORY_AGENT=codex
+      --env "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
+      --env "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
+      sail-shared-memory -- "$bin" --memory-mcp
+  # Spotlight Privacy list (System Settings > Spotlight > Search Privacy) is the
+  # only path-preserving folder exclusion on macOS 26, and it is UI-only: mds
+  # ignores .metadata_never_index and edits to VolumeConfiguration.plist. Dot dirs
+  # and ~/Library/Caches are never indexed. A failing run stops later commands.
+  - name: Spotlight skips dev trees
+    check: >-
+      for d in kong sideprojects sail; do
+      test ! -d "$HOME/$d" ||
+      test "$(timeout 8 mdfind -onlyin "$HOME/$d" -count 'kMDItemDisplayName == *' 2> /dev/null)" = 0 ||
+      exit 1; done
+    run: >-
+      echo "Spotlight indexes these; add them in System Settings > Spotlight > Search Privacy:" >&2;
+      for d in kong sideprojects sail; do
+      test ! -d "$HOME/$d" ||
+      test "$(timeout 8 mdfind -onlyin "$HOME/$d" -count 'kMDItemDisplayName == *' 2> /dev/null)" = 0 ||
+      echo "  $HOME/$d" >&2; done;
+      open "x-apple.systempreferences:com.apple.Spotlight-Settings.extension";
+      exit 1
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
