@@ -10,7 +10,8 @@ Use standard technical English. Bullets over paragraphs. No hedging ("might", "c
 - For Kuma changes, open pull requests from a fork.
 - Use the `agent-workflow` skill before locating a repository, working outside the current repository, changing code or configuration, running quality gates, using Git/GitHub, or writing notes. Read only the references it routes for the task; their rules are binding. If the provider lacks skills, read its `SKILL.md` from `~/sideprojects/environment-as-code/plugins/agent-workflow/skills/agent-workflow/`.
 - For tasks that require controlling or manually testing a visible macOS app, use the `peekaboo` skill. Prefer a programmatic interface when it covers the task.
-- Keep shell commands plain so permission allowlists match them: no `VAR=` prefixes, `env`/`timeout` wrappers, or redirects when a flag, config file or tool option does the same; prefer `cd <dir> && git …` over `git -C <dir>`.
+- Keep shell commands plain so permission allowlists match them: no `VAR=` prefixes, `env`/`timeout` wrappers, or redirects when a flag, config file or tool option does the same. For another directory, use the tool's working-directory parameter, else `cd <dir> && git …`, not `git -C <dir>`.
+- In a sandbox (Codex), run commands sandboxed first. Request escalation only after a sandbox denial or for network access, and escalate one plain command at a time.
 
 ## Non-negotiable safety
 
