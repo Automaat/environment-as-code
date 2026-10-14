@@ -5,6 +5,15 @@ HISTSIZE=100000
 SAVEHIST=100000
 setopt HIST_FCNTL_LOCK EXTENDED_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_DUPS
 setopt HIST_IGNORE_SPACE SHARE_HISTORY
+setopt AUTO_CD
+
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search
+bindkey '^[OA' up-line-or-beginning-search
+bindkey '^[[B' down-line-or-beginning-search
+bindkey '^[OB' down-line-or-beginning-search
 
 ZSH_CLEAN_HISTORY_AUTO_CLEAN=false
 
