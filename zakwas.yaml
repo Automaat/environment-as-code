@@ -80,6 +80,11 @@ mise:
 # instructions is linked as each provider's global CLAUDE.md / AGENTS.md.
 agents:
   providers: [claude, codex, opencode]
+  codex:
+    settings:
+      agents:
+        enabled: true
+        max_concurrent_threads_per_session: 8
   instructions: dotfiles/agents/AGENTS.md
   hooks:
     klaudiush: true
@@ -201,8 +206,8 @@ agents:
       - sleep
       - timeout
       - gtimeout
-      - true
-      - false
+      - "true"
+      - "false"
       - test
       - exit
       - wait
