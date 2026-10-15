@@ -20,6 +20,7 @@ files:
   - {src: dotfiles/tmux/tmux.conf, dst: ~/.config/tmux/tmux.conf}
   - {src: dotfiles/launchd/dev.zsh-clean-history.plist, dst: ~/Library/LaunchAgents/dev.zsh-clean-history.plist}
   - {src: dotfiles/claude/agents, dst: ~/.claude/agents/permission-profiles}
+  - {src: dotfiles/codex/configure-agents.py, dst: ~/.config/codex/configure-agents.py}
   - {src: dotfiles/codex/explore.config.toml, dst: ~/.codex/explore.config.toml}
   - {src: dotfiles/codex/review.config.toml, dst: ~/.codex/review.config.toml}
   - {src: dotfiles/codex/build.config.toml, dst: ~/.codex/build.config.toml}
@@ -371,6 +372,9 @@ system:
     comment: skalskimarcin33@gmail.com
 
 commands:
+  - name: Codex parallel agent capacity
+    check: uv run --script ~/.config/codex/configure-agents.py --check
+    run: uv run --script ~/.config/codex/configure-agents.py
   # Each agent session spawns every global MCP server, and long-lived Codex
   # and opencode servers keep one set per thread, so global servers pile up.
   # The peekaboo skill drives its CLI; chrome-devtools lives in the Codex and

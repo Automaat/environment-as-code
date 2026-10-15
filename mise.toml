@@ -14,3 +14,6 @@ run = "zakwas plan"
 
 [tasks.apply]
 run = "zakwas apply"
+
+[tasks.test-codex-agents]
+run = "uv run --with tomlkit==0.13.3 python -m unittest discover -s evals/codex-agents"
