@@ -206,8 +206,8 @@ agents:
       - sleep
       - timeout
       - gtimeout
-      - true
-      - false
+      - "true"
+      - "false"
       - test
       - exit
       - wait
