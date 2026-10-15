@@ -102,4 +102,4 @@ mise run lint    # shellcheck + actionlint
 
 See [CLAUDE.md](CLAUDE.md) for layout and conventions; zakwas itself is documented in [its repo](https://github.com/Automaat/zakwas).
 
-Codex agent capacity is declared under `agents.codex.settings` in `zakwas.yaml`: eight concurrent subagent threads, excluding the primary agent. Native Zakwas convergence changes only the declared settings in mutable `~/.codex/config.toml`, preserving comments and MCP registrations. Restart Codex after applying. Hosted sessions retain their host-supplied limit. This configuration requires the Zakwas release containing native Codex settings support.
+Codex agent capacity is declared under `agents.codex.settings` in `zakwas.yaml`: eight concurrent subagent threads, excluding the primary agent. Native Zakwas convergence changes only the declared settings in mutable `~/.codex/config.toml`, preserving comments and MCP registrations. Restart Codex after applying. Hosted sessions retain their host-supplied limit. This configuration requires Zakwas 0.9.0 or newer.
