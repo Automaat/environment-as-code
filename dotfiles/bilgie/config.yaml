@@ -131,7 +131,7 @@ providers:
         max_size: 20G
         enabled: true
         type: dir-pattern
-        min_idle: 2h
+        min_idle: 24h
     uv:
         max_size: 4G
         max_age: 30d
