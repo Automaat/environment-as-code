@@ -25,6 +25,7 @@ files:
   - {src: dotfiles/codex/build.config.toml, dst: ~/.codex/build.config.toml}
   - {src: dotfiles/codex/release.config.toml, dst: ~/.codex/release.config.toml}
   - {src: dotfiles/starship/starship.toml, dst: ~/.config/starship.toml}
+  - {src: dotfiles/bilgie/config.yaml, dst: ~/.config/bilgie/config.yaml}
   - {src: dotfiles/ghostty/config, dst: ~/.config/ghostty/config}
   - {src: dotfiles/ghostty/themes, dst: ~/.config/ghostty/themes}
   # Calibrite display profiles; after recalibrating, copy the new .icc here
@@ -433,6 +434,10 @@ commands:
   - name: reef agent observation setup
     check: reef agents setup --check
     run: reef agents setup
+  # install-agent arms the first-run marker, so a new Mac previews before it deletes.
+  - name: bilgie disk janitor agent
+    check: launchctl print "gui/$(id -u)/dev.mskalski.bilgie" > /dev/null 2>&1
+    run: bilgie install-agent
   # Pre-rename agent: removing its plist doesn't unload it.
   - name: old eac drift agent unloaded
     check: '! launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1'
