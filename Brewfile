@@ -26,6 +26,7 @@ brew "rsync"
 brew "rustup"
 brew "tmux"
 brew "tree"
+brew "vhs"
 
 brew "automaat/tap/zsh-clean-history"
 brew "kong/agent-auth-cli/agent-auth-cli"
