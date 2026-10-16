@@ -81,7 +81,7 @@ The small, provider-neutral instruction core lives in `dotfiles/agents/AGENTS.md
 
 See [the agent context budget](docs/agent-context-budget.md) for representative payload measurements.
 
-OpenCode's declarative configuration lives in `dotfiles/opencode/`. `zakwas apply` protects `opencode.json`, `cli.json` and the Kong themes; the config enables only Kong AI Gateway models. It deliberately excludes generated plugins and skills, local package state, auth caches and `service.json` because they are machine state or secrets.
+OpenCode's declarative configuration lives in `dotfiles/opencode/`. `zakwas apply` protects `opencode.json`, `cli.json` and the Kong themes; the config enables only Kong AI Gateway models. It declares the `slack`, `datadog` and `atlassian` MCP servers behind the Kong AI Gateway (OAuth, public client ID, callback port 54661); sign in once per server with `opencode mcp auth <name>`. It deliberately excludes generated plugins and skills, local package state, auth caches and `service.json` because they are machine state or secrets.
 
 ## Agent permission profiles
 
