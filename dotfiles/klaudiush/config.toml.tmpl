@@ -94,8 +94,11 @@ enabled = true
 severity = "error"
 
 # AI Comments - blocks filler comments that only restate the code
+# Disabled: the detector reads Lua's length operator as an inline comment
+# marker, so valid Lua such as "if #targets > 0 then" is rejected as FILE011.
+# Re-enable once it recognises Lua, where only '--' starts a comment.
 [validators.file.ai_comments]
-enabled = true
+enabled = false
 severity = "error"
 mode = "strict"
 
