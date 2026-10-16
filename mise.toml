@@ -9,6 +9,9 @@ uv = "0.12.24"
 [tasks.lint]
 run = "shellcheck bootstrap.sh dotfiles/claude/statusline-command.sh dotfiles/bin/* evals/agent-workflows/validate.sh && actionlint && evals/agent-workflows/validate.sh"
 
+[tasks.test]
+run = "python3 -m unittest discover -s tests -v"
+
 [tasks.plan]
 run = "zakwas plan"
 

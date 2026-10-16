@@ -11,7 +11,8 @@ if [ "$#" -eq 0 ]; then
     exit 2
 fi
 
-root=${BUILD_SLOT_DIR:-${TMPDIR:-/tmp}/build-slots-$(id -u)}
+# TMPDIR is private to each Sail worker; slots must be shared per user.
+root=${BUILD_SLOT_DIR:-/tmp/build-slots-$(id -u)}
 mkdir -p "$root"
 
 held=""
