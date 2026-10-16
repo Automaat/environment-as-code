@@ -4,7 +4,7 @@
 shellcheck = "0.11.0"
 actionlint = "1.7.12"
 jq = "1.8.2"
-uv = "0.12.24"
+uv = "0.13.1"
 
 [tasks.lint]
 run = "shellcheck bootstrap.sh dotfiles/claude/statusline-command.sh dotfiles/bin/* evals/agent-workflows/validate.sh && actionlint && evals/agent-workflows/validate.sh"
