@@ -72,7 +72,7 @@
       "purpose": "Inspect changes and evidence without modifying source.",
       "automatic_rules": ["workspace-read"],
       "interactive_rules": ["unknown", "destructive", "secret", "network", "deployment", "external-path"],
-      "mcp": ["datadog-mcp"]
+      "mcp": ["datadog"]
     }
   },
   "providers": {

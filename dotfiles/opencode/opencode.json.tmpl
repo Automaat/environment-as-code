@@ -21,7 +21,7 @@
     "webfetch": "allow",
     "websearch": "allow",
     "chrome-devtools_*": "deny",
-    "datadog-mcp_*": "deny"
+    "datadog_*": "deny"
   },
   "agent": {
     "explore": {
@@ -30,7 +30,7 @@
       "permission": {
         "edit": "deny",
         "chrome-devtools_*": "deny",
-        "datadog-mcp_*": "deny"
+        "datadog_*": "deny"
       }
     },
     "review": {
@@ -39,7 +39,7 @@
       "permission": {
         "edit": "deny",
         "chrome-devtools_*": "deny",
-        "datadog-mcp_*": "allow"
+        "datadog_*": "allow"
       }
     },
     "build": {
@@ -47,7 +47,7 @@
         "edit": "allow",
         "bash": {{ agentPermissions "opencode" "allow" }},
         "chrome-devtools_*": "allow",
-        "datadog-mcp_*": "deny"
+        "datadog_*": "deny"
       }
     },
     "release": {
@@ -56,12 +56,20 @@
       "permission": {
         "edit": "allow",
         "chrome-devtools_*": "deny",
-        "datadog-mcp_*": "deny"
+        "datadog_*": "deny"
       }
     }
   },
   "mcp": {
     "servers": {
+      "atlassian": {
+        "type": "remote",
+        "url": "https://us.ai-gw.konghq.tech/mcp/atlassian-rovo",
+        "oauth": {
+          "client_id": "0oa1zlwt4wuQdH7xt358",
+          "callback_port": 54661
+        }
+      },
       "chrome-devtools": {
         "type": "local",
         "command": [
@@ -69,9 +77,13 @@
         ],
         "disabled": true
       },
-      "datadog-mcp": {
+      "datadog": {
         "type": "remote",
-        "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp"
+        "url": "https://us.ai-gw.konghq.tech/mcp/datadog",
+        "oauth": {
+          "client_id": "0oa1zlwt4wuQdH7xt358",
+          "callback_port": 54661
+        }
       },
       "sail-shared-memory": {
         "type": "local",
@@ -83,6 +95,14 @@
           "SAIL_MEMORY_AGENT": "opencode",
           "SAIL_MEMORY_ROOT": "{{.Home}}/Library/Application Support/dev.smykla.sai-harness/memory",
           "SAIL_SETTINGS_PATH": "{{.Home}}/Library/Application Support/sail/settings.json"
+        }
+      },
+      "slack": {
+        "type": "remote",
+        "url": "https://us.ai-gw.konghq.tech/mcp/slack",
+        "oauth": {
+          "client_id": "0oa1zlwt4wuQdH7xt358",
+          "callback_port": 54661
         }
       }
     }
