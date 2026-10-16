@@ -33,6 +33,9 @@ jobs:
       - name: shellcheck
         run: shellcheck bootstrap.sh dotfiles/claude/statusline-command.sh dotfiles/bin/*
 
+      - name: build slot behavior
+        run: python3 -m unittest discover -s tests -v
+
       - name: actionlint
         run: actionlint
 
