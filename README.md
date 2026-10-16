@@ -83,6 +83,28 @@ See [the agent context budget](docs/agent-context-budget.md) for representative 
 
 OpenCode's declarative configuration lives in `dotfiles/opencode/`. `zakwas apply` protects `opencode.json`, `cli.json` and the Kong themes; the config enables only Kong AI Gateway models. It declares the `slack`, `datadog` and `atlassian` MCP servers behind the Kong AI Gateway (OAuth, public client ID, callback port 54661); sign in once per server with `opencode mcp auth <name>`. It deliberately excludes generated plugins and skills, local package state, auth caches and `service.json` because they are machine state or secrets.
 
+## Agent MCP servers
+
+`agents.mcp` registers global MCP servers at user scope in Claude Code and Codex. Every server sets `providers`, so none reaches opencode, whose servers stay hand-written in `dotfiles/opencode/opencode.json.tmpl`. zakwas does not expand `~` in `command`, `args` or `env`, so paths are absolute.
+
+| Server | Agents | Notes |
+|---|---|---|
+| `zakwas` | Claude Code, Codex | read-only (`zakwas mcp -c <this repo>/zakwas.yaml`, no `--enable-apply`): agents read the config and the plan and call `zakwas_propose`; the `zakwas@zakwas` plugin teaches them that flow |
+| `sail-shared-memory` | Claude Code, Codex | one declaration, so no per-agent `SAIL_MEMORY_AGENT`; the `Sail memory MCP binary installed` command only copies `~/.local/bin/sail-memory-mcp` |
+| `datadog-mcp` | Claude Code | `/v1/mcp` endpoint, OAuth: sign in with `/mcp` |
+| `datadog` | Codex | same URL under Codex's existing name: `codex mcp login datadog` |
+| `freecad` | Claude Code | `uvx freecad-mcp` |
+
+A same-named server that differs from its declaration fails that provider's plan. Before the first `zakwas apply` on a Mac that still has the hand-made registrations, remove them in a terminal:
+
+```sh
+claude mcp remove datadog-mcp -s user
+claude mcp remove sail-shared-memory -s user
+codex mcp remove sail-shared-memory
+```
+
+The Sail app's memory installer (marker `SAIL_MEMORY_MANAGED=1`) can overwrite the Sail entries; run `zakwas plan` afterwards. chrome-devtools, Peekaboo and Grafana stay out of the global config: the `no global chrome-devtools, Peekaboo or Grafana MCP` command removes them when present.
+
 ## Agent permission profiles
 
 `dotfiles/agents/permission-profiles.json` is the provider-neutral policy. Every rule carries the policy revision and a reason so adapters and task telemetry can explain automated decisions. Explore and review are read-only; build can edit the workspace and run recognized local checks; release reviews remote delivery at the provider permission boundary. Unknown, destructive, secret-bearing, network, deployment and out-of-workspace actions require provider review (OpenCode is the exception, see below).
