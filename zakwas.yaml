@@ -335,6 +335,7 @@ agents:
     claude-plugins-official: {source: anthropics/claude-plugins-official, providers: [claude]}
     ksai: Kong/ksai
     slack: {source: slackapi/slack-skills-plugin, providers: [codex, opencode]}
+    zakwas: Automaat/zakwas
   plugins:
     - adversarial-review@sai
     - adversarial-test@sai
@@ -360,6 +361,41 @@ agents:
     - slack@claude-plugins-official
     - issue-authoring@ksai
     - slack@slack
+    - zakwas@zakwas
+  # Global MCP servers for Claude Code and Codex, each scoped with providers so
+  # none leaks to opencode, whose servers stay hand-written in
+  # dotfiles/opencode/opencode.json.tmpl. zakwas does not expand ~ here, so
+  # paths are absolute. A same-named server that differs fails that provider's
+  # plan: remove the old registration by hand first.
+  mcp:
+    # Read-only: no --enable-apply, so an agent can only propose changes.
+    zakwas:
+      command: zakwas
+      args: [mcp, -c, /Users/marcin.skalski/sideprojects/environment-as-code/zakwas.yaml]
+      providers: [claude, codex]
+    # SAIL_MEMORY_AGENT is left out because one declaration has one env; Sail
+    # then records no agent label in memory provenance.
+    sail-shared-memory:
+      command: /Users/marcin.skalski/.local/bin/sail-memory-mcp
+      args: [--memory-mcp]
+      env:
+        SAIL_MEMORY_ROOT: /Users/marcin.skalski/Library/Application Support/dev.smykla.sai-harness/memory
+        SAIL_SETTINGS_PATH: /Users/marcin.skalski/Library/Application Support/sail/settings.json
+      providers: [claude, codex]
+    # Codex already names its Datadog server `datadog`, the other agents use
+    # `datadog-mcp`.
+    datadog-mcp:
+      url: https://mcp.datadoghq.com/v1/mcp
+      oauth: true
+      providers: [claude]
+    datadog:
+      url: https://mcp.datadoghq.com/v1/mcp
+      oauth: true
+      providers: [codex]
+    freecad:
+      command: uvx
+      args: [freecad-mcp]
+      providers: [claude]
 
 system:
   sudoTouchID: true
@@ -380,14 +416,15 @@ commands:
   # and opencode servers keep one set per thread, so global servers pile up.
   # The peekaboo skill drives its CLI; chrome-devtools lives in the Codex and
   # Claude build profiles, and an opencode project can enable it.
-  - name: no global chrome-devtools or Peekaboo MCP for Codex and Claude Code
+  - name: no global chrome-devtools, Peekaboo or Grafana MCP for Codex and Claude Code
     check: >-
       ! codex mcp get chrome-devtools > /dev/null 2>&1 &&
       ! codex mcp get peekaboo > /dev/null 2>&1 &&
-      ! jq -e '.mcpServers | has("chrome-devtools") or has("peekaboo")'
+      ! codex mcp get grafana > /dev/null 2>&1 &&
+      ! jq -e '.mcpServers | has("chrome-devtools") or has("peekaboo") or has("grafana")'
       "$HOME/.claude.json" > /dev/null 2>&1
     run: >-
-      for s in chrome-devtools peekaboo; do
+      for s in chrome-devtools peekaboo grafana; do
         if codex mcp get "$s" > /dev/null 2>&1; then codex mcp remove "$s" || exit 1; fi;
         if jq -e --arg s "$s" '.mcpServers | has($s)' "$HOME/.claude.json" > /dev/null 2>&1; then
           claude mcp remove "$s" -s user || exit 1; fi;
@@ -490,36 +527,18 @@ commands:
       for s in computer-use find-skills orca-cli orchestration;
       do test -f "$HOME/.agents/skills/$s/SKILL.md" || continue;
       ln -sfn "$HOME/.agents/skills/$s" "$HOME/.claude/skills/$s"; done
-  # Install Sail's project memory tools in the global Claude Code and Codex configs.
-  # OpenCode reads the same launcher from its managed template above. Sail has
-  # no release build yet and cargo relinks the dev binary all day, so the
-  # agents use a copy that only changes when it's deleted and zakwas applies.
-  - name: Sail shared memory MCP for Claude Code and Codex
+  # Sail's memory server is registered by agents.mcp (Claude Code, Codex) and
+  # the opencode template. Sail has no release build yet and cargo relinks the
+  # dev binary all day, so the agents use a copy that only changes when it's
+  # deleted and zakwas applies.
+  - name: Sail memory MCP binary installed
     check: >-
       bin="$HOME/.local/bin/sail-memory-mcp";
       if test -x "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" || test -x "$bin"; then
-      test -x "$bin" &&
-      jq -e --arg bin "$bin" '.mcpServers["sail-shared-memory"].command == $bin'
-      "$HOME/.claude.json" > /dev/null 2>&1 &&
-      codex mcp get sail-shared-memory 2> /dev/null | grep -Fqx "  command: $bin";
-      else true; fi
+      test -x "$bin"; else true; fi
     run: >-
-      bin="$HOME/.local/bin/sail-memory-mcp";
-      { test -x "$bin" ||
-      install -m 0755 "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" "$bin"; } &&
-      { claude mcp remove sail-shared-memory -s user > /dev/null 2>&1 || true; } &&
-      claude mcp add -s user sail-shared-memory
-      -e SAIL_MEMORY_AGENT=claude
-      -e "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
-      -e "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
-      -- "$bin" --memory-mcp &&
-      { ! codex mcp get sail-shared-memory > /dev/null 2>&1 ||
-      codex mcp remove sail-shared-memory; } &&
-      codex mcp add
-      --env SAIL_MEMORY_AGENT=codex
-      --env "SAIL_MEMORY_ROOT=$HOME/Library/Application Support/dev.smykla.sai-harness/memory"
-      --env "SAIL_SETTINGS_PATH=$HOME/Library/Application Support/sail/settings.json"
-      sail-shared-memory -- "$bin" --memory-mcp
+      install -m 0755 "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail"
+      "$HOME/.local/bin/sail-memory-mcp"
   # Raycast finds apps and files through the Spotlight index, so indexing stays
   # on; sudo asks for Touch ID during apply.
   - name: Spotlight indexing on

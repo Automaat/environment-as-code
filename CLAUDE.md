@@ -42,6 +42,7 @@ State: `~/.local/state/zakwas/` (`files.json` hashes, `history.jsonl` applies). 
 | Dotfile needing `$HOME`/vars, or must be a real file | `templates` in `zakwas.yaml` (Go `text/template`: `.Home`, `.Vars.x`) |
 | macOS setting | `defaults` in `zakwas.yaml` (YAML type picks `-bool/-int/-float/-string`; `currentHost: true` for ByHost prefs) |
 | Agent plugin / marketplace | `agents` in `zakwas.yaml` (`name@marketplace`; `providers` limits it to some of claude, codex, opencode) |
+| Global MCP server for Claude Code / Codex | `agents.mcp` in `zakwas.yaml` (always set `providers`, absolute paths, env var names only; opencode's servers stay in `dotfiles/opencode/opencode.json.tmpl`) |
 | Agent shell permissions | `agents.permissions` in `zakwas.yaml` (one `allow`/`review`/`deny` list rendered for Claude Code, Codex and, via `agentPermissions` in the template, opencode) |
 | Always-loaded agent rules | `dotfiles/agents/AGENTS.md` (one file, no generated copies) |
 | Repository/workflow guidance | `plugins/agent-workflow/skills/agent-workflow/references/` |
