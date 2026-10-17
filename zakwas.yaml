@@ -396,6 +396,9 @@ agents:
       command: uvx
       args: [freecad-mcp]
       providers: [claude]
+    linear:
+      url: https://mcp.linear.app/mcp
+      providers: [claude, codex]
 
 system:
   sudoTouchID: true
