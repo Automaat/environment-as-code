@@ -333,12 +333,12 @@ agents:
     sai: smykla-skalski/sai
     environment-as-code: ./
     claude-plugins-official: {source: anthropics/claude-plugins-official, providers: [claude]}
-    ksai: Kong/ksai
     slack: {source: slackapi/slack-skills-plugin, providers: [codex, opencode]}
     zakwas: Automaat/zakwas
   plugins:
     - adversarial-review@sai
     - adversarial-test@sai
+    - agent-issues@sai
     - ai-daily-digest@sai
     - humanize@sai
     - kubecon-cfp@sai
@@ -359,7 +359,6 @@ agents:
     - peekaboo@environment-as-code
     - gopls-lsp@claude-plugins-official
     - slack@claude-plugins-official
-    - issue-authoring@ksai
     - slack@slack
     - zakwas@zakwas
   # Global MCP servers for Claude Code and Codex, each scoped with providers so
