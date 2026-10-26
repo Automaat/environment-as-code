@@ -1,5 +1,6 @@
 tap "automaat/tap", trusted: true
 tap "kong/agent-auth-cli", trusted: true
+tap "openresty/brew", trusted: true
 tap "smykla-skalski/tap", trusted: true
 
 brew "antidote"
@@ -18,7 +19,14 @@ brew "autojump"
 brew "coreutils"
 brew "diffutils"
 brew "docker-credential-helper"
+brew "expat"
 brew "ffmpeg"
+brew "jq"
+brew "libmaxminddb"
+brew "libyaml"
+brew "lua"
+brew "luajit"
+brew "luarocks"
 brew "oniguruma"
 brew "ponysay"
 brew "postgresql@14"
@@ -30,6 +38,8 @@ brew "vhs"
 
 brew "automaat/tap/zsh-clean-history"
 brew "kong/agent-auth-cli/agent-auth-cli"
+brew "openresty/brew/openresty-openssl3"
+brew "openresty/brew/openresty"
 brew "rtk"
 brew "smykla-skalski/tap/bilgie"
 brew "smykla-skalski/tap/klaudiush"
