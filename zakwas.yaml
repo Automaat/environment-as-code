@@ -345,7 +345,6 @@ agents:
     - plan-critic@sai
     - promptgen@sai
     - refactor-council@sai
-    - review-claude-md@sai
     - ship-it@sai
     - staff-resume@sai
     - technical-debt-manager@sai
