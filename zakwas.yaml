@@ -360,6 +360,7 @@ agents:
     - slack@claude-plugins-official
     - slack@slack
     - zakwas@zakwas
+    - rightsize@sai
   # Global MCP servers for Claude Code and Codex, each scoped with providers so
   # none leaks to opencode, whose servers stay hand-written in
   # dotfiles/opencode/opencode.json.tmpl. zakwas does not expand ~ here, so
