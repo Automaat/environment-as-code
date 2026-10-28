@@ -1,0 +1,41 @@
+# Font
+font-family = Iosevka
+font-family = Symbols Nerd Font Mono
+font-size = 23
+
+# Window
+window-width = 240
+window-height = 80
+
+# ============================================================================
+# PERFORMANCE - Critical for Claude Code (heavy output)
+# ============================================================================
+
+# Large scrollback for long AI responses
+scrollback-limit = 10000000
+
+# Keep the cursor still during streamed output
+cursor-style-blink = false
+
+# ============================================================================
+# MOUSE
+# ============================================================================
+
+mouse-hide-while-typing = true
+mouse-scroll-multiplier = 3
+
+# ============================================================================
+# KEYBOARD
+# ============================================================================
+
+keybind = shift+enter=text:\n
+keybind = super+shift+o=write_scrollback_file:open
+keybind = super+shift+r=toggle_readonly
+
+theme = nord-light
+
+# ============================================================================
+# QUICK TERMINAL
+# ============================================================================
+
+keybind = global:ctrl+escape=toggle_quick_terminal

@@ -1,0 +1,164 @@
+providers:
+    agent-scratch-dirs:
+        enabled: true
+    cargo:
+        max_size: 5G
+        max_age: 30d
+        enabled: true
+    chrome-devtools-mcp:
+        max_size: 2G
+        max_age: 30d
+        enabled: false
+        skip_prefixes:
+            - chrome-profile-
+    custom-adobe-camera-raw-2:
+        max_size: 5G
+        enabled: true
+        type: dir-pattern
+        min_idle: 30d
+        paths:
+            - ~/Library/Caches/[A]dobe Camera Raw 2
+    custom-claude-cli-nodejs:
+        max_size: 5G
+        enabled: true
+        type: dir-pattern
+        min_idle: 30d
+        paths:
+            - ~/Library/Caches/[c]laude-cli-nodejs
+    custom-com-vivaldi-vivaldi:
+        max_size: 5G
+        enabled: true
+        type: dir-pattern
+        min_idle: 30d
+        paths:
+            - ~/Library/Caches/[c]om.vivaldi.Vivaldi
+    custom-pnpm:
+        max_size: 5G
+        enabled: true
+        type: dir-pattern
+        min_idle: 30d
+        paths:
+            - ~/Library/Caches/[p]npm
+    custom-sail:
+        max_size: 5G
+        enabled: true
+        type: dir-pattern
+        min_idle: 30d
+        paths:
+            - ~/Library/Caches/[s]ail
+    docker:
+        max_size: 50G
+        max_age: 30d
+        clean_cmd: docker system prune -af
+        enabled: true
+    docker-volumes:
+        max_size: 50G
+        clean_cmd: docker volume prune -f
+        enabled: false
+    edge:
+        max_size: 3G
+        max_age: 30d
+        enabled: true
+    gh:
+        max_size: 1G
+        max_age: 30d
+        enabled: true
+    go-build:
+        max_size: 10G
+        max_age: 30d
+        clean_cmd: go clean -cache
+        enabled: true
+    go-mod:
+        max_size: 5G
+        max_age: 30d
+        clean_cmd: go clean -modcache
+        enabled: true
+    gradle:
+        max_size: 10G
+        max_age: 30d
+        enabled: true
+    homebrew:
+        max_size: 5G
+        max_age: 30d
+        clean_cmd: brew cleanup -s
+        enabled: true
+    huggingface:
+        max_size: 20G
+        max_age: 30d
+        enabled: false
+    ios-simulator:
+        max_size: 10G
+        max_age: 30d
+        clean_cmd: xcrun simctl delete unavailable
+        enabled: true
+    jetbrains:
+        max_size: 3G
+        max_age: 30d
+        enabled: true
+    lima:
+        max_size: 10G
+        max_age: 30d
+        enabled: true
+    mise:
+        max_size: 8G
+        max_age: 30d
+        clean_cmd: mise prune
+        enabled: true
+    npm:
+        max_size: 3G
+        max_age: 30d
+        clean_cmd: npm cache clean --force
+        enabled: true
+    pip:
+        max_size: 3G
+        max_age: 30d
+        clean_cmd: pip cache purge
+        enabled: true
+    playwright:
+        max_size: 5G
+        max_age: 30d
+        enabled: false
+    pnpm:
+        max_size: 5G
+        max_age: 30d
+        clean_cmd: pnpm store prune
+        enabled: true
+    rustup:
+        max_size: 10G
+        clean_cmd: rustup toolchain uninstall
+        enabled: false
+    sail-dirs:
+        max_size: 20G
+        enabled: true
+        type: dir-pattern
+        min_idle: 24h
+    uv:
+        max_size: 4G
+        max_age: 30d
+        enabled: true
+    vivaldi:
+        max_size: 3G
+        max_age: 30d
+        enabled: true
+    vscode-shipit:
+        max_size: 1G
+        max_age: 30d
+        enabled: true
+    xcode-archives:
+        max_size: 10G
+        max_age: 30d
+        enabled: true
+    xcode-deriveddata:
+        max_size: 20G
+        max_age: 30d
+        enabled: true
+    yarn:
+        max_size: 2G
+        max_age: 30d
+        clean_cmd: yarn cache clean
+        enabled: true
+version: "1"
+auto:
+    interval: 30m
+    min_free: 30G
+    min_free_pct: 5

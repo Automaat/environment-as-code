@@ -1,0 +1,151 @@
+# klaudiush global config — single source of truth (XDG: ~/.config/klaudiush/config.toml)
+# Merged from the former XDG + legacy ~/.klaudiush configs; legacy values win on overlap.
+
+# Failure pattern tracking — disabled to avoid writing .klaudiush/patterns.json into project repos
+[patterns]
+enabled = false
+
+# Git Validators
+[validators.git]
+
+# Git Add - blocks adding sensitive files
+[validators.git.add]
+enabled = true
+severity = "error"
+blocked_patterns = ["*.secret", "*.key", ".env"]
+
+# Git Commit - enforce flags, staging, conventional commits
+[validators.git.commit]
+enabled = true
+severity = "error"
+required_flags = ["-s", "-S"]
+check_staging_area = true
+
+# Git Push - validates remote/branch; blocks direct pushes to main/master
+[validators.git.push]
+enabled = true
+severity = "error"
+blocked_branches = ["main", "master"]
+
+# Git PR - conventional commits, body validation
+[validators.git.pr]
+enabled = false
+severity = "error"
+title_max_length = 70
+enable_conventional_commits = true
+require_body = false
+
+# Git Branch - naming conventions
+[validators.git.branch]
+enabled = true
+severity = "error"
+protected_branches = ["main", "master"]
+require_type = true
+allow_uppercase = false
+
+# Git No-Verify - blocks --no-verify flag
+[validators.git.no_verify]
+enabled = true
+severity = "error"
+
+# Git Fetch - default-on; disabled to keep only explicitly configured validators
+[validators.git.fetch]
+enabled = false
+
+# GitHub Issue - default-on; disabled to keep only explicitly configured validators
+[validators.github.issue]
+enabled = false
+
+# Shell nesting (SHELL002) blocks any command it cannot fully parse, including
+# ordinary tools behind shell-function wrappers such as mise's npm reshim.
+[overrides.entries.SHELL002]
+disabled = true
+reason = "Blocks unrelated commands it cannot parse; git validators stay on"
+
+# Rules Engine - custom command-level policies
+[rules]
+enabled = true
+
+# Block all force pushes, including --force-with-lease / --force-if-includes and -f.
+# The leading group skips git's global options, so `git -C <path> push --force`
+# matches too; -C/-c come first in the alternation to consume their argument.
+[[rules.rules]]
+name = "block-force-push"
+description = "Block force pushes"
+enabled = true
+priority = 100
+
+[rules.rules.match]
+validator_type = "git.push"
+command_pattern = 'git(?:\s+(?:-[Cc]\s+\S+|--(?:git-dir|work-tree|namespace|exec-path)=\S+|-\S+|--\S+))*\s+push\b[^&|;]*(\s|=)(--force(-with-lease|-if-includes)?|-f)($|=|\s)'
+
+[rules.rules.action]
+type = "block"
+message = "Force push is blocked. Rebase/merge and push normally; a human must run any force push."
+reference = "GIT-FORCE"
+
+# File Validators
+[validators.file]
+
+
+# Linter Ignore - blocks linter ignore directives
+[validators.file.linter_ignore]
+enabled = true
+severity = "error"
+
+# AI Comments - blocks filler comments that only restate the code
+[validators.file.ai_comments]
+enabled = true
+severity = "error"
+mode = "strict"
+
+# The validators below are default-on; disabled to keep only the explicitly configured set.
+[validators.file.markdown]
+enabled = false
+
+[validators.file.shellscript]
+enabled = false
+
+[validators.file.terraform]
+enabled = false
+
+[validators.file.workflow]
+enabled = false
+
+[validators.file.python]
+enabled = false
+
+[validators.file.javascript]
+enabled = false
+
+# Secrets Detection
+[validators.secrets.secrets]
+enabled = false
+severity = "error"
+use_gitleaks = false
+block_on_detection = true
+max_file_size = 1048576  # 1MB in bytes
+# allow_list = ["test-fixtures/*", "mock-*"]
+
+# Notification Bell - default-on; disabled to keep only explicitly configured validators
+[validators.notification.bell]
+enabled = false
+
+[providers]
+
+[providers.claude]
+enabled = true
+
+[providers.codex]
+enabled = true
+experimental = true
+hooks_config_path = "{{.Home}}/Library/Application Support/orca/codex-runtime-home/home/hooks.json"
+
+[providers.gemini]
+enabled = false
+
+# opencode has no declarative hook config; klaudiush generates a bridge plugin
+# at plugin_path. Zakwas refreshes it after a klaudiush upgrade.
+[providers.opencode]
+enabled = true
+plugin_path = "{{.Home}}/.config/opencode/plugin/klaudiush.ts"

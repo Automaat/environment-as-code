@@ -1,0 +1,4 @@
+MichaelAquilina/zsh-you-should-use
+automaat/zsh-clean-history branch:main
+zsh-users/zsh-autosuggestions kind:defer
+zsh-users/zsh-syntax-highlighting kind:defer

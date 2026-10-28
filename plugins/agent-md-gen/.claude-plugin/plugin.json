@@ -1,0 +1,16 @@
+{
+  "name": "agent-md-gen",
+  "description": "Generate a project-specific CLAUDE.md with domain instructions, workflows and templates from codebase analysis and a few clarifying questions. Ships the claude-md-gen skill.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/agent-md-gen",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "claude-md",
+    "agents-md",
+    "instructions",
+    "scaffold"
+  ]
+}

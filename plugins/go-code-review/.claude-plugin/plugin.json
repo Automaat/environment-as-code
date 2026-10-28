@@ -1,0 +1,16 @@
+{
+  "name": "go-code-review",
+  "description": "Review Go code for 100+ common mistakes from 100go.co: error handling, concurrency, interfaces, performance, testing and stdlib usage.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/go-code-review",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "go",
+    "golang",
+    "code-review",
+    "100go"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "go-code-review",
+  "version": "1.0.0",
+  "description": "Review Go code for 100+ common mistakes from 100go.co: error handling, concurrency, interfaces, performance, testing and stdlib usage.",
+  "author": {
+    "name": "Marcin Skalski"
+  },
+  "homepage": "https://github.com/Automaat/environment-as-code/tree/main/plugins/go-code-review",
+  "repository": "https://github.com/Automaat/environment-as-code",
+  "keywords": [
+    "go",
+    "golang",
+    "code-review",
+    "100go"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Go Code Review",
+        "shortDescription": "Review Go code against 100go.co mistakes",
+        "longDescription": "Review Go code for 100+ common mistakes from 100go.co: error handling, concurrency, interfaces, performance, testing and stdlib usage.",
+        "developerName": "Marcin Skalski",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Interactive"
+        ],
+        "websiteURL": "https://github.com/Automaat/environment-as-code/tree/main/plugins/go-code-review",
+        "defaultPrompt": [
+          "Use $go-code-review to review the Go changes on this branch."
+        ]
+      }
+    }
+  }
+}

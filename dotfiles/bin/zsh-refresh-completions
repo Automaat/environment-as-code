@@ -1,0 +1,40 @@
+#!/bin/sh
+set -eu
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/completions"
+state_file="$cache_dir/.tool-versions"
+format_version=1
+
+versions() {
+    printf 'format=%s\n' "$format_version"
+    docker --version
+    helm version --short
+    kubectl version --client --output=json
+}
+
+check() {
+    [ -s "$cache_dir/_docker" ] || return 1
+    [ -s "$cache_dir/_helm" ] || return 1
+    [ -s "$cache_dir/_kubectl" ] || return 1
+    [ -s "$state_file" ] || return 1
+    [ "$(versions)" = "$(cat "$state_file")" ]
+}
+
+if [ "${1:-}" = "--check" ]; then
+    check
+    exit
+fi
+
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/zsh-completions.XXXXXX")
+trap 'rm -rf -- "$scratch"' EXIT HUP INT TERM
+
+docker completion zsh > "$scratch/_docker"
+helm completion zsh > "$scratch/_helm"
+kubectl completion zsh > "$scratch/_kubectl"
+versions > "$scratch/.tool-versions"
+
+mkdir -p -- "$cache_dir"
+install -m 0600 "$scratch/_docker" "$cache_dir/_docker"
+install -m 0600 "$scratch/_helm" "$cache_dir/_helm"
+install -m 0600 "$scratch/_kubectl" "$cache_dir/_kubectl"
+install -m 0600 "$scratch/.tool-versions" "$state_file"

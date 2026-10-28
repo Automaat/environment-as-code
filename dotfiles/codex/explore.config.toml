@@ -1,0 +1,18 @@
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+sandbox_mode = "read-only"
+
+[auto_review]
+policy = """
+Policy revision 2026-10-07.1, explore profile.
+Approve only read-only, non-secret access inside the active workspace.
+Reject unknown, destructive, secret-bearing, network, deployment, and external-path requests; tell the user to select the release profile when the action is intentional.
+"""
+
+[mcp_servers.chrome-devtools]
+command = "chrome-devtools-mcp"
+enabled = false
+
+[mcp_servers.datadog]
+url = "https://mcp.datadoghq.com/v1/mcp"
+enabled = false

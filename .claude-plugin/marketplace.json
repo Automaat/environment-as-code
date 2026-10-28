@@ -1,0 +1,86 @@
+{
+  "name": "environment-as-code",
+  "owner": {
+    "name": "Marcin Skalski"
+  },
+  "metadata": {
+    "description": "Marcin's personal agent skills, portable across Claude Code, Codex and opencode"
+  },
+  "plugins": [
+    {
+      "name": "agent-workflow",
+      "source": "./plugins/agent-workflow",
+      "description": "Load Marcin's binding repository map and development workflow rules only when a task needs them.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "agents",
+        "workflow",
+        "repositories",
+        "github"
+      ]
+    },
+    {
+      "name": "agent-md-gen",
+      "source": "./plugins/agent-md-gen",
+      "description": "Generate a project-specific CLAUDE.md with domain instructions, workflows and templates from codebase analysis and a few clarifying questions. Ships the claude-md-gen skill.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "claude-md",
+        "agents-md",
+        "instructions",
+        "scaffold"
+      ]
+    },
+    {
+      "name": "go-code-review",
+      "source": "./plugins/go-code-review",
+      "description": "Review Go code for 100+ common mistakes from 100go.co: error handling, concurrency, interfaces, performance, testing and stdlib usage.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "go",
+        "golang",
+        "code-review",
+        "100go"
+      ]
+    },
+    {
+      "name": "fix-review",
+      "source": "./plugins/fix-review",
+      "description": "Fix unresolved GitHub PR review comments non-interactively: apply valid fixes, push, and reply to every thread. Runs only when invoked explicitly.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "github",
+        "pull-request",
+        "code-review",
+        "automation"
+      ]
+    },
+    {
+      "name": "peekaboo",
+      "source": "./plugins/peekaboo",
+      "description": "Operate and test native macOS apps with the pinned Peekaboo CLI.",
+      "author": {
+        "name": "Marcin Skalski"
+      },
+      "category": "development",
+      "tags": [
+        "macos",
+        "computer-use",
+        "mcp",
+        "ui-testing"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,580 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Automaat/zakwas/main/schema/zakwas.schema.json
+protect:
+  immutable: true
+
+files:
+  - {src: dotfiles/zsh/zshrc, dst: ~/.zshrc}
+  - {src: dotfiles/zsh/zshenv, dst: ~/.zshenv}
+  - {src: dotfiles/zsh/zprofile, dst: ~/.zprofile}
+  - {src: dotfiles/zsh/zsh_plugins.txt, dst: ~/.config/zsh/zsh_plugins.txt}
+  - {src: dotfiles/git/config, dst: ~/.config/git/config}
+  - {src: dotfiles/git/.gitignore_global, dst: ~/.gitignore_global}
+  - {src: dotfiles/vim/vimrc, dst: ~/.vimrc}
+  - {src: dotfiles/gnupg/gpg.conf, dst: ~/.gnupg/gpg.conf}
+  - {src: dotfiles/gnupg/gpg-agent.conf, dst: ~/.gnupg/gpg-agent.conf}
+  - {src: dotfiles/mise/config.toml, dst: ~/.config/mise/config.toml}
+  - {src: dotfiles/agents/permission-profiles.json, dst: ~/.config/agents/permission-profiles.json}
+  - {src: dotfiles/tmux/tmux.conf, dst: ~/.config/tmux/tmux.conf}
+  - {src: dotfiles/launchd/dev.zsh-clean-history.plist, dst: ~/Library/LaunchAgents/dev.zsh-clean-history.plist}
+  - {src: dotfiles/claude/agents, dst: ~/.claude/agents/permission-profiles}
+  - {src: dotfiles/codex/explore.config.toml, dst: ~/.codex/explore.config.toml}
+  - {src: dotfiles/codex/review.config.toml, dst: ~/.codex/review.config.toml}
+  - {src: dotfiles/codex/build.config.toml, dst: ~/.codex/build.config.toml}
+  - {src: dotfiles/codex/release.config.toml, dst: ~/.codex/release.config.toml}
+  - {src: dotfiles/starship/starship.toml, dst: ~/.config/starship.toml}
+  - {src: dotfiles/bilgie/config.yaml, dst: ~/.config/bilgie/config.yaml}
+  - {src: dotfiles/ghostty/config, dst: ~/.config/ghostty/config}
+  - {src: dotfiles/ghostty/themes, dst: ~/.config/ghostty/themes}
+  # Calibrite display profiles; after recalibrating, copy the new .icc here
+  # and drop the old one (once no display uses it). Installed copies are
+  # locked, so save a recalibration under a new name, not over an old one.
+  - {src: dotfiles/colorsync, dst: ~/Library/ColorSync/Profiles}
+  - {src: dotfiles/k9s/skins/transparent.yaml, dst: ~/.config/k9s/skins/transparent.yaml}
+  - {src: dotfiles/k9s/skins/everforest-light.yaml, dst: ~/.config/k9s/skins/everforest-light.yaml}
+  - {src: dotfiles/k9s/skins/nord-light.yaml, dst: ~/.config/k9s/skins/nord-light.yaml}
+  - {src: dotfiles/hammerspoon/init.lua, dst: ~/.hammerspoon/init.lua}
+  - {src: dotfiles/hammerspoon/zoom-smart-plug.lua, dst: ~/.hammerspoon/zoom-smart-plug.lua}
+  - {src: dotfiles/hammerspoon/desk-charger-battery.lua, dst: ~/.hammerspoon/desk-charger-battery.lua}
+  - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
+  - {src: dotfiles/bin/zakwas-check-notify, dst: ~/.local/bin/zakwas-check-notify}
+  - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
+  - {src: dotfiles/bin/zsh-refresh-completions, dst: ~/.local/bin/zsh-refresh-completions}
+
+# The work Mac's device management forces ~/.ssh/config back to 600 every
+# ~15 minutes, which would undo the files protection.
+links:
+  - {src: dotfiles/ssh/config, dst: ~/.ssh/config}
+  - {src: dotfiles/claude/statusline-command.sh, dst: ~/.claude/statusline-command.sh}
+  # Global agent instructions for the tools agents.instructions doesn't cover.
+  - {src: dotfiles/agents/AGENTS.md, dst: ~/.copilot/instructions/global.instructions.md}
+  - {src: dotfiles/agents/AGENTS.md, dst: ~/AGENTS.md}
+
+templates:
+  files:
+    - {src: dotfiles/k9s/config.yaml.tmpl, dst: ~/.config/k9s/config.yaml}
+    - {src: dotfiles/klaudiush/config.toml.tmpl, dst: ~/.config/klaudiush/config.toml}
+    - {src: dotfiles/launchd/dev.zakwas.check.plist.tmpl, dst: ~/Library/LaunchAgents/dev.zakwas.check.plist}
+    - {src: dotfiles/launchd/dev.reef.observe.plist.tmpl, dst: ~/Library/LaunchAgents/dev.reef.observe.plist}
+    - {src: dotfiles/launchd/dev.reef.serve.plist.tmpl, dst: ~/Library/LaunchAgents/dev.reef.serve.plist}
+
+brew:
+  file: Brewfile
+  cleanup: zap
+  upgrade: true
+
+mise:
+  config: dotfiles/mise/config.toml
+  prune: true
+
+# Agent plugins for Claude Code, Codex and opencode. Entries without their own
+# providers target all three. Codex and opencode are named so zakwas manages
+# them strictly instead of skipping them. Every skill installs for all three;
+# only marketplaces whose plugins aren't skills (LSP, MCP) are narrowed.
+# opencode can't keep an on-request skill from running on its own, so there
+# those skills rely on their own wording.
+# instructions is linked as each provider's global CLAUDE.md / AGENTS.md.
+agents:
+  providers: [claude, codex, opencode]
+  codex:
+    settings:
+      agents:
+        enabled: true
+        max_concurrent_threads_per_session: 8
+  instructions: dotfiles/agents/AGENTS.md
+  hooks:
+    klaudiush: true
+  permissions:
+    allow:
+      - git status
+      - git diff
+      - git log
+      - git show
+      - git rev-parse
+      - git merge-base
+      - git ls-files
+      - git ls-tree
+      - git ls-remote
+      - git describe
+      - git cat-file
+      - git rev-list
+      - git name-rev
+      - git show-ref
+      - git for-each-ref
+      - git blame
+      - git grep
+      - git check-ignore
+      - git verify-commit
+      - git verify-tag
+      - git config --get
+      - git fetch
+      - git --no-pager diff
+      - git --no-pager log
+      - git --no-pager show
+      - git switch
+      - git merge
+      - git add
+      - git commit
+      - git push
+      - git stash
+      - git rebase
+      - git cherry-pick
+      - git tag
+      - git restore
+      - git checkout
+      - git branch
+      - git remote
+      - git worktree
+      - git clone
+      - git pull
+      - git apply
+      - git am
+      - git mv
+      - git rm
+      - git reset
+      - git revert
+      - gh pr
+      - gh run
+      - gh issue
+      - gh release
+      - gh repo view
+      - gh repo list
+      - gh repo clone
+      - gh search
+      - gh label list
+      - gh workflow list
+      - gh workflow run
+      - gh variable list
+      - gh auth status
+      - gh api
+      - gh-add-subissue
+      - rg
+      - grep
+      - sed
+      - awk
+      - find
+      - fd
+      - head
+      - tail
+      - cat
+      - ls
+      - tree
+      - wc
+      - du
+      - df
+      - stat
+      - file
+      - readlink
+      - realpath
+      - dirname
+      - basename
+      - cut
+      - sort
+      - uniq
+      - tr
+      - comm
+      - column
+      - nl
+      - od
+      - xxd
+      - diff
+      - cmp
+      - jq
+      - yq
+      - date
+      - pwd
+      - which
+      - type
+      - uname
+      - sw_vers
+      - vm_stat
+      - shasum
+      - md5
+      - base64
+      - plutil -p
+      - python3 -m json.tool
+      - python3 -m py_compile
+      - ps
+      - pgrep
+      - lsof
+      - kill
+      - pkill
+      - sleep
+      - timeout
+      - gtimeout
+      - "true"
+      - "false"
+      - test
+      - exit
+      - wait
+      - break
+      - continue
+      - set
+      - unset
+      - mkdir
+      - touch
+      - rm
+      - rmdir
+      - mv
+      - cp
+      - ln
+      - chmod
+      - tar
+      - unzip
+      - zip
+      - curl
+      - wget
+      - open
+      - screencapture
+      - codesign
+      - osascript
+      - peekaboo
+      - orca
+      - limactl
+      - mise
+      - npm
+      - pnpm
+      - yarn
+      - npx
+      - uv
+      - uvx
+      - pytest
+      - node --test
+      - brew info
+      - brew list
+      - brew install
+      - brew upgrade
+      - docker
+      - kubectl get
+      - kubectl describe
+      - kubectl logs
+      - go test
+      - go build
+      - go vet
+      - go list
+      - go version
+      - go env
+      - go mod
+      - go run
+      - go install
+      - go generate
+      - gofmt
+      - cargo
+      - ruff
+      - shellcheck
+      - actionlint
+      - golangci-lint
+      - markdownlint
+      - yamllint
+      - hadolint
+      - checkmake
+      - shellspec
+      - claude plugin validate
+      - ./node_modules/.bin/eslint
+      - ./node_modules/.bin/oxlint
+      - ./node_modules/.bin/svelte-check
+      - ./node_modules/.bin/prettier
+      - ./node_modules/.bin/tsc
+      - make
+      - task
+      - npm test
+      - npm run test
+      - npm run lint
+      - npm run check
+      - npm run build
+      - npm run format
+      - pnpm test
+      - mise run lint
+      - mise run test
+      - mise run check
+      - mise run fmt
+      - mise run format
+      - mise exec
+      - cargo test
+      - cargo check
+      - cargo clippy
+      - cargo build
+      - cargo fmt
+      - make lint
+      - make test
+      - make check
+      - make fmt
+      - make format
+      - task lint
+      - task test
+      - task check
+      - task fmt
+      - task format
+      - zakwas
+      - klaudiush
+      - reef
+      - bilgie
+      - build-slot
+      - fc-list
+      - ghostty
+    deny:
+      - git push --force
+      - git push -f
+      - git commit --no-verify
+      - sudo
+      - chflags nouchg
+      - gh auth token
+      - security find-generic-password
+      - security dump-keychain
+  upgrade: true
+  prune: true
+  marketplaces:
+    sai: smykla-skalski/sai
+    environment-as-code: ./
+    claude-plugins-official: {source: anthropics/claude-plugins-official, providers: [claude]}
+    slack: {source: slackapi/slack-skills-plugin, providers: [codex, opencode]}
+    zakwas: Automaat/zakwas
+  plugins:
+    - adversarial-review@sai
+    - adversarial-test@sai
+    - agent-issues@sai
+    - ai-daily-digest@sai
+    - humanize@sai
+    - kubecon-cfp@sai
+    - plan-critic@sai
+    - promptgen@sai
+    - refactor-council@sai
+    - ship-it@sai
+    - staff-resume@sai
+    - technical-debt-manager@sai
+    - test-writer@sai
+    - youtube-summary@sai
+    - agent-workflow@environment-as-code
+    - agent-md-gen@environment-as-code
+    - go-code-review@environment-as-code
+    - fix-review@environment-as-code
+    - peekaboo@environment-as-code
+    - gopls-lsp@claude-plugins-official
+    - slack@claude-plugins-official
+    - slack@slack
+    - zakwas@zakwas
+    - rightsize@sai
+  # Global MCP servers for Claude Code and Codex, each scoped with providers so
+  # none leaks to opencode, whose servers stay hand-written in its own config
+  # template. zakwas does not expand ~ here, so paths are absolute. A
+  # same-named server that differs fails that provider's plan: remove the old
+  # registration by hand first.
+  mcp:
+    # Read-only: no --enable-apply, so an agent can only propose changes.
+    zakwas:
+      command: zakwas
+      args: [mcp, -c, /Users/marcin.skalski/sideprojects/environment-as-code/zakwas.yaml]
+      providers: [claude, codex]
+    # SAIL_MEMORY_AGENT is left out because one declaration has one env; Sail
+    # then records no agent label in memory provenance.
+    sail-shared-memory:
+      command: /Users/marcin.skalski/.local/bin/sail-memory-mcp
+      args: [--memory-mcp]
+      env:
+        SAIL_MEMORY_ROOT: /Users/marcin.skalski/Library/Application Support/dev.smykla.sai-harness/memory
+        SAIL_SETTINGS_PATH: /Users/marcin.skalski/Library/Application Support/sail/settings.json
+      providers: [claude, codex]
+    # Codex already names its Datadog server `datadog`, the other agents use
+    # `datadog-mcp`.
+    datadog-mcp:
+      url: https://mcp.datadoghq.com/v1/mcp
+      oauth: true
+      providers: [claude]
+    datadog:
+      url: https://mcp.datadoghq.com/v1/mcp
+      oauth: true
+      providers: [codex]
+    freecad:
+      command: uvx
+      args: [freecad-mcp]
+      providers: [claude]
+    linear:
+      url: https://mcp.linear.app/mcp
+      providers: [claude, codex]
+
+system:
+  sudoTouchID: true
+  dirs:
+    - {path: ~/.ssh, mode: 0o700}
+    - {path: ~/.gnupg, mode: 0o700}
+    - {path: ~/Documents/1_Projects}
+    - {path: ~/Documents/2_Areas}
+    - {path: ~/Documents/3_Resources}
+    - {path: ~/Documents/4_Archive}
+    - {path: ~/Documents/screenshots}
+  sshKey:
+    path: ~/.ssh/id_ed25519
+    comment: skalskimarcin33@gmail.com
+
+commands:
+  # Each agent session spawns every global MCP server, and long-lived Codex
+  # and opencode servers keep one set per thread, so global servers pile up.
+  # The peekaboo skill drives its CLI; chrome-devtools lives in the Codex and
+  # Claude build profiles, and an opencode project can enable it.
+  - name: no global chrome-devtools, Peekaboo or Grafana MCP for Codex and Claude Code
+    check: >-
+      ! codex mcp get chrome-devtools > /dev/null 2>&1 &&
+      ! codex mcp get peekaboo > /dev/null 2>&1 &&
+      ! codex mcp get grafana > /dev/null 2>&1 &&
+      ! jq -e '.mcpServers | has("chrome-devtools") or has("peekaboo") or has("grafana")'
+      "$HOME/.claude.json" > /dev/null 2>&1
+    run: >-
+      for s in chrome-devtools peekaboo grafana; do
+        if codex mcp get "$s" > /dev/null 2>&1; then codex mcp remove "$s" || exit 1; fi;
+        if jq -e --arg s "$s" '.mcpServers | has($s)' "$HOME/.claude.json" > /dev/null 2>&1; then
+          claude mcp remove "$s" -s user || exit 1; fi;
+      done
+  - name: zsh completions current
+    check: zsh-refresh-completions --check
+    run: zsh-refresh-completions
+  - name: daily zsh history cleanup
+    check: >-
+      launchctl print "gui/$(id -u)/dev.zsh-clean-history" > /dev/null 2>&1 &&
+      cmp -s "$HOME/Library/LaunchAgents/dev.zsh-clean-history.plist" "$HOME/.local/state/zakwas/dev.zsh-clean-history.loaded.plist"
+    run: >-
+      launchctl bootout "gui/$(id -u)/dev.zsh-clean-history" 2> /dev/null;
+      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.zsh-clean-history.plist" &&
+      mkdir -p "$HOME/.local/state/zakwas" &&
+      cp -f "$HOME/Library/LaunchAgents/dev.zsh-clean-history.plist" "$HOME/.local/state/zakwas/dev.zsh-clean-history.loaded.plist"
+  - name: daily drift notification
+    check: >-
+      launchctl print "gui/$(id -u)/dev.zakwas.check" > /dev/null 2>&1 &&
+      cmp -s "$HOME/Library/LaunchAgents/dev.zakwas.check.plist" "$HOME/.local/state/zakwas/dev.zakwas.check.loaded.plist"
+    run: >-
+      launchctl bootout "gui/$(id -u)/dev.zakwas.check" 2> /dev/null;
+      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.zakwas.check.plist" &&
+      mkdir -p "$HOME/.local/state/zakwas" &&
+      cp -f "$HOME/Library/LaunchAgents/dev.zakwas.check.plist" "$HOME/.local/state/zakwas/dev.zakwas.check.loaded.plist"
+  - name: reef baseline recorder
+    check: >-
+      launchctl print "gui/$(id -u)/dev.reef.observe" 2> /dev/null |
+      grep -Fq "state = running" &&
+      cmp -s "$HOME/Library/LaunchAgents/dev.reef.observe.plist" "$HOME/.local/state/zakwas/dev.reef.observe.loaded.plist"
+    run: >-
+      launchctl bootout "gui/$(id -u)/dev.reef.observe" 2> /dev/null;
+      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.reef.observe.plist" &&
+      mkdir -p "$HOME/.local/state/zakwas" &&
+      cp -f "$HOME/Library/LaunchAgents/dev.reef.observe.plist" "$HOME/.local/state/zakwas/dev.reef.observe.loaded.plist"
+  - name: reef background scheduler
+    check: >-
+      launchctl print "gui/$(id -u)/dev.reef.serve" 2> /dev/null |
+      grep -Fq "state = running" &&
+      cmp -s "$HOME/Library/LaunchAgents/dev.reef.serve.plist" "$HOME/.local/state/zakwas/dev.reef.serve.loaded.plist"
+    run: >-
+      launchctl bootout "gui/$(id -u)/dev.reef.serve" 2> /dev/null;
+      launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/dev.reef.serve.plist" &&
+      mkdir -p "$HOME/.local/state/zakwas" &&
+      cp -f "$HOME/Library/LaunchAgents/dev.reef.serve.plist" "$HOME/.local/state/zakwas/dev.reef.serve.loaded.plist"
+  - name: reef agent observation setup
+    check: reef agents setup --check
+    run: reef agents setup
+  # install-agent arms the first-run marker, so a new Mac previews before it deletes.
+  - name: bilgie disk janitor agent
+    check: launchctl print "gui/$(id -u)/dev.mskalski.bilgie" > /dev/null 2>&1
+    run: bilgie install-agent
+  # Pre-rename agent: removing its plist doesn't unload it.
+  - name: old eac drift agent unloaded
+    check: '! launchctl print "gui/$(id -u)/dev.eac.check" > /dev/null 2>&1'
+    run: launchctl bootout "gui/$(id -u)/dev.eac.check"
+  # technical-debt-manager and youtube-summary used to be linked from
+  # research-machine; they're SAI plugins now, so the old links would load twice.
+  - name: old research-machine skill links removed
+    check: >-
+      for l in .claude/skills/technical-debt-manager .claude/skills/youtube-summary .codex/skills/technical-debt-manager;
+      do case "$(readlink "$HOME/$l")" in */research-machine/*) exit 1 ;; esac; done
+    run: >-
+      for l in .claude/skills/technical-debt-manager .claude/skills/youtube-summary .codex/skills/technical-debt-manager;
+      do case "$(readlink "$HOME/$l")" in */research-machine/*) rm -f "$HOME/$l" ;; esac; done
+  # The old link script linked the instruction rules dir here; its source is
+  # gone now that the rules live in dotfiles/agents/AGENTS.md.
+  - name: old claude rules link removed
+    check: >-
+      case "$(readlink "$HOME/.claude/rules")" in */environment-as-code/dotfiles/claude/rules) exit 1 ;; esac
+    run: rm -f "$HOME/.claude/rules"
+  # General skills that live outside any marketplace. openscad is a third-party
+  # repo; it is linked into ~/.agents/skills (Codex, opencode) and
+  # ~/.claude/skills (Claude) so updates via git pull reach every agent.
+  - name: openscad skill shared with all agents
+    check: >-
+      d="$HOME/Development/Claude/openscad_claude_skill";
+      test -f "$d/SKILL.md" &&
+      test "$(readlink "$HOME/.agents/skills/openscad")" = "$d" &&
+      test "$(readlink "$HOME/.claude/skills/openscad")" = "$d"
+    run: >-
+      d="$HOME/Development/Claude/openscad_claude_skill";
+      { test -d "$d" || git clone https://github.com/andreahaku/openscad_claude_skill.git "$d"; } &&
+      mkdir -p "$HOME/.agents/skills" "$HOME/.claude/skills" &&
+      ln -sfn "$d" "$HOME/.agents/skills/openscad" &&
+      ln -sfn "$d" "$HOME/.claude/skills/openscad"
+  # Orca and the skills CLI install general skills into ~/.agents/skills, which
+  # Codex and opencode read but Claude doesn't. Link each into ~/.claude/skills
+  # so Claude gets them too; the owners keep updating them in place.
+  - name: shared agent skills linked for claude
+    check: >-
+      for s in computer-use find-skills orca-cli orchestration;
+      do test -f "$HOME/.agents/skills/$s/SKILL.md" || continue;
+      test "$(readlink "$HOME/.claude/skills/$s")" = "$HOME/.agents/skills/$s" || exit 1; done
+    run: >-
+      mkdir -p "$HOME/.claude/skills" &&
+      for s in computer-use find-skills orca-cli orchestration;
+      do test -f "$HOME/.agents/skills/$s/SKILL.md" || continue;
+      ln -sfn "$HOME/.agents/skills/$s" "$HOME/.claude/skills/$s"; done
+  # Sail's memory server is registered by agents.mcp (Claude Code, Codex) and
+  # the opencode template. Sail has no release build yet and cargo relinks the
+  # dev binary all day, so the agents use a copy that only changes when it's
+  # deleted and zakwas applies.
+  - name: Sail memory MCP binary installed
+    check: >-
+      bin="$HOME/.local/bin/sail-memory-mcp";
+      if test -x "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail" || test -x "$bin"; then
+      test -x "$bin"; else true; fi
+    run: >-
+      install -m 0755 "$HOME/sideprojects/sai-harness/src-tauri/target/debug/sail"
+      "$HOME/.local/bin/sail-memory-mcp"
+  # Raycast finds apps and files through the Spotlight index, so indexing stays
+  # on; sudo asks for Touch ID during apply.
+  - name: Spotlight indexing on
+    check: >-
+      mdutil -s / | grep -q 'Indexing enabled' &&
+      mdutil -s /System/Volumes/Data | grep -q 'Indexing enabled'
+    run: sudo mdutil -a -i on
+  # Spotlight Privacy list (System Settings > Spotlight > Search Privacy) is the
+  # only path-preserving folder exclusion on macOS 26, and it is UI-only: mds
+  # ignores .metadata_never_index and edits to VolumeConfiguration.plist. Dot dirs
+  # and ~/Library/Caches are never indexed. A failing run stops later commands.
+  - name: Spotlight skips dev trees
+    check: >-
+      for d in kong sideprojects sail; do
+      test ! -d "$HOME/$d" ||
+      test "$(timeout 8 mdfind -onlyin "$HOME/$d" -count 'kMDItemDisplayName == *' 2> /dev/null)" = 0 ||
+      exit 1; done
+    run: >-
+      echo "Spotlight indexes these; add them in System Settings > Spotlight > Search Privacy:" >&2;
+      for d in kong sideprojects sail; do
+      test ! -d "$HOME/$d" ||
+      test "$(timeout 8 mdfind -onlyin "$HOME/$d" -count 'kMDItemDisplayName == *' 2> /dev/null)" = 0 ||
+      echo "  $HOME/$d" >&2; done;
+      open "x-apple.systempreferences:com.apple.Spotlight-Settings.extension";
+      exit 1
+  # dotfiles/git/config signs every commit with this key, so git can't
+  # commit until it's imported. Last: a failing command stops the ones after it.
+  - name: git signing key imported
+    check: gpg --list-secret-keys C25DFDF396ADF455 > /dev/null 2>&1
+    run: >-
+      echo "GPG key C25DFDF396ADF455 (signingKey in dotfiles/git/config) is missing; git commits will fail." >&2;
+      echo "Export it on the old Mac: gpg --export-secret-keys --armor C25DFDF396ADF455 > key.asc" >&2;
+      echo "Import it here: gpg --import key.asc && rm key.asc, then run zakwas apply again." >&2;
+      exit 1
+
+defaults:
+  - {domain: com.apple.dock, key: autohide, value: true}
+  - {domain: com.apple.dock, key: show-recents, value: false}
+  - {domain: com.apple.dock, key: wvous-br-corner, value: 1}
+  - {domain: com.apple.finder, key: AppleShowAllExtensions, value: true}
+  - {domain: com.apple.finder, key: FXEnableExtensionChangeWarning, value: false}
+  - {domain: NSGlobalDomain, key: AppleShowAllExtensions, value: true}
+  - {domain: NSGlobalDomain, key: InitialKeyRepeat, value: 15}
+  - {domain: NSGlobalDomain, key: KeyRepeat, value: 2}
+  - {domain: NSGlobalDomain, key: AppleInterfaceStyle, value: Dark}
+  - {domain: NSGlobalDomain, key: com.apple.keyboard.fnState, value: true}
+  - {domain: com.apple.screencapture, key: location, value: ~/Documents/screenshots}
+  - {domain: com.apple.screencapture, key: type, value: png}

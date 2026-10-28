@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "policy_revision": "2026-10-07.1",
+  "default_decision": "ask",
+  "rules": [
+    {
+      "id": "workspace-read",
+      "decision": "allow",
+      "reason": "Reading non-secret files in the active workspace has no side effects."
+    },
+    {
+      "id": "workspace-edit",
+      "decision": "allow",
+      "reason": "Build and release work requires reversible edits inside the active workspace."
+    },
+    {
+      "id": "local-check",
+      "decision": "allow",
+      "reason": "Recognized local validation commands are reversible and scoped to the active workspace."
+    },
+    {
+      "id": "unknown",
+      "decision": "ask",
+      "reason": "Unclassified actions need review before their impact is known."
+    },
+    {
+      "id": "destructive",
+      "decision": "ask",
+      "reason": "Deletion, overwrite and history-rewrite operations can cause unrecoverable data loss."
+    },
+    {
+      "id": "secret",
+      "decision": "ask",
+      "reason": "Secret-bearing files and credentials require an explicit audience and purpose."
+    },
+    {
+      "id": "network",
+      "decision": "ask",
+      "reason": "Network actions can disclose data or mutate systems outside the local workspace."
+    },
+    {
+      "id": "deployment",
+      "decision": "ask",
+      "reason": "Deployments and release actions change shared or production systems."
+    },
+    {
+      "id": "external-path",
+      "decision": "ask",
+      "reason": "Access outside the active workspace crosses the task's filesystem boundary."
+    }
+  ],
+  "profiles": {
+    "build": {
+      "purpose": "Implement and validate changes in the active workspace.",
+      "automatic_rules": ["workspace-read", "workspace-edit", "local-check"],
+      "interactive_rules": ["unknown", "destructive", "secret", "network", "deployment", "external-path"],
+      "mcp": ["chrome-devtools"]
+    },
+    "explore": {
+      "purpose": "Understand a repository without changing it.",
+      "automatic_rules": ["workspace-read"],
+      "interactive_rules": ["unknown", "destructive", "secret", "network", "deployment", "external-path"],
+      "mcp": []
+    },
+    "release": {
+      "purpose": "Commit, publish and deliver an already validated change.",
+      "automatic_rules": ["workspace-read", "workspace-edit", "local-check"],
+      "interactive_rules": ["unknown", "destructive", "secret", "network", "deployment", "external-path"],
+      "mcp": []
+    },
+    "review": {
+      "purpose": "Inspect changes and evidence without modifying source.",
+      "automatic_rules": ["workspace-read"],
+      "interactive_rules": ["unknown", "destructive", "secret", "network", "deployment", "external-path"],
+      "mcp": ["datadog"]
+    }
+  },
+  "providers": {
+    "claude": {
+      "adapter": "permission-mode and allowed/disallowed tools",
+      "selection": "claude --agent <profile>"
+    },
+    "codex": {
+      "adapter": "profile config files",
+      "selection": "codex --profile <profile>"
+    },
+    "opencode": {
+      "adapter": "agent permission overrides",
+      "selection": "opencode --agent <profile>"
+    }
+  }
+}

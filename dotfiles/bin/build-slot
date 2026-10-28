@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+slots=${BUILD_SLOTS:-3}
+if [ "${1:-}" = "-n" ]; then
+    slots=$2
+    shift 2
+fi
+if [ "$#" -eq 0 ]; then
+    echo "Usage: build-slot [-n slots] command [args...]" >&2
+    exit 2
+fi
+
+# TMPDIR is private to each Sail worker; slots must be shared per user.
+root=${BUILD_SLOT_DIR:-/tmp/build-slots-$(id -u)}
+mkdir -p "$root"
+
+held=""
+release() {
+    [ -z "$held" ] || rm -rf "$held"
+}
+trap release EXIT
+trap 'exit 130' INT TERM
+
+claim() {
+    local i dir pid
+    for ((i = 1; i <= slots; i++)); do
+        dir="$root/slot-$i"
+        if mkdir "$dir" 2> /dev/null; then
+            echo "$$" > "$dir/pid"
+            held=$dir
+            return 0
+        fi
+        pid=$(cat "$dir/pid" 2> /dev/null || true)
+        if [ -n "$pid" ] && ! kill -0 "$pid" 2> /dev/null; then
+            rm -rf "$dir"
+        fi
+    done
+    return 1
+}
+
+until claim; do
+    sleep 2
+done
+
+"$@"
