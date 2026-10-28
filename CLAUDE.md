@@ -38,6 +38,7 @@ State: `~/.local/state/zakwas/` (`files.json` hashes, `history.jsonl` applies). 
 | CLI tool not in mise registry / needs system libs | `Brewfile` `brew` |
 | GUI app, font | `Brewfile` `cask` |
 | Dotfile | put under `dotfiles/`, add to `files` in `zakwas.yaml` (a dir src copies every file) |
+| zsh lines from another config repo on this Mac | its own `files` entry into `~/.config/zsh/zshrc.d/*.zsh` or `zshenv.d/*.zsh`, which `zshrc`/`zshenv` source |
 | Config an app must write itself | `links` in `zakwas.yaml` (plain symlink, unprotected) |
 | Dotfile needing `$HOME`/vars, or must be a real file | `templates` in `zakwas.yaml` (Go `text/template`: `.Home`, `.Vars.x`) |
 | macOS setting | `defaults` in `zakwas.yaml` (YAML type picks `-bool/-int/-float/-string`; `currentHost: true` for ByHost prefs) |
