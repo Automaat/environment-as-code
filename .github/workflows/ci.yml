@@ -84,7 +84,7 @@ jobs:
           ln -s "$old/AGENTS.md" "$HOME/.config/opencode/AGENTS.md"
           zakwas apply -y -c "$cfg" --only agents
           for p in .claude/CLAUDE.md .codex/AGENTS.md .config/opencode/AGENTS.md; do
-            if [ "$(readlink "$HOME/$p")" != "$PWD/dotfiles/agents/AGENTS.md" ]; then echo "$HOME/$p not linked to AGENTS.md"; exit 1; fi
+            if [ -L "$HOME/$p" ] || ! cmp -s "$HOME/$p" dotfiles/agents/AGENTS.md; then echo "$HOME/$p is not a rendered copy of AGENTS.md"; exit 1; fi
           done
           zakwas check -c "$cfg" --only agents
 
