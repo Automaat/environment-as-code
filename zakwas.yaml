@@ -596,3 +596,6 @@ defaults:
   - {domain: NSGlobalDomain, key: com.apple.keyboard.fnState, value: true}
   - {domain: com.apple.screencapture, key: location, value: ~/Documents/screenshots}
   - {domain: com.apple.screencapture, key: type, value: png}
+  - {domain: NSGlobalDomain, key: AppleShowScrollBars, value: Always}
+  - {domain: NSGlobalDomain, key: AppleMiniaturizeOnDoubleClick, value: false}
+  - {domain: com.apple.finder, key: FXPreferredViewStyle, value: Nlsv}
