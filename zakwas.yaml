@@ -39,6 +39,7 @@ files:
   - {src: dotfiles/bin/zakwas-check-notify, dst: ~/.local/bin/zakwas-check-notify}
   - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
   - {src: dotfiles/bin/zsh-refresh-completions, dst: ~/.local/bin/zsh-refresh-completions}
+  - {src: dotfiles/streamdeck/profiles.streamDeckProfilesBackup, dst: ~/.local/share/streamdeck/profiles.streamDeckProfilesBackup}
 
 # The work Mac's device management forces ~/.ssh/config back to 600 every
 # ~15 minutes, which would undo the files protection.
@@ -555,6 +556,23 @@ commands:
       echo "  $HOME/$d" >&2; done;
       open "x-apple.systempreferences:com.apple.Spotlight-Settings.extension";
       exit 1
+  # Stream Deck has no account sync. Copies the backed-up profiles in once,
+  # without overwriting; they bind to this Stream Deck's device ID. Skipped
+  # while the app isn't installed (CI skips casks).
+  - name: stream deck profiles restored
+    check: >-
+      test -f "$HOME/.local/state/zakwas/streamdeck-restored" ||
+      ! test -d "/Applications/Elgato Stream Deck.app"
+    run: >-
+      s="$HOME/Library/Application Support/com.elgato.StreamDeck";
+      d=$(mktemp -d) &&
+      unzip -q "$HOME/.local/share/streamdeck/profiles.streamDeckProfilesBackup" 'Profiles/*' -d "$d" &&
+      { osascript -e 'quit app "Elgato Stream Deck"' > /dev/null 2>&1 || true; } &&
+      mkdir -p "$s/ProfilesV3" &&
+      cp -Rn "$d/Profiles/." "$s/ProfilesV3/" &&
+      mkdir -p "$HOME/.local/state/zakwas" &&
+      touch "$HOME/.local/state/zakwas/streamdeck-restored";
+      rc=$?; rm -rf "$d"; exit $rc
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
