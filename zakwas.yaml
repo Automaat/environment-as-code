@@ -355,8 +355,9 @@ agents:
     - rightsize@sai
   # Global MCP servers for Claude Code and Codex, each scoped with providers so
   # none leaks to opencode, whose servers stay hand-written in its own config
-  # template. zakwas does not expand ~ here, so paths are absolute. A same-named server that differs fails that provider's
-  # plan: remove the old registration by hand first.
+  # template. zakwas does not expand ~ here, so paths are absolute. A
+  # same-named server that differs fails that provider's plan: remove the old
+  # registration by hand first.
   mcp:
     # Read-only: no --enable-apply, so an agent can only propose changes.
     zakwas:
