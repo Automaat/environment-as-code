@@ -1,12 +1,11 @@
 # Repository Map
 
-Projects live in two roots. Don't search the filesystem — look here first. Owner = GitHub org/user (`—` = local only). Variants = extra worktrees/clones of the same repo; `*-worktrees`/`*.worktrees`/`worktrees` dirs are worktree holders.
+Projects live in `~/sideprojects/`. Don't search the filesystem — look here first. Owner = GitHub org/user (`—` = local only). Variants = extra worktrees/clones of the same repo; `*-worktrees`/`*.worktrees`/`worktrees` dirs are worktree holders.
 
 ## Worktrees
 
 - For a repository other than the session's current repository, create a new worktree from the freshly fetched default branch. Never edit another repository's main checkout.
 - Pet project path: `~/sideprojects/worktrees/<repo>-<topic>`.
-- Kong project path: `~/kong/worktrees/<repo>-<topic>`.
 - Remove the worktree after its changes merge.
 
 ## Pet projects — `~/sideprojects/`
@@ -72,55 +71,3 @@ Projects live in two roots. Don't search the filesystem — look here first. Own
 | whisper-hotkey | Automaat | Rust | macOS hotkey voice-to-text with local Whisper |
 | zakwas | Automaat | Go | Declarative macOS setup CLI (OSS; config lives in environment-as-code) |
 | zsh-clean-history | Automaat | Rust | zsh history cleaner |
-
-## Work projects (Kong) — `~/kong/`
-
-| Repo | Owner | Stack | What |
-|------|-------|-------|------|
-| afi | Kong | Rust | Internal (private) |
-| agent-auth-cli | Kong | Go | Internal CLI (private) |
-| creative_tax | — | scripts | creative_tax (PR listing script; no git) |
-| developer.konghq.com | Automaat | Ruby | Fork of Kong developer portal |
-| draft-rfc-ai-cost | Kong | docs | Internal RFC draft (private) |
-| engineering-ai-gw | Kong | config | Internal config (private) |
-| envoy | envoyproxy | C++ | Envoy proxy |
-| envoy-builds | kumahq | Shell | Envoy builds for Kuma |
-| k8s-argo-apps | kong-konnect | YAML | Internal infra (private) |
-| k8s-cloud-aws | kong-konnect | YAML | Internal infra (private) |
-| kong | Kong | Lua | Kong Gateway (API + AI gateway) |
-| kong-ee | Kong | Lua | Kong Gateway Enterprise |
-| kong-mesh | Kong | Go | Kong Mesh |
-| kong-mesh-ecs | Kong | IaC | Kong Mesh on ECS + Fargate |
-| kong-mesh-smoke | Kong | Go | Kong Mesh smoke tests |
-| kong-mesh-v3-ai-driven-verification | Kong | Shell | Kong Mesh v3 upgrade verification (private) |
-| konnect-ui-apps | kong-konnect | TypeScript | Konnect UI (private) |
-| konnect-velocity | — | Go | Internal metrics CLI |
-| ksai | Kong | Svelte | KSAI internal AI tooling (private) |
-| ksai-bench | Kong | Python | KSAI component (private) |
-| ksai-cairn | Kong | TypeScript | KSAI component (private) |
-| ksai-cp | kong-konnect | Go | KSAI component (private) |
-| ksai-internal | Kong | JavaScript | KSAI component (private) |
-| ksai-swe-bench | Kong | HTML | KSAI component (private) |
-| kubernetes-ingress-controller | Kong | Go | Kong Ingress Controller |
-| kuma | kumahq | Go | Kuma service mesh |
-| kuma-counter-demo | kumahq | Go | Kuma demo app |
-| kuma-website | kumahq | Ruby | Kuma website |
-| mink-charts | Kong | Go | MinK (Mesh in Konnect) Helm charts |
-| mink-charts-v3 | kong-konnect | Go | MinK Helm charts, v3 (private) |
-| mink-vcp-manager | Kong | Go | Mesh in Konnect VCP manager |
-| opencode-plugin-kong-ai-gateway | Kong | TypeScript | Internal opencode plugin (private) |
-| oss-cc-scratch | — | scratch | Empty scratch dir |
-| oss-cc-test | — | Python | Local experiments (no git) |
-| perf-review | — | docs | Personal notes (no git) |
-| platform-api | Kong | OpenAPI | Konnect API specs (private) |
-| shared-go | Kong | Go | Internal Go modules monorepo (Konnect) |
-| shared-ui-components | kong-konnect | TypeScript | Konnect UI components (private) |
-| sidecarless-gateway-poc | — | Go/K8s | Mesh gateway POC (no git) |
-| team-mesh | Kong | Go | Mesh team repo: `team-mesh-tools` CLI, docs, automation |
-| team-mesh-oncall | Kong | Shell | Mesh team oncall docs (private) |
-| tf-kmesh | kong-konnect | Terraform | Konnect mesh policies via TF/Atlantis |
-| tf-kong-cloud-02-aws | kong-konnect | Terraform | Internal infra (private) |
-| tf-kong-datadog | kong-konnect | Terraform | Internal monitoring (private) |
-| tf-konnect-gh-runners | kong-konnect | Terraform | Internal CI runners (private) |
-| tf-resources-konnect | kong-konnect | Terraform | Internal infra (private) |
-| v3-readiness | Kong | Go | Clone of `Kong/kong-mesh-v3-readiness`: Kuma 3.0 upgrade preflight CLI |

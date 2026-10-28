@@ -75,17 +75,17 @@ agents:
 
 A plugin targets its marketplace's providers unless it lists its own, which must be a subset. Every skill here installs for all three agents. opencode can't keep an on-request skill (`disable-model-invocation`, or Codex `allow_implicit_invocation: false`) from running on its own, so those skills rely on their own wording there. A marketplace source is a GitHub `owner/repo`, a git URL or a local path; its name must match the `name` in its manifest.
 
-`plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `agent-workflow`, `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `kong-ai-intel`. The repo itself is the `environment-as-code` marketplace (`.claude-plugin/marketplace.json` for Claude Code, `.agents/plugins/marketplace.json` for Codex), declared in `zakwas.yaml` as a local path.
+`plugins/` holds my personal skills as portable [Agent Plugins](https://agent-plugins.org), one skill each: `agent-workflow`, `claude-md-gen`, `go-code-review`, `fix-review` (runs only when invoked) and `peekaboo`. The repo itself is the `environment-as-code` marketplace (`.claude-plugin/marketplace.json` for Claude Code, `.agents/plugins/marketplace.json` for Codex), declared in `zakwas.yaml` as a local path.
 
 The small, provider-neutral instruction core lives in `dotfiles/agents/AGENTS.md`. `agents.instructions` links it as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` and `~/.config/opencode/AGENTS.md`; plain `links` entries give it to Copilot CLI (`~/.copilot/instructions/global.instructions.md`) and `~/AGENTS.md`. Detailed repository and workflow rules load on demand from the shared `agent-workflow` skill.
 
 See [the agent context budget](docs/agent-context-budget.md) for representative payload measurements.
 
-OpenCode's declarative configuration lives in `dotfiles/opencode/`. `zakwas apply` protects `opencode.json`, `cli.json` and the Kong themes; the config enables only Kong AI Gateway models. It declares the `slack`, `datadog` and `atlassian` MCP servers behind the Kong AI Gateway (OAuth, public client ID, callback port 54661); sign in once per server with `opencode mcp auth <name>`. It deliberately excludes generated plugins and skills, local package state, auth caches and `service.json` because they are machine state or secrets.
+This repo doesn't manage opencode's own config (`opencode.json`, `tui.json`, themes). A config that does can render the shared permission rules with the `agentPermissions` template function.
 
 ## Agent MCP servers
 
-`agents.mcp` registers global MCP servers at user scope in Claude Code and Codex. Every server sets `providers`, so none reaches opencode, whose servers stay hand-written in `dotfiles/opencode/opencode.json.tmpl`. zakwas does not expand `~` in `command`, `args` or `env`, so paths are absolute.
+`agents.mcp` registers global MCP servers at user scope in Claude Code and Codex. Every server sets `providers`, so none reaches opencode, whose servers stay hand-written in its own config. zakwas does not expand `~` in `command`, `args` or `env`, so paths are absolute.
 
 | Server | Agents | Notes |
 |---|---|---|
@@ -107,13 +107,11 @@ The Sail app's memory installer (marker `SAIL_MEMORY_MANAGED=1`) can overwrite t
 
 ## Agent permission profiles
 
-`dotfiles/agents/permission-profiles.json` is the provider-neutral policy. Every rule carries the policy revision and a reason so adapters and task telemetry can explain automated decisions. Explore and review are read-only; build can edit the workspace and run recognized local checks; release reviews remote delivery at the provider permission boundary. Unknown, destructive, secret-bearing, network, deployment and out-of-workspace actions require provider review (OpenCode is the exception, see below).
+`dotfiles/agents/permission-profiles.json` is the provider-neutral policy. Every rule carries the policy revision and a reason so adapters and task telemetry can explain automated decisions. Explore and review are read-only; build can edit the workspace and run recognized local checks; release reviews remote delivery at the provider permission boundary. Unknown, destructive, secret-bearing, network, deployment and out-of-workspace actions require provider review.
 
 Claude Code loads the matching protected user agent with `claude --agent explore`, `review`, `build` or `release`. Read-only profiles omit mutation tools, build accepts workspace edits, and release keeps approvals manual. These agents expose no MCP servers.
 
 Codex loads the matching protected profile with `codex --profile explore`, `review`, `build` or `release`. Explore uses automatic review to reject requests outside its read-only boundary. Build and release route eligible approval requests to automatic review; review keeps user approvals. Ordinary workspace reads, edits and local checks stay inside the sandbox. Automatic review evaluates boundary-crossing requests and does not override sandbox decisions or managed requirements. Review exposes Datadog and build exposes Chrome DevTools, with every MCP tool call requiring approval; the other servers stay disabled.
-
-OpenCode exposes the same names as agents but deliberately runs in full auto mode, unlike the Claude Code and Codex profiles above: no tool prompts, including `bash`, pushes, merges, deletes and network access. It still denies direct `.env` reads and the edit tool for `explore` and `review`, but `bash` is unrestricted for every agent, so those two are not a read-only boundary. Datadog tools stay off outside review and Chrome DevTools outside build. Select a profile with the agent picker or `opencode --agent <name>`.
 
 ## Development
 

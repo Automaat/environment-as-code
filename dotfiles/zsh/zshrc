@@ -54,29 +54,16 @@ take() {
   command mkdir -p -- "$@" && builtin cd -- "${@[-1]}"
 }
 
-if [[ -d "$HOME/kong" ]]; then
-  alias sync-kuma="gh repo sync automaat/kuma -b master"
-  alias sync-kuma-website="gh repo sync automaat/kuma-website -b master"
-  alias awsk="aws --profile saml --region us-west-1"
-  alias kol="bash $HOME/kong/konnect-on-call-tool-kit/cli/kolsch.sh"
-  alias kctl="$HOME/kong/mesh/kuma/build/artifacts-darwin-arm64/kumactl/kumactl"
-fi
-
-[[ ! -d "$HOME/.kuma-dev/kuma-master/bin" ]] || path=("$HOME/.kuma-dev/kuma-master/bin" $path)
 [[ ! -d "$HOME/.antigravity/antigravity/bin" ]] || path=("$HOME/.antigravity/antigravity/bin" $path)
-path=($path "$HOME/go/bin" "$HOME/.local/bin" "/opt/homebrew/share/google-cloud-sdk/bin")
+path=($path "$HOME/go/bin" "$HOME/.local/bin")
+
+# Drop-ins from other config repos layered on this machine.
+for f in ~/.config/zsh/zshrc.d/*.zsh(N); do source "$f"; done; unset f
 
 eval "$(mise activate zsh)"
 
 source <(fzf --zsh)
 [[ ! -r /opt/homebrew/opt/autojump/etc/profile.d/autojump.sh ]] || source /opt/homebrew/opt/autojump/etc/profile.d/autojump.sh
-
-_saml2aws() {
-  local matches=($(${words[1]} --completion-bash "${(@)words[2,$CURRENT]}"))
-  compadd -a matches
-  (( compstate[nmatches] )) || [[ $words[$CURRENT] == -* ]] || _files
-}
-compdef _saml2aws saml2aws
 
 npm_token() {
   [[ -n ${NPM_TOKEN:-} ]] && return 0

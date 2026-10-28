@@ -1,5 +1,4 @@
 export EDITOR=vim
-export GOPRIVATE="github.com/Kong/*"
 export MISE_AUTO_INSTALL=1
 export CARGO_BUILD_JOBS=4
 export GOFLAGS="-p=4"
@@ -8,3 +7,4 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export ZAKWAS_CONFIG="$HOME/sideprojects/environment-as-code/zakwas.yaml"
 
 [[ ! -r ~/.config/zsh/secrets.zsh ]] || source ~/.config/zsh/secrets.zsh
+for f in ~/.config/zsh/zshenv.d/*.zsh(N); do source "$f"; done; unset f

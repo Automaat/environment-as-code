@@ -1,6 +1,4 @@
 tap "automaat/tap", trusted: true
-tap "kong/agent-auth-cli", trusted: true
-tap "openresty/brew", trusted: true
 tap "smykla-skalski/tap", trusted: true
 
 brew "antidote"
@@ -8,8 +6,6 @@ brew "git"
 brew "git-lfs"
 brew "mise"
 brew "vim"
-
-brew "kumactl"
 
 brew "gnupg"
 brew "pinentry-mac"
@@ -24,12 +20,8 @@ brew "ffmpeg"
 brew "jq"
 brew "libmaxminddb"
 brew "libyaml"
-brew "lua"
-brew "luajit"
-brew "luarocks"
 brew "oniguruma"
 brew "ponysay"
-brew "postgresql@14"
 brew "rsync"
 brew "rustup"
 brew "tmux"
@@ -37,9 +29,6 @@ brew "tree"
 brew "vhs"
 
 brew "automaat/tap/zsh-clean-history"
-brew "kong/agent-auth-cli/agent-auth-cli"
-brew "openresty/brew/openresty-openssl3"
-brew "openresty/brew/openresty"
 brew "rtk"
 brew "smykla-skalski/tap/bilgie"
 brew "smykla-skalski/tap/klaudiush"
@@ -68,9 +57,7 @@ cask "openscad"
 
 cask "balenaetcher"
 cask "copilot-cli"
-cask "gcloud-cli"
 cask "ghostty"
-cask "insomnia"
 cask "jetbrains-toolbox"
 cask "orbstack"
 cask "pgadmin4"

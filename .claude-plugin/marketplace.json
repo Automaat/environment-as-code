@@ -68,21 +68,6 @@
       ]
     },
     {
-      "name": "kong-ai-intel",
-      "source": "./plugins/kong-ai-intel",
-      "description": "Digest new Kong Slack messages about agentic AI, Claude Code and AI agents since the last run, filtered for kreview/ksai, internal AI adoption and agentic tooling.",
-      "author": {
-        "name": "Marcin Skalski"
-      },
-      "category": "productivity",
-      "tags": [
-        "slack",
-        "digest",
-        "ai",
-        "kong"
-      ]
-    },
-    {
       "name": "peekaboo",
       "source": "./plugins/peekaboo",
       "description": "Operate and test native macOS apps with the pinned Peekaboo CLI.",

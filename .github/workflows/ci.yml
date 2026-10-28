@@ -42,8 +42,6 @@ jobs:
       - name: agent permission profiles are valid
         run: |
           jq -e '.policy_revision and (.profiles | keys == ["build", "explore", "release", "review"]) and all(.rules[]; .id and .decision and .reason)' dotfiles/agents/permission-profiles.json
-          sed 's/{{ agentPermissions "opencode" "allow" }}/{"*": "allow"}/' dotfiles/opencode/opencode.json.tmpl |
-            jq -e '.permission["*"] == "allow" and .permission.bash["*"] == "allow" and .agent.explore.permission.edit == "deny" and .agent.review.permission.edit == "deny" and .permission.read["*.env"] == "deny" and .agent.review.permission["datadog_*"] == "allow" and .agent.build.permission["chrome-devtools_*"] == "allow"'
           for profile in explore review build release; do
             grep -q "^name: $profile$" "dotfiles/claude/agents/$profile.md"
             grep -q '^permissionMode:' "dotfiles/claude/agents/$profile.md"
@@ -134,14 +132,14 @@ jobs:
           key: mise-tools-${{ runner.os }}-${{ hashFiles('dotfiles/mise/config.toml') }}
           restore-keys: mise-tools-${{ runner.os }}-
 
-      # kong/* is a private tap the runner can't clone. The image pins
-      # HOMEBREW_NO_AUTO_UPDATE and ships a stale formula index (e.g. a mise
-      # too old for the pypi backend), so update first, as a fresh Mac would.
+      # The image pins HOMEBREW_NO_AUTO_UPDATE and ships a stale formula index
+      # (e.g. a mise too old for the pypi backend), so update first, as a fresh
+      # Mac would.
       # bundle install trusts the taps from their `trusted: true` options.
       - name: install formulae from the Brewfile
         run: |
           brew update --quiet
-          grep -E '^(tap|brew) ' Brewfile | grep -v '"kong/' > "$RUNNER_TEMP/Brewfile"
+          grep -E '^(tap|brew) ' Brewfile > "$RUNNER_TEMP/Brewfile"
           brew bundle install --file "$RUNNER_TEMP/Brewfile" --no-upgrade
 
       # apply is idempotent, so one rerun absorbs runner network flakes.
@@ -200,11 +198,6 @@ jobs:
               exit 1
             fi
           done
-          jq '{"$schema": "https://opencode.ai/config.json", permission, agent}' \
-            dotfiles/opencode/opencode.json.tmpl > "$RUNNER_TEMP/opencode-agent-profiles.json"
-          mise exec -- uvx --from check-jsonschema==0.38.2 check-jsonschema \
-            --schemafile https://opencode.ai/config.json \
-            "$RUNNER_TEMP/opencode-agent-profiles.json"
 
       - name: dotfiles are protected
         run: |
