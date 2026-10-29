@@ -1,0 +1,88 @@
+#!/usr/bin/env swift
+import ColorSync
+import CoreGraphics
+import Foundation
+
+let profileFiles = [
+    "37D8832A-2D66-02CA-B9F7-8F30A301B230": "macbook_26-03-12.icc",
+]
+
+let profileDir = NSHomeDirectory() + "/Library/ColorSync/Profiles/"
+let displayClass = kColorSyncDisplayDeviceClass.takeUnretainedValue()
+
+struct Display {
+    let uuid: CFUUID
+    let id: String
+    let builtin: Bool
+    let vendor: UInt32
+    let model: UInt32
+}
+
+func onlineDisplays() -> [Display] {
+    var ids = [CGDirectDisplayID](repeating: 0, count: 16)
+    var count: UInt32 = 0
+    CGGetOnlineDisplayList(16, &ids, &count)
+    return ids.prefix(Int(count)).map { displayID in
+        let uuid = CGDisplayCreateUUIDFromDisplayID(displayID).takeRetainedValue()
+        return Display(
+            uuid: uuid,
+            id: CFUUIDCreateString(nil, uuid) as String,
+            builtin: CGDisplayIsBuiltin(displayID) != 0,
+            vendor: CGDisplayVendorNumber(displayID),
+            model: CGDisplayModelNumber(displayID)
+        )
+    }
+}
+
+func currentProfile(_ display: Display) -> String? {
+    guard let info = ColorSyncDeviceCopyDeviceInfo(displayClass, display.uuid)?.takeRetainedValue() as? [String: Any],
+          let custom = info["CustomProfiles"] as? [String: Any],
+          let value = custom["1"]
+    else { return nil }
+    if let url = value as? URL { return url.path }
+    if let text = value as? String { return URL(string: text)?.path }
+    return nil
+}
+
+func wantedPath(_ display: Display) -> String? {
+    profileFiles[display.id].map { profileDir + $0 }
+}
+
+_ = CGMainDisplayID()
+let command = CommandLine.arguments.dropFirst().first ?? "check"
+var failed = false
+
+switch command {
+case "list":
+    for display in onlineDisplays() {
+        let mapped = profileFiles[display.id] ?? "-"
+        print("\(display.id) builtin=\(display.builtin) vendor=\(display.vendor) model=\(display.model) current=\(currentProfile(display) ?? "-") mapped=\(mapped)")
+    }
+case "check", "apply":
+    for display in onlineDisplays() {
+        guard let wanted = wantedPath(display) else { continue }
+        if currentProfile(display) == wanted { continue }
+        if command == "check" {
+            print("\(display.id): not using \(wanted)")
+            failed = true
+            continue
+        }
+        guard FileManager.default.fileExists(atPath: wanted) else {
+            print("\(display.id): missing \(wanted)")
+            failed = true
+            continue
+        }
+        let info: [String: Any] = ["1": URL(fileURLWithPath: wanted)]
+        if ColorSyncDeviceSetCustomProfiles(displayClass, display.uuid, info as CFDictionary) {
+            print("\(display.id): set \(wanted)")
+        } else {
+            print("\(display.id): failed to set \(wanted)")
+            failed = true
+        }
+    }
+default:
+    print("usage: display-profiles [list|check|apply]")
+    failed = true
+}
+
+exit(failed ? 1 : 0)
