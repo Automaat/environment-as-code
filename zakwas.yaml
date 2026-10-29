@@ -40,6 +40,7 @@ files:
   - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
   - {src: dotfiles/bin/zsh-refresh-completions, dst: ~/.local/bin/zsh-refresh-completions}
   - {src: dotfiles/streamdeck/profiles.streamDeckProfilesBackup, dst: ~/.local/share/streamdeck/profiles.streamDeckProfilesBackup}
+  - {src: dotfiles/swift/display-profiles, dst: ~/.local/bin/display-profiles}
 
 # The work Mac's device management forces ~/.ssh/config back to 600 every
 # ~15 minutes, which would undo the files protection.
@@ -573,6 +574,14 @@ commands:
       mkdir -p "$HOME/.local/state/zakwas" &&
       touch "$HOME/.local/state/zakwas/streamdeck-restored";
       rc=$?; rm -rf "$d"; exit $rc
+  # Assigns the Calibrite profiles to displays by UUID (the table is in
+  # dotfiles/swift/display-profiles). Skipped until the Xcode tools exist, and
+  # displays not in the table are ignored.
+  - name: display color profiles assigned
+    check: >-
+      ! xcode-select -p > /dev/null 2>&1 ||
+      swift "$HOME/.local/bin/display-profiles" check
+    run: swift "$HOME/.local/bin/display-profiles" apply
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
