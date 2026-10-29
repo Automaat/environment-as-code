@@ -40,7 +40,7 @@ files:
   - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
   - {src: dotfiles/bin/zsh-refresh-completions, dst: ~/.local/bin/zsh-refresh-completions}
   - {src: dotfiles/streamdeck/profiles.streamDeckProfilesBackup, dst: ~/.local/share/streamdeck/profiles.streamDeckProfilesBackup}
-  - {src: dotfiles/bin/display-profiles, dst: ~/.local/bin/display-profiles}
+  - {src: dotfiles/swift/display-profiles, dst: ~/.local/bin/display-profiles}
 
 # The work Mac's device management forces ~/.ssh/config back to 600 every
 # ~15 minutes, which would undo the files protection.
@@ -575,7 +575,7 @@ commands:
       touch "$HOME/.local/state/zakwas/streamdeck-restored";
       rc=$?; rm -rf "$d"; exit $rc
   # Assigns the Calibrite profiles to displays by UUID (the table is in
-  # dotfiles/bin/display-profiles). Skipped until the Xcode tools exist, and
+  # dotfiles/swift/display-profiles). Skipped until the Xcode tools exist, and
   # displays not in the table are ignored.
   - name: display color profiles assigned
     check: >-
