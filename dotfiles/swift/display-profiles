@@ -5,6 +5,8 @@ import Foundation
 
 let profileFiles = [
     "37D8832A-2D66-02CA-B9F7-8F30A301B230": "macbook_26-03-12.icc",
+    "F8018CAC-FC2F-4DAB-8401-C97271E9055F": "asus_26-03-12.icc",
+    "1130E282-2A64-4B70-AD61-7082E0D987F5": "dell_26-03-12.icc",
 ]
 
 let profileDir = NSHomeDirectory() + "/Library/ColorSync/Profiles/"
