@@ -15,3 +15,19 @@ commands:
       pmset -g | awk '$1=="sleep"{s=$2} $1=="womp"{w=$2} $1=="autorestart"{a=$2}
       END{exit !(s=="0" && w=="1" && a=="1")}'
     run: sudo pmset -a sleep 0 womp 1 autorestart 1
+
+  # YubiKey touch approves sudo, then Touch ID, then the password. Fixed
+  # origin: the default pam://$HOSTNAME breaks when the hostname changes.
+  # Registration waits for a touch on the key.
+  - name: yubikey registered for sudo
+    check: test -s .config/Yubico/u2f_keys
+    run: >-
+      mkdir -p .config/Yubico &&
+      pamu2fcfg -o pam://studio -i pam://studio > .config/Yubico/u2f_keys
+  - name: sudo accepts yubikey
+    check: grep -q pam_u2f.so /etc/pam.d/sudo_local
+    run: >-
+      printf '%s\n'
+      'auth       sufficient     /opt/homebrew/opt/pam-u2f/lib/pam/pam_u2f.so cue origin=pam://studio appid=pam://studio'
+      'auth       sufficient     pam_tid.so'
+      | sudo tee /etc/pam.d/sudo_local > /dev/null

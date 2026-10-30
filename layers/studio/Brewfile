@@ -1,1 +1,2 @@
+brew "pam-u2f"
 cask "jump-desktop-connect"
