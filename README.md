@@ -92,6 +92,8 @@ The small, provider-neutral instruction core lives in `dotfiles/agents/AGENTS.md
 
 See [the agent context budget](docs/agent-context-budget.md) for representative payload measurements.
 
+[Monitor calibration](docs/monitor-calibration.md) records the Calibrite PROFILER, OSD and macOS settings for both external monitors.
+
 This repo doesn't manage opencode's own config (`opencode.json`, `tui.json`, themes). A config that does can render the shared permission rules with the `agentPermissions` template function.
 
 ## Agent MCP servers

@@ -50,6 +50,9 @@ links:
   # Global agent instructions for the tools agents.instructions doesn't cover.
   - {src: dotfiles/agents/AGENTS.md, dst: ~/.copilot/instructions/global.instructions.md}
   - {src: dotfiles/agents/AGENTS.md, dst: ~/AGENTS.md}
+  # Calibrite PROFILER saved presets; the app rewrites this file when saving
+  # one. The path carries the app version, so update it after an upgrade.
+  - {src: dotfiles/calibrite/userPresets.json, dst: "~/Library/Application Support/calibrite PROFILER/3.1.3/presets/userPresets.json"}
 
 templates:
   files:
