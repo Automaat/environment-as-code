@@ -1,0 +1,550 @@
+[
+  {
+    "presetName": "D65_160nit_G2.2_v2_matrix_211",
+    "presetID": "D65_160nit_G2.2_v2_matrix_211",
+    "date": "2026-10-30T14:36:00+01:00",
+    "type": "user",
+    "notes": "Both monitors. ASUS PA329CRV: PFS Phosphor, OSD User Mode 1. Dell U2515H: White LED.",
+    "data": {
+      "id": "monitorProfileEngineModule",
+      "values": [
+        {
+          "id": "polarizerEngine",
+          "values": [
+            {
+              "id": "whitepoints",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "d65"
+                }
+              ]
+            },
+            {
+              "id": "luminance",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "160cd"
+                }
+              ]
+            },
+            {
+              "id": "gamma",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "standard"
+                }
+              ]
+            },
+            {
+              "id": "contrastRatio",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "native"
+                }
+              ]
+            },
+            {
+              "id": "opt_whitepoints_DaylightTemperature",
+              "value": 6500
+            },
+            {
+              "id": "opt_whitepoints_whitepoints_xy",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                }
+              ]
+            },
+            {
+              "id": "opt_whitepoints_whitepoints_uv",
+              "values": [
+                {
+                  "id": "u",
+                  "value": 0.2
+                },
+                {
+                  "id": "v",
+                  "value": 0.46
+                }
+              ]
+            },
+            {
+              "id": "opt_whitepoints_xyY",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 0.329
+                }
+              ]
+            },
+            {
+              "id": "opt_luminance_customLuminance",
+              "value": 120
+            },
+            {
+              "id": "opt_luminance_xyY",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 0.329
+                }
+              ]
+            },
+            {
+              "id": "opt_gamma_custom",
+              "value": 2.2
+            },
+            {
+              "id": "opt_contrastRatio_custom",
+              "value": 300
+            },
+            {
+              "id": "opt_contrastRatio_blackPoint",
+              "value": 0.3
+            },
+            {
+              "id": "opt_black_point_xyY",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 0.329
+                }
+              ]
+            },
+            {
+              "id": "ambientLightReading",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "id": "flareCorrectReading",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "id": "chromaticAdaption",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "bradford"
+                }
+              ]
+            },
+            {
+              "id": "iccProfileVersion",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "version2"
+                }
+              ]
+            },
+            {
+              "id": "profilingType",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "matrix"
+                }
+              ]
+            },
+            {
+              "id": "displayType",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "displayTypeMonitor"
+                }
+              ]
+            },
+            {
+              "id": "patchSet",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "medium"
+                }
+              ]
+            },
+            {
+              "id": "patchDataSet1",
+              "value": false
+            },
+            {
+              "id": "patchDataSet2",
+              "value": false
+            },
+            {
+              "id": "patchDataSetExtraColors",
+              "value": false
+            },
+            {
+              "id": "validationPatchData",
+              "value": false
+            },
+            {
+              "id": "validationPatchDataPhase2",
+              "value": false
+            },
+            {
+              "id": "uniforimtyPatchData",
+              "value": false
+            },
+            {
+              "id": "utilityValidationPatches",
+              "value": false
+            },
+            {
+              "id": "utilityValidationImagePatches",
+              "value": false
+            },
+            {
+              "id": "cubePatches",
+              "value": false
+            },
+            {
+              "id": "verificationDeltaResults",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    "device": {
+      "deviceID": "i1displaypro-hl",
+      "deviceName": "Calibrite Display Pro HL"
+    },
+    "workflow": "monitor"
+  },
+  {
+    "presetName": "D65_250nit_G2.2_v2_matrix_211",
+    "presetID": "D65_250nit_G2.2_v2_matrix_211",
+    "date": "2026-10-30T14:52:36+01:00",
+    "type": "user",
+    "notes": "Both monitors. ASUS PA329CRV: PFS Phosphor, OSD User Mode 1. Dell U2515H: White LED, Custom Color.",
+    "data": {
+      "id": "monitorProfileEngineModule",
+      "values": [
+        {
+          "id": "polarizerEngine",
+          "values": [
+            {
+              "id": "whitepoints",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "d65"
+                }
+              ]
+            },
+            {
+              "id": "luminance",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "250cd"
+                }
+              ]
+            },
+            {
+              "id": "gamma",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "standard"
+                }
+              ]
+            },
+            {
+              "id": "contrastRatio",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "native"
+                }
+              ]
+            },
+            {
+              "id": "opt_whitepoints_DaylightTemperature",
+              "value": 6500
+            },
+            {
+              "id": "opt_whitepoints_whitepoints_xy",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                }
+              ]
+            },
+            {
+              "id": "opt_whitepoints_whitepoints_uv",
+              "values": [
+                {
+                  "id": "u",
+                  "value": 0.2
+                },
+                {
+                  "id": "v",
+                  "value": 0.46
+                }
+              ]
+            },
+            {
+              "id": "opt_whitepoints_xyY",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 0.329
+                }
+              ]
+            },
+            {
+              "id": "opt_luminance_customLuminance",
+              "value": 120
+            },
+            {
+              "id": "opt_luminance_xyY",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 0.329
+                }
+              ]
+            },
+            {
+              "id": "opt_gamma_custom",
+              "value": 2.2
+            },
+            {
+              "id": "opt_contrastRatio_custom",
+              "value": 300
+            },
+            {
+              "id": "opt_contrastRatio_blackPoint",
+              "value": 0.3
+            },
+            {
+              "id": "opt_black_point_xyY",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 0.329
+                }
+              ]
+            },
+            {
+              "id": "ambientLightReading",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "id": "flareCorrectReading",
+              "values": [
+                {
+                  "id": "x",
+                  "value": 0.313
+                },
+                {
+                  "id": "y",
+                  "value": 0.329
+                },
+                {
+                  "id": "Y",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "id": "chromaticAdaption",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "bradford"
+                }
+              ]
+            },
+            {
+              "id": "iccProfileVersion",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "version2"
+                }
+              ]
+            },
+            {
+              "id": "profilingType",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "matrix"
+                }
+              ]
+            },
+            {
+              "id": "displayType",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "displayTypeMonitor"
+                }
+              ]
+            },
+            {
+              "id": "patchSet",
+              "values": [
+                {
+                  "id": "current",
+                  "value": "medium"
+                }
+              ]
+            },
+            {
+              "id": "patchDataSet1",
+              "value": false
+            },
+            {
+              "id": "patchDataSet2",
+              "value": false
+            },
+            {
+              "id": "patchDataSetExtraColors",
+              "value": false
+            },
+            {
+              "id": "validationPatchData",
+              "value": false
+            },
+            {
+              "id": "validationPatchDataPhase2",
+              "value": false
+            },
+            {
+              "id": "uniforimtyPatchData",
+              "value": false
+            },
+            {
+              "id": "utilityValidationPatches",
+              "value": false
+            },
+            {
+              "id": "utilityValidationImagePatches",
+              "value": false
+            },
+            {
+              "id": "cubePatches",
+              "value": false
+            },
+            {
+              "id": "verificationDeltaResults",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    "device": {
+      "deviceID": "i1displaypro-hl",
+      "deviceName": "Calibrite Display Pro HL"
+    },
+    "workflow": "monitor"
+  }
+]
