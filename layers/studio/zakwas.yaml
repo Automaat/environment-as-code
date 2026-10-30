@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Automaat/zakwas/main/schema/zakwas.schema.json
+# Mac Studio layer on top of the personal config, for headless remote access
+# from the iPad. Register it only on the Studio:
+#   zakwas layer add studio ~/sideprojects/environment-as-code/layers/studio/zakwas.yaml
+# and run zakwas from the repo root as usual.
+
+brew:
+  file: Brewfile
+
+commands:
+  # Never sleep, wake for network, boot after a power loss. Desktop-only
+  # settings: autorestart doesn't exist on a laptop.
+  - name: studio stays reachable remotely
+    check: >-
+      pmset -g | awk '$1=="sleep"{s=$2} $1=="womp"{w=$2} $1=="autorestart"{a=$2}
+      END{exit !(s=="0" && w=="1" && a=="1")}'
+    run: sudo pmset -a sleep 0 womp 1 autorestart 1

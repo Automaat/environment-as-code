@@ -27,6 +27,17 @@ gpg --import key.asc && rm key.asc                             # on the new one
 zakwas apply
 ```
 
+## Mac Studio
+
+`layers/studio/` is a local layer for the Mac Studio only: the Jump Desktop Connect host agent for remote access from the iPad, and `pmset` settings that keep it awake and reachable. Register it on the Studio once:
+
+```bash
+zakwas layer add studio ~/sideprojects/environment-as-code/layers/studio/zakwas.yaml
+zakwas apply
+```
+
+Still manual: Remote Login and Screen Sharing in System Settings > General > Sharing, signing in to Jump Desktop Connect and granting it Screen Recording and Accessibility, and logging in to Tailscale.
+
 ## Day to day
 
 ```bash
