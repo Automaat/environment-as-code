@@ -61,7 +61,6 @@ cask "orbstack"
 cask "pgadmin4"
 cask "visual-studio-code"
 
-cask "vivaldi"
 cask "google-drive"
 cask "discord"
 cask "signal"
