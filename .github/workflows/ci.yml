@@ -2,12 +2,16 @@ name: ci
 
 on:
   pull_request:
-    paths-ignore:
-      - dotfiles/**
+    paths:
+      - "**"
+      - "!dotfiles/**"
+      - dotfiles/mise/**
   push:
     branches: [main]
-    paths-ignore:
-      - dotfiles/**
+    paths:
+      - "**"
+      - "!dotfiles/**"
+      - dotfiles/mise/**
   workflow_dispatch:
 
 permissions:
@@ -165,6 +169,10 @@ jobs:
       - name: Claude Code CLI runs from the global mise config
         working-directory: /
         run: mise exec -- claude --version
+
+      - name: Codex CLI runs from the global mise config
+        working-directory: /
+        run: mise exec -- codex --version
 
       - name: agent profile configs load in provider CLIs
         run: |
