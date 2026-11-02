@@ -368,16 +368,16 @@ agents:
     # Read-only: no --enable-apply, so an agent can only propose changes.
     zakwas:
       command: zakwas
-      args: [mcp, -c, /Users/marcin.skalski/sideprojects/environment-as-code/zakwas.yaml]
+      args: [mcp, -c, /Users/marcinskalski/sideprojects/environment-as-code/zakwas.yaml]
       providers: [claude, codex]
     # SAIL_MEMORY_AGENT is left out because one declaration has one env; Sail
     # then records no agent label in memory provenance.
     sail-shared-memory:
-      command: /Users/marcin.skalski/.local/bin/sail-memory-mcp
+      command: /Users/marcinskalski/.local/bin/sail-memory-mcp
       args: [--memory-mcp]
       env:
-        SAIL_MEMORY_ROOT: /Users/marcin.skalski/Library/Application Support/dev.smykla.sai-harness/memory
-        SAIL_SETTINGS_PATH: /Users/marcin.skalski/Library/Application Support/sail/settings.json
+        SAIL_MEMORY_ROOT: /Users/marcinskalski/Library/Application Support/dev.smykla.sai-harness/memory
+        SAIL_SETTINGS_PATH: /Users/marcinskalski/Library/Application Support/sail/settings.json
       providers: [claude, codex]
     # Codex already names its Datadog server `datadog`, the other agents use
     # `datadog-mcp`.
