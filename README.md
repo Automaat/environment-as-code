@@ -17,7 +17,7 @@ What it manages:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Automaat/environment-as-code/main/bootstrap.sh)"
 ```
 
-Runs the zakwas installer (Xcode CLI tools, pinned zakwas release to `~/.local/bin`), clones the repo to `~/sideprojects/environment-as-code`, creates an SSH key and waits until it's added to GitHub, then runs `zakwas apply` (which installs Homebrew and mise itself) and runs it again for the agent plugins and instructions, whose plan needs the CLIs the first one installed. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
+Runs the zakwas installer (Xcode CLI tools, pinned zakwas release to `~/.local/bin`), clones the repo to `~/sideprojects/environment-as-code`, creates a GitHub SSH key and waits until it's added to GitHub, then runs `zakwas apply` (which installs Homebrew and mise itself) and runs it again for the agent plugins and instructions, whose plan needs the CLIs the first one installed. It asks for an optional GitHub token so tool downloads don't hit the API rate limit.
 
 Git signs every commit with the GPG key in `dotfiles/git/config`, which bootstrap can't create. Until it's imported, `zakwas apply` fails on the `git signing key imported` command with the steps:
 
@@ -59,6 +59,21 @@ On a new Mac, run `bw login`, then restore the keys:
 ```
 
 To check them, run `age-keygen -y <file>`. The public keys it prints must match the recipients in `.sops.yaml` of each repo.
+
+### SSH keys
+
+The keys that log in to my machines stay in Bitwarden's SSH agent, so no private key is on disk. The `.pub` files from `dotfiles/ssh/keys/` tell `ssh` which agent key to use:
+
+| Bitwarden item | Public key | Logs in to |
+|---|---|---|
+| `ssh - id_ed25519` | `~/.ssh/id_ed25519.pub` | Proxmox and every other `192.168.*` host |
+| `ssh - id_ed25519_homelab` | `~/.ssh/id_ed25519_homelab.pub` | `homelab` |
+
+On a new Mac, sign in to the Bitwarden desktop app and turn on its SSH agent. While Bitwarden runs, `zakwas apply` fails on the `Bitwarden SSH agent holds the infrastructure keys` command until the agent lists both keys. With the vault locked, `ssh` to these hosts waits for you to unlock it.
+
+GitHub uses a separate key on each Mac, `~/.ssh/id_ed25519_github`, which zakwas creates and bootstrap registers. It stays on disk so unattended git doesn't stall on a locked vault.
+
+The host blocks are in `dotfiles/ssh/config.d/personal` because the work Mac keeps rewriting `~/.ssh/config`.
 
 ## Mac Studio
 

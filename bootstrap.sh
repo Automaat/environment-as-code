@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_URL="https://github.com/Automaat/environment-as-code.git"
 REPO_DIR="$HOME/sideprojects/environment-as-code"
 INSTALLER="https://raw.githubusercontent.com/Automaat/zakwas/main/install.sh"
+GITHUB_KEY="$HOME/.ssh/id_ed25519_github"
 
 info() { printf '\033[1;33m==> %s\033[0m\n' "$1"; }
 
@@ -11,7 +12,8 @@ info() { printf '\033[1;33m==> %s\033[0m\n' "$1"; }
 # exit status can't be trusted; match the greeting instead.
 github_ssh_ok() {
     local out
-    out=$(ssh -T -o StrictHostKeyChecking=accept-new git@github.com 2>&1 || true)
+    out=$(ssh -T -i "$GITHUB_KEY" -o IdentitiesOnly=yes -o IdentityAgent=none \
+        -o StrictHostKeyChecking=accept-new git@github.com 2>&1 || true)
     [[ "$out" == *"successfully authenticated"* ]]
 }
 
@@ -32,13 +34,13 @@ main() {
     zakwas() { "$HOME/.local/bin/zakwas" "$@"; }
     cd "$REPO_DIR"
 
-    info "Creating the SSH key"
+    info "Creating the GitHub SSH key"
     zakwas apply -y --only system
 
     # The managed git config fetches GitHub over SSH, so tool installs need
     # the key registered first.
     until github_ssh_ok; do
-        pbcopy < "$HOME/.ssh/id_ed25519.pub"
+        pbcopy < "$GITHUB_KEY.pub"
         info "Public key copied. Add it at https://github.com/settings/ssh/new, then press any key"
         open "https://github.com/settings/ssh/new"
         read -r -n 1 -s
