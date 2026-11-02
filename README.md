@@ -27,6 +27,39 @@ gpg --import key.asc && rm key.asc                             # on the new one
 zakwas apply
 ```
 
+### Sops age keys
+
+The private keys that decrypt the `home-nas` and `klaudiusz-smart-home` secrets are secure notes in Bitwarden, and bootstrap can't restore them:
+
+| Bitwarden item | Path on the Mac |
+|---|---|
+| `sops age - home-nas proxmox` | `~/.config/sops/age/keys.txt` |
+| `sops age - klaudiusz-smart-home local` | `~/.config/sops/age/keys.txt` |
+| `sops age - home-nas gh runner` | `~/.config/sops/age/gh-runner-home-nas.txt` |
+
+The homelab host's own key isn't in Bitwarden. It's only at `/var/lib/sops-nix/key.txt` on homelab.
+
+On a new Mac, run `bw login`, then restore the keys:
+
+```bash
+(
+  set -e
+  umask 077
+  BW_SESSION="$(bw unlock --raw)"
+  export BW_SESSION
+  mkdir -p ~/.config/sops/age
+  {
+    # echo: each key needs its own line
+    bw get notes "sops age - home-nas proxmox"; echo
+    bw get notes "sops age - klaudiusz-smart-home local"; echo
+  } > ~/.config/sops/age/keys.txt
+  bw get notes "sops age - home-nas gh runner" > ~/.config/sops/age/gh-runner-home-nas.txt
+  bw lock
+)
+```
+
+To check them, run `age-keygen -y <file>`. The public keys it prints must match the recipients in `.sops.yaml` of each repo.
+
 ## Mac Studio
 
 `layers/studio/` is a local layer for the Mac Studio only: the Jump Desktop Connect host agent for remote access from the iPad, and `pmset` settings that keep it awake and reachable. Register it on the Studio once:
