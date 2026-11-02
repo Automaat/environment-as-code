@@ -82,3 +82,4 @@ cask "font-iosevka-term-nerd-font"
 cask "font-symbols-only-nerd-font"
 
 cask "basictex"
+cask "superset"
