@@ -23,6 +23,7 @@ files:
   - {src: dotfiles/codex/release.config.toml, dst: ~/.codex/release.config.toml}
   - {src: dotfiles/starship/starship.toml, dst: ~/.config/starship.toml}
   - {src: dotfiles/bilgie/config.yaml, dst: ~/.config/bilgie/config.yaml}
+  - {src: dotfiles/sybra/config.yaml, dst: ~/.sybra/config.yaml}
   - {src: dotfiles/ghostty/config, dst: ~/.config/ghostty/config}
   - {src: dotfiles/ghostty/themes, dst: ~/.config/ghostty/themes}
   # Calibrite display profiles; after recalibrating, copy the new .icc here
