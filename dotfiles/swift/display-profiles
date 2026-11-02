@@ -15,6 +15,7 @@ let profileDir = NSHomeDirectory() + "/Library/ColorSync/Profiles/"
 let displayClass = kColorSyncDisplayDeviceClass.takeUnretainedValue()
 
 struct Display {
+    let displayID: CGDirectDisplayID
     let uuid: CFUUID
     let id: String
     let builtin: Bool
@@ -29,6 +30,7 @@ func onlineDisplays() -> [Display] {
     return ids.prefix(Int(count)).map { displayID in
         let uuid = CGDisplayCreateUUIDFromDisplayID(displayID).takeRetainedValue()
         return Display(
+            displayID: displayID,
             uuid: uuid,
             id: CFUUIDCreateString(nil, uuid) as String,
             builtin: CGDisplayIsBuiltin(displayID) != 0,
@@ -52,6 +54,21 @@ func wantedPath(_ display: Display) -> String? {
     profileFiles[display.id].map { profileDir + $0 }
 }
 
+func isActive(_ display: Display, _ path: String) -> Bool {
+    guard let wanted = FileManager.default.contents(atPath: path),
+          let active = CGDisplayCopyColorSpace(display.displayID).copyICCData()
+    else { return false }
+    return active as Data == wanted
+}
+
+func waitUntilActive(_ display: Display, _ path: String) -> Bool {
+    for _ in 0..<30 {
+        if isActive(display, path) { return true }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+    }
+    return false
+}
+
 _ = CGMainDisplayID()
 let command = CommandLine.arguments.dropFirst().first ?? "check"
 var failed = false
@@ -60,12 +77,13 @@ switch command {
 case "list":
     for display in onlineDisplays() {
         let mapped = profileFiles[display.id] ?? "-"
-        print("\(display.id) builtin=\(display.builtin) vendor=\(display.vendor) model=\(display.model) current=\(currentProfile(display) ?? "-") mapped=\(mapped)")
+        let active = wantedPath(display).map { isActive(display, $0) ? "yes" : "no" } ?? "-"
+        print("\(display.id) builtin=\(display.builtin) vendor=\(display.vendor) model=\(display.model) current=\(currentProfile(display) ?? "-") mapped=\(mapped) active=\(active)")
     }
 case "check", "apply":
     for display in onlineDisplays() {
         guard let wanted = wantedPath(display) else { continue }
-        if currentProfile(display) == wanted { continue }
+        if isActive(display, wanted) { continue }
         if command == "check" {
             print("\(display.id): not using \(wanted)")
             failed = true
@@ -77,7 +95,8 @@ case "check", "apply":
             continue
         }
         let info: [String: Any] = ["1": URL(fileURLWithPath: wanted)]
-        if ColorSyncDeviceSetCustomProfiles(displayClass, display.uuid, info as CFDictionary) {
+        if ColorSyncDeviceSetCustomProfiles(displayClass, display.uuid, info as CFDictionary),
+           waitUntilActive(display, wanted) {
             print("\(display.id): set \(wanted)")
         } else {
             print("\(display.id): failed to set \(wanted)")
