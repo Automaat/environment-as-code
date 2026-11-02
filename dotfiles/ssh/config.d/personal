@@ -12,7 +12,7 @@ IdentitiesOnly yes
 Host 192.168.* !192.168.0.241
 IdentityFile ~/.ssh/id_ed25519.pub
 IdentitiesOnly yes
-Host github.com
+Host github.com ssh.github.com gist.github.com
 IdentityAgent none
 IdentityFile ~/.ssh/id_ed25519_github
 IdentitiesOnly yes
