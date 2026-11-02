@@ -43,7 +43,6 @@ The homelab host's own key isn't in Bitwarden. It's only at `/var/lib/sops-nix/k
 
 To restore another age key, add a line to `dotfiles/secrets/bitwarden.tsv` with its path, Bitwarden note and public key, separated by tabs. Update the line when you rotate a key.
 
-
 ### SSH keys
 
 The keys that log in to my machines stay in Bitwarden's SSH agent, so no private key is on disk. The `.pub` files from `dotfiles/ssh/keys/` tell `ssh` which agent key to use:
