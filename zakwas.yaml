@@ -12,6 +12,9 @@ files:
   - {src: dotfiles/vim/vimrc, dst: ~/.vimrc}
   - {src: dotfiles/gnupg/gpg.conf, dst: ~/.gnupg/gpg.conf}
   - {src: dotfiles/gnupg/gpg-agent.conf, dst: ~/.gnupg/gpg-agent.conf}
+  - {src: dotfiles/ssh/config.d, dst: ~/.ssh/config.d}
+  - {src: dotfiles/ssh/keys/id_ed25519.pub, dst: ~/.ssh/id_ed25519.pub}
+  - {src: dotfiles/ssh/keys/id_ed25519_homelab.pub, dst: ~/.ssh/id_ed25519_homelab.pub}
   - {src: dotfiles/mise/config.toml, dst: ~/.config/mise/config.toml}
   - {src: dotfiles/agents/permission-profiles.json, dst: ~/.config/agents/permission-profiles.json}
   - {src: dotfiles/tmux/tmux.conf, dst: ~/.config/tmux/tmux.conf}
@@ -408,7 +411,7 @@ system:
     - {path: ~/Documents/4_Archive}
     - {path: ~/Documents/screenshots}
   sshKey:
-    path: ~/.ssh/id_ed25519
+    path: ~/.ssh/id_ed25519_github
     comment: skalskimarcin33@gmail.com
 
 commands:
@@ -586,6 +589,17 @@ commands:
       ! xcode-select -p > /dev/null 2>&1 ||
       swift "$HOME/.local/bin/display-profiles" check
     run: swift "$HOME/.local/bin/display-profiles" apply
+  # Skipped while Bitwarden isn't running, so the daily drift check stays
+  # quiet when the app is closed.
+  - name: Bitwarden SSH agent holds the infrastructure keys
+    check: >-
+      ! pgrep -xq Bitwarden || {
+      keys=$(SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock" ssh-add -l 2> /dev/null) &&
+      for fp in SHA256:v3k8YKuDtyea+iKVsYPnNCQZYHhe5L3oiZfzRR7mDcI SHA256:Xyjve1AHQURn52uLbfttpWNY/SK2bctFu7JnPh5SJSQ;
+      do printf '%s\n' "$keys" | grep -qF "$fp" || exit 1; done; }
+    run: >-
+      echo "Bitwarden's SSH agent is missing a key. Sign in to the desktop app, turn on its SSH agent and check the items in the README." >&2;
+      exit 1
   # dotfiles/git/config signs every commit with this key, so git can't
   # commit until it's imported. Last: a failing command stops the ones after it.
   - name: git signing key imported
