@@ -75,6 +75,16 @@ mise:
   config: dotfiles/mise/config.toml
   prune: true
 
+secrets:
+  age:
+    - dst: ~/.config/sops/age/keys.txt
+      keys:
+        - {bitwarden: "sops age - home-nas proxmox", publicKey: age1kfklkd3xuacvfu0gy35v7cwk5lw8y9xv0lr5hs2ddyn82ww9mdlslfth6h}
+        - {bitwarden: "sops age - klaudiusz-smart-home local", publicKey: age10nm6ar2haj797ycemkp640xs0sc4juym57ll5zxh7uupg8rkhy5szt58tc}
+    - dst: ~/.config/sops/age/gh-runner-home-nas.txt
+      keys:
+        - {bitwarden: "sops age - home-nas gh runner", publicKey: age1jxptglgt0hkwlsqmyn5dzsyluhg69m5m07apskmxyytdwap8wdnqs4nd0d}
+
 # Agent plugins for Claude Code, Codex and opencode. Entries without their own
 # providers target all three. Codex and opencode are named so zakwas manages
 # them strictly instead of skipping them. Every skill installs for all three;
