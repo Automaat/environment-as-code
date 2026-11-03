@@ -577,7 +577,7 @@ commands:
       unzip -q "$HOME/.local/share/streamdeck/profiles.streamDeckProfilesBackup" 'Profiles/*' -d "$d" &&
       { osascript -e 'quit app "Elgato Stream Deck"' > /dev/null 2>&1 || true; } &&
       mkdir -p "$s/ProfilesV3" &&
-      cp -Rn "$d/Profiles/." "$s/ProfilesV3/" &&
+      /usr/bin/rsync -a --ignore-existing "$d/Profiles/" "$s/ProfilesV3/" &&
       mkdir -p "$HOME/.local/state/zakwas" &&
       touch "$HOME/.local/state/zakwas/streamdeck-restored";
       rc=$?; rm -rf "$d"; exit $rc
