@@ -331,6 +331,10 @@ agents:
       - build-slot
       - fc-list
       - ghostty
+      - command: python3 /Users/marcinskalski/.local/share/sai/ship-it/plugin-pins
+        justification: ship-it runs its pinned helper scripts (bookkeeping, checkpoints, gates) from the retained bundle store.
+      - command: python3 /Users/marcinskalski/.claude/plugins/cache/sai/ship-it
+        justification: ship-it acquires and releases its pinned bundle with plugin_pins.py from the plugin cache.
     deny:
       - git push --force
       - git push -f
