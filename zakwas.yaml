@@ -42,6 +42,7 @@ files:
   - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
   - {src: dotfiles/bin/zakwas-check-notify, dst: ~/.local/bin/zakwas-check-notify}
   - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
+  - {src: dotfiles/bin/git-ssh-sign, dst: ~/.local/bin/git-ssh-sign}
   - {src: dotfiles/bin/zsh-refresh-completions, dst: ~/.local/bin/zsh-refresh-completions}
   - {src: dotfiles/streamdeck/profiles.streamDeckProfilesBackup, dst: ~/.local/share/streamdeck/profiles.streamDeckProfilesBackup}
   - {src: dotfiles/swift/display-profiles, dst: ~/.local/bin/display-profiles}
@@ -610,6 +611,16 @@ commands:
       ! test -x "$t" || ! "$t" status > /dev/null 2>&1 ||
       "$t" debug prefs | grep -q '"RouteAll": false'
     run: /Applications/Tailscale.app/Contents/MacOS/Tailscale set --accept-routes=false
+  # The service keeps the T3 server up without the desktop app; remote access
+  # (T3 Connect or tailnet) is a separate choice made with `t3 up`. Skipped
+  # until the desktop app has installed the t3 launcher.
+  - name: T3 Code background service installed
+    check: >-
+      ! test -x "$HOME/.t3/bin/t3" ||
+      "$HOME/.t3/bin/t3" status --json 2> /dev/null | jq -e '.service.installed' > /dev/null
+    run: >-
+      echo "Quit the T3 Code desktop app first: it and the service both bind port 3773." >&2;
+      "$HOME/.t3/bin/t3" service install
   # Skipped while Bitwarden isn't running, so the daily drift check stays
   # quiet when the app is closed.
   - name: Bitwarden SSH agent holds the infrastructure keys
