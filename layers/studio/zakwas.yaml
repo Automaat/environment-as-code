@@ -7,6 +7,9 @@
 brew:
   file: Brewfile
 
+files:
+  - {src: git/signing.gitconfig, dst: ~/.config/git/local.gitconfig}
+
 commands:
   # Never sleep, wake for network, boot after a power loss. Desktop-only
   # settings: autorestart doesn't exist on a laptop.
@@ -31,3 +34,15 @@ commands:
       'auth       sufficient     /opt/homebrew/opt/pam-u2f/lib/pam/pam_u2f.so cue origin=pam://studio appid=pam://studio'
       'auth       sufficient     pam_tid.so'
       | sudo tee /etc/pam.d/sudo_local > /dev/null
+
+  # git/signing.gitconfig signs with this software subkey, so the Studio's
+  # commits need no YubiKey touch. Last: a failing command stops the ones after it.
+  - name: git signing subkey imported
+    check: >-
+      gpg --list-secret-keys --with-colons --with-subkey-fingerprints C25DFDF396ADF455 2> /dev/null |
+      grep -q '^fpr:::::::::4C87E4377EC834C405AE619989B58A1317507C65:'
+    run: >-
+      echo "GPG subkey 4C87E4377EC834C405AE619989B58A1317507C65 (signingKey in git/signing.gitconfig) is missing; git commits will fail." >&2;
+      echo "Restore it from the Bitwarden note: bw get notes 'gpg C25DFDF396ADF455 secret keys' | gpg --import" >&2;
+      echo "Then run zakwas apply again." >&2;
+      exit 1
