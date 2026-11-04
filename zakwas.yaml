@@ -600,6 +600,16 @@ commands:
       ! xcode-select -p > /dev/null 2>&1 ||
       swift "$HOME/.local/bin/display-profiles" check
     run: swift "$HOME/.local/bin/display-profiles" apply
+  # Home subnets (192.168.x.x) are on the LAN; accepting the Proxmox subnet
+  # routes sends that traffic through the tailnet and TCP times out. Skipped
+  # while Tailscale is missing or logged out. Away from home:
+  # tailscale set --accept-routes=true
+  - name: Tailscale does not accept subnet routes
+    check: >-
+      t=/Applications/Tailscale.app/Contents/MacOS/Tailscale;
+      ! test -x "$t" || ! "$t" status > /dev/null 2>&1 ||
+      "$t" debug prefs | grep -q '"RouteAll": false'
+    run: /Applications/Tailscale.app/Contents/MacOS/Tailscale set --accept-routes=false
   # Skipped while Bitwarden isn't running, so the daily drift check stays
   # quiet when the app is closed.
   - name: Bitwarden SSH agent holds the infrastructure keys
