@@ -42,7 +42,6 @@ files:
   - {src: dotfiles/bin/gh-add-subissue, dst: ~/.local/bin/gh-add-subissue}
   - {src: dotfiles/bin/zakwas-check-notify, dst: ~/.local/bin/zakwas-check-notify}
   - {src: dotfiles/bin/build-slot, dst: ~/.local/bin/build-slot}
-  - {src: dotfiles/bin/git-ssh-sign, dst: ~/.local/bin/git-ssh-sign}
   - {src: dotfiles/bin/zsh-refresh-completions, dst: ~/.local/bin/zsh-refresh-completions}
   - {src: dotfiles/streamdeck/profiles.streamDeckProfilesBackup, dst: ~/.local/share/streamdeck/profiles.streamDeckProfilesBackup}
   - {src: dotfiles/swift/display-profiles, dst: ~/.local/bin/display-profiles}

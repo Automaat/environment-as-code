@@ -47,7 +47,6 @@ cask "logi-options+"
 cask "microsoft-edge"
 cask "obsidian"
 cask "raycast"
-cask "secretive"
 cask "todoist-app"
 cask "zed"
 
