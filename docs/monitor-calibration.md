@@ -82,3 +82,4 @@ A correct ASUS run measures its full green primary at about xy (0.28, 0.66), mat
 - A loaded preset overrides edits: changing luminance with a preset selected snaps back. Edit the values in the Progress & Review bar, then save under a new name.
 - Changing the OSD can make macOS reconnect the monitor, which resets PROFILER to its start screen and drops unsaved settings. Set the OSD first.
 - Factory presets are often 250–350 cd/m² and oversaturated, so an accurate profile at 120–160 cd/m² looks dim and muted at first.
+- macOS can fall back to the factory profile while ColorSync still reports the custom one as assigned. `swift ~/.local/bin/display-profiles list` shows `active=no` when that happens, and `display-profiles apply` restores it.
