@@ -69,6 +69,12 @@ zakwas apply
 
 Still manual: Remote Login and Screen Sharing in System Settings > General > Sharing, signing in to Jump Desktop Connect and granting it Screen Recording and Accessibility, and logging in to Tailscale.
 
+## Tailscale subnet routes
+
+Keep "Use Tailscale subnets" off at home. Proxmox advertises 192.168.0.0/24, 192.168.10.0/24, 192.168.20.0/24 and 192.168.40.0/24; with `accept-routes` on, the Mac sends LAN traffic through the tailnet and TCP connections time out. The setting lives only in tailscaled's state, so a reinstall, logout, `tailscale up --reset` or the menu-bar toggle turns it back on. The `Tailscale does not accept subnet routes` command in `zakwas.yaml` turns it off again on the next `zakwas apply` and shows as drift in `zakwas check`.
+
+Away from home, reach the LAN with `tailscale set --accept-routes=true`, and run `tailscale set --accept-routes=false` when back (or `zakwas apply`).
+
 ## Day to day
 
 ```bash
