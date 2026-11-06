@@ -85,3 +85,4 @@ cask "font-symbols-only-nerd-font"
 
 cask "basictex"
 cask "superset"
+cask "linear"
