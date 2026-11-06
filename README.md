@@ -73,7 +73,7 @@ Still manual: Remote Login and Screen Sharing in System Settings > General > Sha
 
 The Canon LiDE 400 is plugged into the Studio. `scan-to-paperless` scans pages with SANE (`sane-backends`), merges them into one PDF with `img2pdf` and uploads it to Paperless-ngx, which runs OCR. Run `scan-to-paperless -h` for options (grayscale, DPI, title, tag IDs).
 
-One-time setup: create an API token in Paperless (profile menu), then store it in the Keychain:
+The API token lives in Bitwarden ("Paperless API token"). `zakwas apply` copies it into the Keychain when it is missing and asks for the Bitwarden master password. To set it by hand instead:
 
 ```bash
 security add-generic-password -a "$USER" -s paperless-api-token -w
