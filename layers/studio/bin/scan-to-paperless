@@ -1,0 +1,79 @@
+#!/bin/sh
+set -eu
+
+PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH
+
+url="${PAPERLESS_URL:-https://paperless.mskalski.dev}"
+resolution=300
+mode=Color
+title=""
+tags=""
+
+usage() {
+    cat <<EOF
+Usage: scan-to-paperless [-g] [-r DPI] [-t TITLE] [-T TAG_ID]...
+Scans pages on the flatbed, merges them into one PDF and uploads it to
+Paperless-ngx, which does the OCR.
+  -g         grayscale (default: color)
+  -r DPI     resolution (default: 300)
+  -t TITLE   document title (default: Paperless picks one)
+  -T TAG_ID  Paperless tag ID, repeatable
+Env: PAPERLESS_URL (default $url), SCANNER_DEVICE (default: first found)
+EOF
+}
+
+while getopts gr:t:T:h opt; do
+    case $opt in
+        g) mode=Gray ;;
+        r) resolution=$OPTARG ;;
+        t) title=$OPTARG ;;
+        T) tags="$tags $OPTARG" ;;
+        h) usage; exit 0 ;;
+        *) usage >&2; exit 64 ;;
+    esac
+done
+
+token=$(security find-generic-password -s paperless-api-token -w) || {
+    echo "No Paperless API token in the Keychain. Add it with:" >&2
+    echo "  security add-generic-password -a \"\$USER\" -s paperless-api-token -w" >&2
+    exit 1
+}
+
+work=$(mktemp -d "${TMPDIR:-/tmp}/scan-to-paperless.XXXXXX")
+trap 'rm -rf "$work"' EXIT INT TERM
+
+if [ -z "${SCANNER_DEVICE:-}" ]; then
+    SCANNER_DEVICE=$(scanimage -f '%d%n' | head -n 1)
+    [ -n "$SCANNER_DEVICE" ] || { echo "No scanner found" >&2; exit 1; }
+fi
+
+page=0
+while :; do
+    next=$((page + 1))
+    file=$(printf '%s/page-%03d.jpg' "$work" "$next")
+    echo "Scanning page $next..."
+    scanimage -d "$SCANNER_DEVICE" --format=jpeg --resolution "$resolution" \
+        --mode "$mode" -o "$file"
+    page=$next
+    printf 'Enter: next page, r: rescan page %s, d: done, q: abort > ' "$page"
+    read -r answer < /dev/tty
+    case $answer in
+        r) rm -f "$file"; page=$((page - 1)) ;;
+        d) break ;;
+        q) echo "Aborted"; exit 1 ;;
+    esac
+done
+
+pdf="$work/scan-$(date +%Y%m%d-%H%M%S).pdf"
+img2pdf "$work"/page-*.jpg -o "$pdf"
+
+set -- -F "document=@$pdf"
+[ -n "$title" ] && set -- "$@" -F "title=$title"
+for tag in $tags; do
+    set -- "$@" -F "tags=$tag"
+done
+
+task=$(curl -fsS -H "Authorization: Token $token" "$@" \
+    "$url/api/documents/post_document/")
+echo "Uploaded $page page(s); Paperless task $task"
