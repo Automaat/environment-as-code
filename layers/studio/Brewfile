@@ -1,2 +1,4 @@
 brew "pam-u2f"
+brew "sane-backends"
+brew "img2pdf"
 cask "jump-desktop-connect"
