@@ -9,6 +9,7 @@ brew:
 
 files:
   - {src: git/signing.gitconfig, dst: ~/.config/git/local.gitconfig}
+  - {src: bin/scan-to-paperless, dst: ~/.local/bin/scan-to-paperless}
 
 secrets:
   gpg:
@@ -38,3 +39,12 @@ commands:
       'auth       sufficient     /opt/homebrew/opt/pam-u2f/lib/pam/pam_u2f.so cue origin=pam://studio appid=pam://studio'
       'auth       sufficient     pam_tid.so'
       | sudo tee /etc/pam.d/sudo_local > /dev/null
+
+  # scan-to-paperless reads the token from the Keychain; Bitwarden holds
+  # the original. bw asks for the master password: secrets locks it again.
+  - name: paperless token in keychain
+    check: security find-generic-password -s paperless-api-token > /dev/null
+    run: >-
+      token=$(bw get password 85e4b2fc-b0f3-43fb-bdef-b4fa00d96804) &&
+      security add-generic-password -U -a "$USER" -s paperless-api-token
+      -l "Paperless API token" -w "$token"

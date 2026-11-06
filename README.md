@@ -69,6 +69,18 @@ zakwas apply
 
 Still manual: Remote Login and Screen Sharing in System Settings > General > Sharing, signing in to Jump Desktop Connect and granting it Screen Recording and Accessibility, and logging in to Tailscale.
 
+### Scanning to Paperless
+
+The Canon LiDE 400 is plugged into the Studio. `scan-to-paperless` scans pages with SANE (`sane-backends`), merges them into one PDF with `img2pdf` and uploads it to Paperless-ngx, which runs OCR. Run `scan-to-paperless -h` for options (grayscale, DPI, title, tag IDs).
+
+The API token lives in Bitwarden ("Paperless API token"). `zakwas apply` copies it into the Keychain when it is missing and asks for the Bitwarden master password. To set it by hand instead:
+
+```bash
+security add-generic-password -a "$USER" -s paperless-api-token -w
+```
+
+If the scanner stops answering, unplug it and plug it back in; SANE's `pixma` backend marks the LiDE 400 as not well tested.
+
 ## Tailscale subnet routes
 
 Keep "Use Tailscale subnets" off at home. Proxmox advertises 192.168.0.0/24, 192.168.10.0/24, 192.168.20.0/24 and 192.168.40.0/24; with `accept-routes` on, the Mac sends LAN traffic through the tailnet and TCP connections time out. The setting lives only in tailscaled's state, so a reinstall, logout, `tailscale up --reset` or the menu-bar toggle turns it back on. The `Tailscale does not accept subnet routes` command in `zakwas.yaml` turns it off again on the next `zakwas apply` and shows as drift in `zakwas check`.
