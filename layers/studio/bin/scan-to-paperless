@@ -57,7 +57,7 @@ while :; do
         --mode "$mode" -o "$file"
     page=$next
     printf 'Enter: next page, r: rescan page %s, d: done, q: abort > ' "$page"
-    read -r answer < /dev/tty
+    read -r answer || answer=d
     case $answer in
         r) rm -f "$file"; page=$((page - 1)) ;;
         d) break ;;
