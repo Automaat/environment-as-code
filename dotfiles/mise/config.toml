@@ -49,8 +49,8 @@ cloudflared = "2026.10.7"
 opentofu = "1.13.9"
 tflint = "0.66.0"
 "github:stacklok/toolhive" = "0.63.0"
-"github:can1357/oh-my-pi" = "18.18.2"
-"aqua:anthropics/claude-code" = "2.1.319"
+"github:can1357/oh-my-pi" = "18.18.5"
+"aqua:anthropics/claude-code" = "2.1.321"
 "npm:@opencode/cli" = { version = "2.2.6", allow_builds = ["@opencode/cli"] }
 "npm:chrome-devtools-mcp" = "1.12.0"
 
