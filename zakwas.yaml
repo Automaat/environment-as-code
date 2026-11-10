@@ -330,9 +330,15 @@ agents:
       - build-slot
       - fc-list
       - ghostty
+      # Rules match literal command prefixes (no ~ expansion), so ship-it's
+      # paths are listed once per Mac's home.
       - command: python3 /Users/marcinskalski/.local/share/sai/ship-it/plugin-pins
         justification: ship-it runs its pinned helper scripts (bookkeeping, checkpoints, gates) from the retained bundle store.
+      - command: python3 /Users/marcin.skalski/.local/share/sai/ship-it/plugin-pins
+        justification: ship-it runs its pinned helper scripts (bookkeeping, checkpoints, gates) from the retained bundle store.
       - command: python3 /Users/marcinskalski/.claude/plugins/cache/sai/ship-it
+        justification: ship-it acquires and releases its pinned bundle with plugin_pins.py from the plugin cache.
+      - command: python3 /Users/marcin.skalski/.claude/plugins/cache/sai/ship-it
         justification: ship-it acquires and releases its pinned bundle with plugin_pins.py from the plugin cache.
     deny:
       - git push --force
@@ -378,23 +384,24 @@ agents:
     - rightsize@sai
   # Global MCP servers for Claude Code and Codex, each scoped with providers so
   # none leaks to opencode, whose servers stay hand-written in its own config
-  # template. zakwas does not expand ~ here, so paths are absolute. A
+  # template. zakwas expands a leading ~/ in command, args and env values, so
+  # the same paths work on Macs with different home directories. A
   # same-named server that differs fails that provider's plan: remove the old
   # registration by hand first.
   mcp:
     # Read-only: no --enable-apply, so an agent can only propose changes.
     zakwas:
       command: zakwas
-      args: [mcp, -c, /Users/marcinskalski/sideprojects/environment-as-code/zakwas.yaml]
+      args: [mcp, -c, ~/sideprojects/environment-as-code/zakwas.yaml]
       providers: [claude, codex]
     # SAIL_MEMORY_AGENT is left out because one declaration has one env; Sail
     # then records no agent label in memory provenance.
     sail-shared-memory:
-      command: /Users/marcinskalski/.local/bin/sail-memory-mcp
+      command: ~/.local/bin/sail-memory-mcp
       args: [--memory-mcp]
       env:
-        SAIL_MEMORY_ROOT: /Users/marcinskalski/Library/Application Support/dev.smykla.sai-harness/memory
-        SAIL_SETTINGS_PATH: /Users/marcinskalski/Library/Application Support/sail/settings.json
+        SAIL_MEMORY_ROOT: ~/Library/Application Support/dev.smykla.sai-harness/memory
+        SAIL_SETTINGS_PATH: ~/Library/Application Support/sail/settings.json
       providers: [claude, codex]
     # Codex already names its Datadog server `datadog`, the other agents use
     # `datadog-mcp`.
