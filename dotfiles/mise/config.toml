@@ -19,7 +19,7 @@ pipx = "1.18.19"
 uv = "0.13.9"
 ruff = "0.17.6"
 "pipx:virtualenv" = "21.15.12"
-"pypi:ansible" = { version = "14.6.0", expose = ["ansible-core"] }
+"pypi:ansible" = { version = "15.0.0", expose = ["ansible-core"] }
 "pipx:gcalcli" = "4.5.1"
 "pipx:yubikey-manager" = "5.9.2"
 "pipx:b2" = "5.0.3"
